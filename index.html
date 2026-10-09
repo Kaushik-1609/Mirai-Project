@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirai School of Technology | 未来工科大学 • Gamified Academy</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Noto+Serif+JP:wght@600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets & Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/main.css?v=6">
+    <link rel="stylesheet" href="css/hero-gate.css?v=6">
+    <link rel="stylesheet" href="css/games.css?v=6">
+    <link rel="stylesheet" href="css/auth.css?v=6">
+</head>
+<body>
+    <section class="auth-screen hidden" id="authScreen" aria-label="MSOT Learn Gateway">
+        <div class="auth-noise"></div>
+        <div class="auth-grid"></div>
+        <div class="auth-card">
+            <!-- Brand Crest -->
+            <div class="auth-brand">
+                <div class="auth-crest">⛩️</div>
+                <div>
+                    <div class="auth-kicker">未来工科大学 • NEO-TOKYO</div>
+                    <h1>MSOT <span>LEARN</span></h1>
+                </div>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs" role="tablist">
+                <button type="button" class="auth-tab-btn active" id="tabSignInBtn" role="tab" aria-selected="true">SIGN IN</button>
+                <button type="button" class="auth-tab-btn" id="tabSignUpBtn" role="tab" aria-selected="false">REGISTER CADET</button>
+            </div>
+
+            <!-- Pane 1: Sign In -->
+            <div id="signInPane" class="auth-pane">
+                <div class="auth-heading">
+                    <span class="auth-tag">SECURE ACADEMY ACCESS</span>
+                    <h2>Enter the Gates</h2>
+                    <p>Sign in to access your learning journey, quests, XP economy, and leagues.</p>
+                </div>
+                <form id="loginForm" class="auth-form" novalidate>
+                    <div class="form-group">
+                        <label class="auth-label" for="loginEmail">COLLEGE / ACADEMY EMAIL</label>
+                        <div class="auth-input-wrap">
+                            <span class="auth-input-icon">✉</span>
+                            <input id="loginEmail" type="email" autocomplete="username" placeholder="you@msot.edu" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="auth-label" for="loginPassword">PASSWORD</label>
+                        <div class="auth-input-wrap">
+                            <span class="auth-input-icon">⌁</span>
+                            <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter password" required minlength="4">
+                            <button type="button" class="password-toggle" id="passwordToggle" title="Toggle password visibility">◉</button>
+                        </div>
+                    </div>
+                    <div class="auth-row">
+                        <label class="remember-box">
+                            <input type="checkbox" id="rememberMe" checked>
+                            <span>Remember session</span>
+                        </label>
+                        <button type="button" class="auth-link" id="forgotPasswordBtn">Forgot password?</button>
+                    </div>
+                    <button class="auth-submit" type="submit">ACCESS MSOT LEARN <span>➔</span></button>
+                    <div class="auth-error" id="loginError" role="alert"></div>
+                </form>
+
+                <div class="demo-access">
+                    <div class="demo-title">⚡ 1-CLICK DEMO ACCESS (HACKATHON REVIEW)</div>
+                    <div class="demo-buttons">
+                        <button type="button" data-demo-email="student@msot.edu">⚔️ STUDENT</button>
+                        <button type="button" data-demo-email="faculty@msot.edu">🎓 FACULTY</button>
+                        <button type="button" data-demo-email="admin@msot.edu">🛡️ ADMIN</button>
+                    </div>
+                    <small>Demo password: <b>msot1234</b></small>
+                </div>
+
+                <div class="auth-switch-footer">
+                    New Cadet? <a href="javascript:void(0)" id="switchToSignUpLink">Create an account here</a>
+                </div>
+            </div>
+
+            <!-- Pane 2: Sign Up / Cadet Registration -->
+            <div id="signUpPane" class="auth-pane" style="display:none;">
+                <div class="auth-heading">
+                    <span class="auth-tag">ENROLLMENT PROTOCOL</span>
+                    <h2>Create Cadet Account</h2>
+                    <p>Register as a new cadet, select your avatar badge, and initialize your XP wallet.</p>
+                </div>
+                <form id="registerForm" class="auth-form" novalidate>
+                    <div class="form-group">
+                        <label class="auth-label" for="regName">FULL NAME / CADET CODENAME</label>
+                        <div class="auth-input-wrap">
+                            <span class="auth-input-icon">👤</span>
+                            <input id="regName" type="text" autocomplete="name" placeholder="e.g. Kenji Vance or NeonBlade" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="auth-label" for="regEmail">ACADEMY EMAIL</label>
+                        <div class="auth-input-wrap">
+                            <span class="auth-input-icon">✉</span>
+                            <input id="regEmail" type="email" autocomplete="email" placeholder="cadet@msot.edu or personal" required>
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="auth-label" for="regRole">ACADEMY ROLE</label>
+                            <div class="auth-input-wrap">
+                                <span class="auth-input-icon">🎖️</span>
+                                <select id="regRole">
+                                    <option value="STUDENT">CADET (Student)</option>
+                                    <option value="FACULTY">FACULTY (Instructor)</option>
+                                    <option value="ADMIN">ADMIN (Governance)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="auth-label" for="regTrack">DISCIPLINE TRACK</label>
+                            <div class="auth-input-wrap">
+                                <span class="auth-input-icon">🎯</span>
+                                <select id="regTrack">
+                                    <option value="C++ Algorithms & DSA">C++ Algorithms (7 Trials)</option>
+                                    <option value="Web Architecture & HTML">Web Architecture (10 Trials)</option>
+                                    <option value="Full Spectrum Systems">Full Spectrum Systems</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Avatar Picker -->
+                    <div class="avatar-picker-section">
+                        <div class="avatar-picker-header">
+                            <label class="auth-label">CHOOSE CADET AVATAR CREST</label>
+                            <div class="avatar-preview-badge" id="regAvatarPreview">⚔️</div>
+                        </div>
+                        <div class="avatar-choices-grid">
+                            <button type="button" class="avatar-choice-btn selected" data-avatar="⚔️" title="Swordsman">⚔️</button>
+                            <button type="button" class="avatar-choice-btn" data-avatar="🛡️" title="Guardian">🛡️</button>
+                            <button type="button" class="avatar-choice-btn" data-avatar="🧙‍♂️" title="Archmage">🧙‍♂️</button>
+                            <button type="button" class="avatar-choice-btn" data-avatar="⚡" title="Volt Runner">⚡</button>
+                            <button type="button" class="avatar-choice-btn" data-avatar="🤖" title="Mecha Core">🤖</button>
+                            <button type="button" class="avatar-choice-btn" data-avatar="🌸" title="Cherry Blossom">🌸</button>
+                            <button type="button" class="avatar-choice-btn" data-avatar="🔥" title="Inferno">🔥</button>
+                            <button type="button" class="avatar-choice-btn" data-avatar="🏹" title="Shadow Archer">🏹</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="auth-label" for="regPassword">PASSWORD</label>
+                            <div class="auth-input-wrap">
+                                <span class="auth-input-icon">⌁</span>
+                                <input id="regPassword" type="password" placeholder="Min. 4 characters" required minlength="4">
+                                <button type="button" class="password-toggle" id="regPasswordToggle" title="Toggle password">◉</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="auth-label" for="regConfirmPassword">CONFIRM PASSWORD</label>
+                            <div class="auth-input-wrap">
+                                <span class="auth-input-icon">✓</span>
+                                <input id="regConfirmPassword" type="password" placeholder="Re-enter password" required minlength="4">
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="auth-terms-box">
+                        <input type="checkbox" id="regHonorCode" checked required>
+                        <span>I pledge to uphold MSOT academic integrity and fair play.</span>
+                    </label>
+
+                    <button class="auth-submit" type="submit">INITIALIZE CADET PROTOCOL <span>➔</span></button>
+                    <div class="auth-error" id="registerError" role="alert"></div>
+                </form>
+
+                <div class="auth-switch-footer">
+                    Already enrolled? <a href="javascript:void(0)" id="switchToSignInLink">Sign in to your account</a>
+                </div>
+            </div>
+
+            <div class="auth-footer">LEARNING FIRST • FAIR PLAY • GRADES ALWAYS SEPARATE</div>
+        </div>
+    </section>
+
+    <!-- Forgot Password Modal Dialog -->
+    <div class="forgot-modal-overlay" id="forgotPasswordModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+        <div class="forgot-modal-card">
+            <button type="button" class="forgot-close-btn" id="closeForgotModalBtn" aria-label="Close">✕</button>
+            <div class="auth-tag">CREDENTIAL RECOVERY</div>
+            <h3 id="forgotTitle" style="font-family:'Cinzel',serif;font-size:20px;color:#fff;margin:6px 0 10px;">Reset Password</h3>
+            <p style="font-size:12px;color:#8d95a4;line-height:1.5;margin-bottom:14px;">
+                Enter your college email address to receive password reset dispatch.
+            </p>
+            <form id="forgotPasswordForm">
+                <div class="auth-input-wrap" style="margin-bottom:12px;">
+                    <span class="auth-input-icon">✉</span>
+                    <input type="email" id="forgotEmail" placeholder="you@msot.edu" required>
+                </div>
+                <button type="submit" class="auth-submit" style="height:44px;font-size:11px;">SEND RESET DISPATCH ➔</button>
+            </form>
+            <div class="forgot-feedback" id="forgotFeedback"></div>
+        </div>
+    </div>
+
+    <!-- Anime Speedlines Flash Overlay -->
+    <div class="anime-speedlines-overlay" id="animeSpeedlines"></div>
+
+    <!-- TOP HEADER & HUD -->
+    <header class="site-header">
+        <div id="roleIndicatorBanner" class="role-indicator-banner student" style="display:none"></div>
+        <div class="header-inner">
+            <div class="brand-block" onclick="window.location.hash='#/gates'">
+                <div class="brand-crest">⛩️</div>
+                <div class="brand-titles">
+                    <span class="brand-kanji">未来工科大学 • NEO-TOKYO</span>
+                    <span class="brand-name">MIRAI <span>TECH</span></span>
+                </div>
+            </div>
+
+            <nav class="main-nav" id="mainNav">
+                <a href="#/gates"     class="nav-link active" data-section="heroSection"    onclick="window.switchSection('heroSection', true); return false;">THE GATES</a>
+                <a href="#/arcade"    class="nav-link"        data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); return false;">ARCADE (17)</a>
+                <a href="#/daily"     class="nav-link"        data-section="dailySection"   onclick="window.switchSection('dailySection', true); return false;">DAILY TRIAL</a>
+                <a href="#/leagues"   class="nav-link"        data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); return false;">LEAGUES</a>
+                <a href="#/guild-war" class="nav-link"        data-section="battleSection"  onclick="window.switchSection('battleSection', true); return false;">GUILD WAR</a>
+                <a href="#/faculty"   class="nav-link"        data-section="facultySection" onclick="window.switchSection('facultySection', true); return false;">FACULTY</a>
+                <a href="#/admin"     class="nav-link"        data-section="adminSection"   onclick="window.switchSection('adminSection', true); return false;">XP RULES</a>
+                <a href="#/profile"   class="nav-link"        data-section="profileSection" onclick="window.switchSection('profileSection', true); return false;">PROFILE</a>
+            </nav>
+
+            <div class="header-hud">
+                <div class="role-select-wrapper">
+                    <span class="role-icon-indicator" id="roleIconIndicator">⚔️</span>
+                    <select id="userRoleSelect" class="cyber-role-select" aria-label="Active Academy Role">
+                        <option value="STUDENT">STUDENT</option>
+                        <option value="FACULTY">FACULTY</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                </div>
+
+                <button class="sound-toggle-btn" id="soundToggleBtn" title="Toggle dark synth audio atmosphere">
+                    <span id="soundBtnText">🔊 SOUND</span>
+                </button>
+
+                <div class="cadet-hud-pill" onclick="window.switchSection('profileSection', true)" title="View Cadet Dossier & Badges">
+                    <div class="hud-avatar" id="headerAvatar">⚔️</div>
+                    <div class="hud-values">
+                        <span class="hud-level" id="headerLevel">LVL 5</span>
+                        <span class="hud-xp" id="headerXP">685 XP</span>
+                        <span class="hud-streak" id="headerStreak">6 Days 🔥</span>
+                        <span class="hud-freezes" id="headerFreezes" title="Streak Freezes Available">2 🛡️</span>
+                    </div>
+                </div>
+
+                <button class="logout-btn" id="logoutBtn" title="Sign out of MSOT Learn">⎋ LOGOUT</button>
+
+                <!-- Mobile Hamburger Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Slide-out Drawer -->
+        <div class="mobile-nav-drawer" id="mobileNavDrawer">
+            <div class="mobile-nav-header">
+                <div class="mobile-brand-title">⛩️ MSOT ACADEMY</div>
+                <button type="button" class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">✕</button>
+            </div>
+            <div class="mobile-nav-links">
+                <a href="#/gates"     class="mobile-nav-link" data-section="heroSection"    onclick="window.switchSection('heroSection', true); return false;">⛩️ THE GATES</a>
+                <a href="#/arcade"    class="mobile-nav-link" data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); return false;">🎮 ARCADE (17 GAMES)</a>
+                <a href="#/daily"     class="mobile-nav-link" data-section="dailySection"   onclick="window.switchSection('dailySection', true); return false;">⚡ DAILY TRIAL</a>
+                <a href="#/leagues"   class="mobile-nav-link" data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); return false;">🏆 LEAGUES & FAIRNESS</a>
+                <a href="#/guild-war" class="mobile-nav-link" data-section="battleSection"  onclick="window.switchSection('battleSection', true); return false;">⚔️ GUILD WAR / TEAM CLASH</a>
+                <a href="#/faculty"   class="mobile-nav-link" data-section="facultySection" onclick="window.switchSection('facultySection', true); return false;">🎓 FACULTY DASHBOARD</a>
+                <a href="#/admin"     class="mobile-nav-link" data-section="adminSection"   onclick="window.switchSection('adminSection', true); return false;">⚙️ ADMIN XP RULES</a>
+                <a href="#/profile"   class="mobile-nav-link" data-section="profileSection" onclick="window.switchSection('profileSection', true); return false;">👤 CADET PROFILE</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+
+        <!-- ===================================================================
+             1. HERO GATE EXPERIENCE: TOWERING GATES PART IN RED SMOKE & FIRELIGHT
+             =================================================================== -->
+        <section class="app-section active hero-gate-section" id="heroSection">
+            <div class="hero-gate-wrapper" id="heroGateWrapper">
+                <!-- Background Fire Backdrop -->
+                <div class="gate-scenery-backdrop">
+                    <div class="shrine-silhouette">
+                        <div class="temple-arch"></div>
+                        <div class="oni-mask-crest">👹</div>
+                    </div>
+                </div>
+
+                <!-- 3D Interactive Three.js Cyber Shrine Viewport -->
+                <div class="hero-3d-viewport-wrap">
+                    <canvas id="hero3DCanvas" class="hero-3d-canvas"></canvas>
+                </div>
+
+                <!-- Interactive Particle & Cloth Canvas -->
+                <canvas class="gate-canvas" id="gateCanvas"></canvas>
+
+                <!-- Physical Heavy Split Gate Doors -->
+                <div class="physical-gate-doors">
+                    <div class="gate-door left" id="gateDoorLeft">
+                        <div class="door-panel-texture"></div>
+                        <div class="door-runes">未来工科門 • 勇気 • 知性</div>
+                    </div>
+                    <div class="gate-door right" id="gateDoorRight">
+                        <div class="door-panel-texture"></div>
+                        <div class="door-runes">鉄の論理 • 絶望を棄てよ</div>
+                    </div>
+                </div>
+
+                <!-- Hero Dramatic Prose Layer -->
+                <div class="hero-content-layer">
+                    <div class="hero-relic-badge">RELIC 01 • LA PORTE DE L'ENFER • MIRAI ARCHIVES, 2026</div>
+                    <h1 class="hero-main-heading">
+                        Abandon all bugs,<br>
+                        <em>ye who enter here.</em>
+                    </h1>
+                    <p class="hero-prose">
+                        Towering gates part in red smoke and firelight, motion heavy enough to feel like a warning — 
+                        a crucible for coders who want to be remembered, not just noticed. Master 17 interactive trials across 
+                        C++ Algorithms and Web Architecture.
+                    </p>
+                    <div class="hero-drag-prompt">
+                        <span>⚡ Drag mouse through the glowing opening to disturb the inscription curtain.</span>
+                    </div>
+                    <div class="hero-actions-row">
+                        <button class="enter-gate-btn" id="enterGateBtn">
+                            ENTER THE GATES / 開門 ➔
+                        </button>
+                        <button class="secondary-btn" onclick="window.switchSection('dailySection')">
+                            DAILY SPEED TRIAL ⚡
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Side Tuning Drawer (Matching Scrolltide Curtain Reference) -->
+                <aside class="curtain-side-panel collapsed" id="curtainSidePanel">
+                    <div class="panel-header-row">
+                        <div>
+                            <span class="panel-brand-tag">SCROLLTIDE // PHYSICS</span>
+                            <h3 class="panel-title">Curtain Controls</h3>
+                        </div>
+                    </div>
+
+                    <!-- Weave Sliders -->
+                    <div class="ctrl-group">
+                        <div class="ctrl-section-label">
+                            <span>WEAVE</span>
+                            <span class="ctrl-section-sub">Rebuilds the sheet</span>
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Gate Parting / 開門</span>
+                                <span class="slider-val" id="valGateParting">70%</span>
+                            </div>
+                            <input type="range" min="0" max="1" step="0.01" value="0.70" class="gate-slider" id="ctrlGateParting">
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Text size</span>
+                                <span class="slider-val" id="valTextSize">9.00</span>
+                            </div>
+                            <input type="range" min="6" max="18" step="0.5" value="9" class="gate-slider" id="ctrlTextSize">
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Glyph weight</span>
+                                <span class="slider-val" id="valGlyphWeight">0.80</span>
+                            </div>
+                            <input type="range" min="0.2" max="1.5" step="0.05" value="0.8" class="gate-slider" id="ctrlGlyphWeight">
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Fraying / Turbulence</span>
+                                <span class="slider-val" id="valFraying">0.10</span>
+                            </div>
+                            <input type="range" min="0.01" max="0.5" step="0.01" value="0.1" class="gate-slider" id="ctrlFraying">
+                        </div>
+                    </div>
+
+                    <!-- Cloth & Atmosphere Sliders -->
+                    <div class="ctrl-group">
+                        <div class="ctrl-section-label">
+                            <span>CLOTH & ATMOSPHERE</span>
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Gravity</span>
+                                <span class="slider-val" id="valGravity">0.10</span>
+                            </div>
+                            <input type="range" min="0" max="0.5" step="0.01" value="0.1" class="gate-slider" id="ctrlGravity">
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Damping</span>
+                                <span class="slider-val" id="valDamping">0.955</span>
+                            </div>
+                            <input type="range" min="0.8" max="0.99" step="0.005" value="0.955" class="gate-slider" id="ctrlDamping">
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Red Smoke Density</span>
+                                <span class="slider-val" id="valSmoke">35</span>
+                            </div>
+                            <input type="range" min="10" max="80" step="5" value="35" class="gate-slider" id="ctrlSmoke">
+                        </div>
+
+                        <div class="slider-item">
+                            <div class="slider-label-row">
+                                <span>Fire Ember Heat</span>
+                                <span class="slider-val" id="valHeat">1.0</span>
+                            </div>
+                            <input type="range" min="0.2" max="2.5" step="0.1" value="1.0" class="gate-slider" id="ctrlHeat">
+                        </div>
+                    </div>
+
+                    <div class="panel-footer-row">
+                        <span class="stats-coords">1040 points • 28×18 • 11px</span>
+                        <button class="reset-physics-btn" id="btnResetPhysics">RESET</button>
+                    </div>
+                </aside>
+
+                <button class="panel-toggle-tab" id="toggleCurtainPanelBtn" title="Toggle physics controls">⚙️ PHYSICS</button>
+            </div>
+            <!-- Student dashboard renders here when logged in -->
+            <div id="studentDashboardSection"></div>
+        </section>
+
+
+        <!-- ===================================================================
+             2. GAMES ARCADE HUB (ALL 17 GAMES & 170 QUESTIONS)
+             =================================================================== -->
+        <section class="app-section" id="arcadeSection">
+            <div class="content-container">
+                <div class="section-intro-block">
+                    <span class="section-tagline">CURRICULUM COMBAT SIMULATION</span>
+                    <h2 class="section-title">THE 17 SACRED TRIAL CHAMBERS</h2>
+                    <p class="section-subtitle">
+                        7 Mastery Games for C++ DSA (Input/Output through Functions) and 10 Architecture Games for Web HTML. 
+                        Each game contains 10 rigorous challenges with instant feedback and unique visual mechanics.
+                    </p>
+                </div>
+
+                <!-- Interactive 3D Holographic Showcase Card -->
+                <div class="arcade-3d-showcase scroll-reveal">
+                    <div class="showcase-info-block">
+                        <span class="showcase-tag">⚡ 3D HOLOGRAPHIC STAGE</span>
+                        <h3 class="showcase-title">INTERACTIVE CURRICULUM VAULT</h3>
+                        <p class="showcase-desc">
+                            Select any of the 17 mission sectors to render real-time 3D models. 
+                            Hover and drag to rotate the holographic battle card in 3D perspective space.
+                        </p>
+                        <button class="primary-btn" onclick="window.miraiGame.openGame('game_cpp_3')">
+                            CHALLENGE 3D BOSS BATTLE ➔
+                        </button>
+                    </div>
+                    <div class="showcase-interactive-hologram">
+                        <div class="holo-card-mesh" onclick="if(window.miraiAudio) window.miraiAudio.playTilt();">
+                            <span class="holo-crest">👹</span>
+                            <span class="holo-label">MECHA ONI-09</span>
+                            <span style="font-size: 10px; color: var(--cyber-cyan); letter-spacing: 1px;">3D VIEWPORT ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Track Filter Tabs -->
+                <div class="arcade-filter-bar">
+                    <button class="filter-tab-btn active" onclick="window.miraiPlatform.setFilter('all', this)">ALL 17 GAMES</button>
+                    <button class="filter-tab-btn" onclick="window.miraiPlatform.setFilter('cpp', this)">DSA IN C++ (7 TOPICS)</button>
+                    <button class="filter-tab-btn" onclick="window.miraiPlatform.setFilter('html', this)">WEB HTML (10 TOPICS)</button>
+                    <button class="filter-tab-btn" onclick="window.miraiPlatform.setFilter('completed', this)">COMPLETED BADGES</button>
+                </div>
+
+                <!-- 17 Game Cards Grid -->
+                <div class="arcade-cards-grid" id="arcadeGrid"></div>
+            </div>
+        </section>
+
+
+        <!-- ===================================================================
+             3. DAILY TRIAL ARENA (SPEED QUIZ & STREAKS)
+             =================================================================== -->
+        <section class="app-section" id="dailySection">
+            <div class="content-container" id="dailyQuizSection"></div>
+        </section>
+
+
+        <!-- ===================================================================
+             4. WEEKLY LEAGUES & ANONYMOUS MODE
+             =================================================================== -->
+        <section class="app-section" id="leaguesSection">
+            <div class="content-container">
+                <div class="section-intro-block">
+                    <span class="section-tagline">COMPETITIVE TIERS & ACADEMIC FAIRNESS</span>
+                    <h2 class="section-title">WEEKLY CADET LEAGUES</h2>
+                    <p class="section-subtitle">
+                        Cohorts of ~20 students compete weekly. Top 3 promote to higher divisions; bottom 3 face relegation. 
+                        Enable Anonymous Mode to safeguard your identity while maintaining competitive drive.
+                    </p>
+                </div>
+
+                <div class="leagues-wrapper">
+                    <div class="leagues-top-bar">
+                        <div class="league-tier-tabs">
+                            <button class="tier-tab active">💎 DIAMOND LEAGUE</button>
+                            <button class="tier-tab">🏆 PLATINUM</button>
+                            <button class="tier-tab">🥇 GOLD</button>
+                            <button class="tier-tab">🥈 SILVER</button>
+                            <button class="tier-tab">🥉 BRONZE</button>
+                        </div>
+
+                        <div class="league-privacy-toggle">
+                            <label class="switch-lbl">
+                                <input type="checkbox" id="anonModeToggle" onchange="window.miraiPlatform.toggleAnonymousMode()">
+                                <span>Anonymous Mode (Alias: <strong>CyberSamurai_904</strong>)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="league-table-wrap">
+                        <table class="league-table">
+                            <thead>
+                                <tr>
+                                    <th>RANK</th>
+                                    <th>TREND</th>
+                                    <th>CADET NAME</th>
+                                    <th>STREAK</th>
+                                    <th>WEEKLY XP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leagueTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Fairness leaderboards -->
+            <div class="content-container" id="fairnessLeaderboardContainer"></div>
+            <!-- Quests -->
+            <div class="content-container" id="questsSectionContainer"></div>
+        </section>
+
+
+        <!-- ===================================================================
+             5. FACTION / TEAM BATTLES (REAL-TIME CLASH)
+             =================================================================== -->
+        <section class="app-section" id="battleSection">
+            <div class="content-container" id="teamBattleSection"></div>
+        </section>
+
+
+        <!-- ===================================================================
+             6. FACULTY DASHBOARD & ACADEMIC INTEGRITY
+             =================================================================== -->
+        <section class="app-section" id="facultySection">
+            <div class="content-container" id="facultyDashboardSection"></div>
+        </section>
+
+
+        <!-- ===================================================================
+             7. ADMIN XP ECONOMY RULES CONSOLE
+             =================================================================== -->
+        <section class="app-section" id="adminSection">
+            <div class="content-container" id="adminRulesSection"></div>
+        </section>
+
+
+        <!-- ===================================================================
+             8. STUDENT PROFILE & 17 BADGES VAULT
+             =================================================================== -->
+        <section class="app-section" id="profileSection">
+            <div class="content-container" id="profileCardContainer"></div>
+            <div class="content-container" id="badgesVaultContainer"></div>
+            <div class="content-container" id="xpLedgerContainer"></div>
+        </section>
+
+    </main>
+
+    <!-- ===================================================================
+         INTERACTIVE GAME RUNTIME MODAL
+         =================================================================== -->
+    <div class="game-modal-overlay" id="gameModal">
+        <div class="game-arena-card" id="gameArenaContainer">
+            <!-- Dynamically populated by window.miraiGame -->
+        </div>
+    </div>
+
+    <!-- Earliest possible switchSection definition — guarantees nav works even if external scripts fail -->
+    <script>
+        window.switchSection = window.switchSection || function(sectionId, updateHash) {
+            if (!sectionId) sectionId = 'heroSection';
+            document.querySelectorAll('.app-section').forEach(function(s){
+                s.classList.remove('active');
+                s.style.display = 'none';
+                s.style.opacity = '';
+            });
+            document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(function(l){
+                l.classList.remove('active');
+            });
+            var sec = document.getElementById(sectionId);
+            if (sec) {
+                sec.classList.add('active');
+                sec.style.display = '';
+                sec.style.opacity = '';
+                window.scrollTo({top:0,behavior:'smooth'});
+
+                if (sectionId === 'arcadeSection') {
+                    window.msotPlatform && window.msotPlatform.renderArcade && window.msotPlatform.renderArcade();
+                }
+
+                // Force scroll-reveal elements visible
+                setTimeout(function() {
+                    sec.querySelectorAll('.scroll-reveal,.stagger-item,.game-card,.faction-card').forEach(function(el){
+                        el.classList.add('in-view');
+                    });
+                }, 80);
+            }
+            var lnk = document.querySelector('.nav-link[data-section="'+sectionId+'"]');
+            if (lnk) lnk.classList.add('active');
+            var mobLnk = document.querySelector('.mobile-nav-link[data-section="'+sectionId+'"]');
+            if (mobLnk) mobLnk.classList.add('active');
+        };
+    </script>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Supabase (must load before app.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Application Scripts (v=6 busts any browser/Live Server cache) -->
+    <script src="js/auth.js?v=6"></script>
+    <script src="js/audio.js?v=6"></script>
+    <script src="js/state.js?v=6"></script>
+    <script src="js/games-data.js?v=6"></script>
+    <script src="js/three-viewport.js?v=6"></script>
+    <script src="js/gate-canvas.js?v=6"></script>
+    <script src="js/game-engine.js?v=6"></script>
+    <script src="js/scroll-animations.js?v=6"></script>
+    <script src="js/platform.js?v=6"></script>
+    <script src="js/app.js?v=6"></script>
+</body>
+</html>
