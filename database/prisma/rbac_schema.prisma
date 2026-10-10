@@ -1,0 +1,138 @@
+// ==============================================================================
+// PRISMA SCHEMA: THREE-ROLE ROLE BASED ACCESS CONTROL (MSOT LEARN)
+// Roles: ADMIN, FACULTY, STUDENT
+// Models: Profile, Question, Submission, UserStat, AuditLog
+// ==============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  FACULTY
+  STUDENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ActivityType {
+  DAILY_TRIAL
+  WEEKEND_LAB
+  GENERAL
+}
+
+enum QuestionDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Profile {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  displayName     String         @map("display_name")
+  username        String         @unique
+  role            UserRole       @default(STUDENT)
+  avatar          String         @default("⚔️")
+  status          AccountStatus  @default(ACTIVE)
+  studentId       String?        @map("student_id")
+  year            String?        @default("2nd Year")
+  semester        String?        @default("Semester 4")
+  section         String?        @default("Section Alpha")
+  branch          String?        @default("Computer Science & Engineering (CSE)")
+  phone           String?
+  track           String?        @default("C++ Algorithms & DSA")
+  anonymousMode   Boolean        @default(false) @map("anonymous_mode")
+  anonymousAlias  String?        @map("anonymous_alias")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  questions       Question[]     @relation("CreatorQuestions")
+  submissions     Submission[]
+  stats           UserStat?
+  auditLogs       AuditLog[]     @relation("ActorAuditLogs")
+
+  @@map("profiles")
+}
+
+model Question {
+  id              String              @id @default(uuid())
+  title           String
+  description     String?
+  options         Json                // Array of option objects
+  correctAnswer   String              @map("correct_answer")
+  explanation     String?
+  difficulty      QuestionDifficulty  @default(BEGINNER)
+  category        String              @default("C++ DSA")
+  activityType    ActivityType        @default(DAILY_TRIAL) @map("activity_type")
+  isPublished     Boolean             @default(true) @map("is_published")
+  creatorId       String?             @map("creator_id")
+  creatorEmail    String?             @map("creator_email")
+  creatorName     String?             @map("creator_name")
+  xpReward        Int                 @default(15) @map("xp_reward")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  creator         Profile?            @relation("CreatorQuestions", fields: [creatorId], references: [id])
+  submissions     Submission[]
+
+  @@map("questions")
+}
+
+model Submission {
+  id              String       @id @default(uuid())
+  studentId       String       @map("student_id")
+  questionId      String       @map("question_id")
+  submittedAnswer String       @map("submitted_answer")
+  isCorrect       Boolean      @map("is_correct")
+  xpAwarded       Int          @default(0) @map("xp_awarded")
+  submittedAt     DateTime     @default(now()) @map("submitted_at")
+
+  student         Profile      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  question        Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("submissions")
+}
+
+model UserStat {
+  id              String       @id @default(uuid())
+  userId          String       @unique @map("user_id")
+  xp              Int          @default(0)
+  streak          Int          @default(1)
+  freezeShields   Int          @default(2) @map("freeze_shields")
+  questionsSolved Int          @default(0) @map("questions_solved")
+  timeSpentMins   Int          @default(0) @map("time_spent_mins")
+  lastActive      DateTime     @default(now()) @map("last_active")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  profile         Profile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model AuditLog {
+  id              String       @id @default(uuid())
+  actorId         String?      @map("actor_id")
+  actorEmail      String       @map("actor_email")
+  actorRole       UserRole     @map("actor_role")
+  action          String
+  targetType      String?      @map("target_type")
+  targetId        String?      @map("target_id")
+  details         Json?
+  ipHint          String?      @map("ip_hint")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  actor           Profile?     @relation("ActorAuditLogs", fields: [actorId], references: [id])
+
+  @@map("audit_logs")
+}

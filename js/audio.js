@@ -266,14 +266,143 @@ class MiraiAudioEngine {
         } catch (e) {}
     }
 
-    // Towering Gate Opening Rumble
+    // Sacred Ancient Japanese Temple Bell (Bonshō 梵鐘 / Kane)
+    // Struck by heavy wooden log striker (Shumoku 撞木) - deep 108Hz Buddhist fundamental drone,
+    // natural acoustic beating (Uneri 唸り at ~1.2Hz), and lingering warm bronze resonance (Meian 銘暗).
+    // Strictly zero high-frequency beeps or clicks!
+    playTempleBell() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        this.resume();
+        try {
+            const now = this.ctx.currentTime;
+
+            // Master Bell Bus with warm saturation gain
+            const bellBus = this.ctx.createGain();
+            bellBus.gain.setValueAtTime(0.9, now);
+            bellBus.connect(this.masterGain);
+
+            // 1. Heavy Wooden Log Striker Hit ("Shumoku" 撞木)
+            // Real Bonshō are struck by a suspended wooden trunk, producing a deep, rounded,
+            // low-frequency thud with zero metallic clatter or electronic beeps.
+            const strikeGain = this.ctx.createGain();
+            const strikeFilter = this.ctx.createBiquadFilter();
+            strikeFilter.type = 'lowpass';
+            strikeFilter.frequency.setValueAtTime(140, now);
+            strikeFilter.frequency.exponentialRampToValueAtTime(45, now + 0.22);
+
+            const strikeOsc = this.ctx.createOscillator();
+            strikeOsc.type = 'sine';
+            strikeOsc.frequency.setValueAtTime(88, now);
+            strikeOsc.frequency.exponentialRampToValueAtTime(32, now + 0.2);
+
+            strikeGain.gain.setValueAtTime(0.55, now);
+            strikeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+            strikeOsc.connect(strikeFilter);
+            strikeFilter.connect(strikeGain);
+            strikeGain.connect(bellBus);
+            strikeOsc.start(now);
+            strikeOsc.stop(now + 0.25);
+
+            // Low-frequency damped friction thud from wood grain meeting cast bronze
+            const noiseLen = Math.floor(this.ctx.sampleRate * 0.15);
+            const noiseBuf = this.ctx.createBuffer(1, noiseLen, this.ctx.sampleRate);
+            const nData = noiseBuf.getChannelData(0);
+            for (let i = 0; i < noiseLen; i++) {
+                nData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (noiseLen * 0.22));
+            }
+            const noiseSrc = this.ctx.createBufferSource();
+            noiseSrc.buffer = noiseBuf;
+
+            const noiseFilter = this.ctx.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.setValueAtTime(110, now);
+            noiseFilter.Q.value = 1.6;
+
+            const noiseGain = this.ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.28, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+
+            noiseSrc.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(bellBus);
+            noiseSrc.start(now);
+            noiseSrc.stop(now + 0.16);
+
+            // 2. Japanese Temple Bell Acoustic Spectrum (Inharmonic Bronze Modes)
+            // - 108 Hz fundamental: Sacred Buddhist number of earthly passions (Joya no Kane)
+            // - Paired twin frequencies create natural acoustic beating (Uneri 唸り ~1.2 Hz)
+            // - Resonant partials carefully tuned to ancient Japanese temple acoustics
+            // - Strictly sine waves below 600 Hz to prevent any synthetic chirp or beep
+            const partials = [
+                // Deep Fundamental Drone (Tsurigane / Otsu-on)
+                { f: 108.0, g: 0.62, d: 6.8 },
+                { f: 109.25, g: 0.44, d: 6.4 }, // Interferes with 108.0 Hz -> produces 1.25 Hz slow beating pulse
+
+                // Main Bell Body Resonance (Dō-on)
+                { f: 216.0, g: 0.48, d: 5.8 },
+                { f: 217.4, g: 0.32, d: 5.4 }, // 1.4 Hz beating on the octave
+
+                // Sacred Japanese Zen Scale Harmonic (Jū-on)
+                { f: 271.5, g: 0.30, d: 4.8 },
+                { f: 325.0, g: 0.22, d: 4.2 },
+
+                // Upper Bronze Overtones (Mellow, solemn air resonance)
+                { f: 433.0, g: 0.14, d: 3.6 },
+                { f: 541.0, g: 0.08, d: 2.8 }
+            ];
+
+            partials.forEach(p => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(p.f, now);
+
+                // Smooth organic attack (bronze blossoming, no transient click)
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.linearRampToValueAtTime(p.g, now + 0.035);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + p.d);
+
+                osc.connect(gain);
+                gain.connect(bellBus);
+                osc.start(now);
+                osc.stop(now + p.d + 0.1);
+            });
+
+            // 3. Sub-Bass Earth Presence (Chest rumble of a 2-ton bronze bell)
+            const subOsc = this.ctx.createOscillator();
+            const subGain = this.ctx.createGain();
+            subOsc.type = 'sine';
+            subOsc.frequency.setValueAtTime(54, now); // Sub-octave of 108Hz
+            subGain.gain.setValueAtTime(0.0001, now);
+            subGain.gain.linearRampToValueAtTime(0.38, now + 0.04);
+            subGain.gain.exponentialRampToValueAtTime(0.0001, now + 5.2);
+
+            subOsc.connect(subGain);
+            subGain.connect(bellBus);
+            subOsc.start(now);
+            subOsc.stop(now + 5.3);
+
+        } catch (e) {
+            console.warn("Temple bell audio error:", e);
+        }
+    }
+
+    // Towering Gate Opening with Sacred Bell & Cinematic Stone Rumble
     playGateOpening() {
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
         this.resume();
         try {
-            const bufferSize = this.ctx.sampleRate * 2.5;
+            // 1. Ring the sacred ancient Japanese temple bell immediately upon gate opening
+            this.playTempleBell();
+
+            // 2. Deep cinematic stone unsealing rumble (extended for ~3.8s sequence)
+            const now = this.ctx.currentTime;
+            const bufferSize = Math.floor(this.ctx.sampleRate * 3.8);
             const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
             const data = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) {
@@ -285,33 +414,33 @@ class MiraiAudioEngine {
 
             const filter = this.ctx.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(80, this.ctx.currentTime);
-            filter.frequency.linearRampToValueAtTime(220, this.ctx.currentTime + 1.2);
-            filter.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 2.4);
+            filter.frequency.setValueAtTime(45, now);
+            filter.frequency.linearRampToValueAtTime(160, now + 1.8);
+            filter.frequency.exponentialRampToValueAtTime(40, now + 3.8);
 
             const gain = this.ctx.createGain();
-            gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.4, this.ctx.currentTime + 0.8);
-            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 2.5);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.26, now + 1.2);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 3.8);
 
             noise.connect(filter);
             filter.connect(gain);
             gain.connect(this.masterGain);
-            noise.start();
-            noise.stop(this.ctx.currentTime + 2.5);
+            noise.start(now);
+            noise.stop(now + 3.8);
 
-            // Low sub-bass hum
+            // 3. Low sub-bass earth hum
             const sub = this.ctx.createOscillator();
             const subGain = this.ctx.createGain();
             sub.type = 'sine';
-            sub.frequency.setValueAtTime(45, this.ctx.currentTime);
-            sub.frequency.linearRampToValueAtTime(65, this.ctx.currentTime + 1.0);
-            subGain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-            subGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 2.2);
+            sub.frequency.setValueAtTime(40, now);
+            sub.frequency.linearRampToValueAtTime(54, now + 1.8);
+            subGain.gain.setValueAtTime(0.24, now);
+            subGain.gain.exponentialRampToValueAtTime(0.001, now + 3.6);
             sub.connect(subGain);
             subGain.connect(this.masterGain);
-            sub.start();
-            sub.stop(this.ctx.currentTime + 2.2);
+            sub.start(now);
+            sub.stop(now + 3.6);
         } catch (e) {}
     }
 

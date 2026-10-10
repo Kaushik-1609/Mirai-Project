@@ -20,7 +20,7 @@ class MiraiGateEngine {
 
         // Parameters matching reference controls
         this.params = {
-            gateParting: 0.70,      // 0 to 1 — defaults to 70% parted so scene is immediately visible
+            gateParting: 0.0,       // 0 to 1 — closed by default in the center
             smokeDensity: 35,
             emberCount: 75,
             textSize: 9.0,
@@ -34,6 +34,7 @@ class MiraiGateEngine {
 
         this.particles = [];
         this.smokePuffs = [];
+        this.sakuraPetals = [];
         this.clothGrid = [];
         this.cols = 28;
         this.rows = 18;
@@ -42,9 +43,10 @@ class MiraiGateEngine {
         this.initCanvasSize();
         this.initSmoke();
         this.initEmbers();
+        this.initSakura();
         this.initClothGrid();
         this.bindEvents();
-        this.setGateParting(0.70, false);
+        this.setGateParting(0.0, false);
 
         this.lastTime = performance.now();
         this.animate = this.animate.bind(this);
@@ -87,6 +89,30 @@ class MiraiGateEngine {
                 life: Math.random() * 100,
                 maxLife: 80 + Math.random() * 120,
                 hue: Math.random() > 0.3 ? 10 : 35 // crimson red to blazing orange
+            });
+        }
+    }
+
+    initSakura() {
+        this.sakuraPetals = [];
+        const count = window.innerWidth < 768 ? 25 : 45;
+        for (let i = 0; i < count; i++) {
+            this.sakuraPetals.push({
+                x: Math.random() * (this.width || 1200),
+                y: Math.random() * (this.height || 800),
+                size: Math.random() * 6 + 6,
+                speedY: Math.random() * 1.2 + 0.8,
+                speedX: Math.random() * 1.0 + 0.4,
+                swaySpeed: Math.random() * 0.03 + 0.015,
+                swayOffset: Math.random() * Math.PI * 2,
+                swayAmp: Math.random() * 1.6 + 0.6,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.03,
+                flip: Math.random() * Math.PI * 2,
+                flipSpeed: Math.random() * 0.04 + 0.02,
+                opacity: Math.random() * 0.4 + 0.5,
+                colorTop: 'rgba(255, 192, 203, 0.9)',
+                colorBottom: 'rgba(255, 105, 180, 0.85)'
             });
         }
     }
@@ -328,6 +354,47 @@ class MiraiGateEngine {
         this.ctx.restore();
     }
 
+    drawSakura() {
+        if (!this.sakuraPetals || !this.sakuraPetals.length) return;
+        const time = performance.now();
+        for (const p of this.sakuraPetals) {
+            p.y += p.speedY;
+            p.x += p.speedX + Math.sin(time * p.swaySpeed * 0.05 + p.swayOffset) * p.swayAmp;
+            p.rotation += p.rotationSpeed;
+            p.flip += p.flipSpeed;
+
+            if (p.y > this.height + 20) {
+                p.y = -20;
+                p.x = Math.random() * this.width;
+            }
+            if (p.x > this.width + 30) {
+                p.x = -20;
+            }
+
+            this.ctx.save();
+            this.ctx.translate(p.x, p.y);
+            this.ctx.rotate(p.rotation);
+            this.ctx.scale(1, Math.cos(p.flip));
+
+            this.ctx.beginPath();
+            const s = p.size;
+            this.ctx.moveTo(0, -s);
+            this.ctx.bezierCurveTo(s * 0.85, -s * 0.7, s * 0.9, s * 0.4, 0, s);
+            this.ctx.bezierCurveTo(-s * 0.9, s * 0.4, -s * 0.85, -s * 0.7, 0, -s);
+
+            const grad = this.ctx.createLinearGradient(0, -s, 0, s);
+            grad.addColorStop(0, p.colorTop);
+            grad.addColorStop(1, p.colorBottom);
+
+            this.ctx.fillStyle = grad;
+            this.ctx.globalAlpha = p.opacity;
+            this.ctx.shadowBlur = 6;
+            this.ctx.shadowColor = 'rgba(255, 105, 180, 0.4)';
+            this.ctx.fill();
+            this.ctx.restore();
+        }
+    }
+
     setGateParting(val, triggerAudio = true) {
         const clamped = Math.max(0, Math.min(1, val));
         if (Math.abs(this.params.gateParting - clamped) > 0.05 && triggerAudio && window.miraiAudio) {
@@ -335,13 +402,19 @@ class MiraiGateEngine {
         }
         this.params.gateParting = clamped;
 
-        // Apply physical transform to HTML doors
+        // Toggle 3D CSS classes on heroGateWrapper
+        const heroWrapper = document.getElementById('heroGateWrapper');
         const leftDoor = document.getElementById('gateDoorLeft');
         const rightDoor = document.getElementById('gateDoorRight');
-        if (leftDoor && rightDoor) {
-            const percent = (clamped * 100).toFixed(1);
-            leftDoor.style.transform = `translateX(-${percent}%)`;
-            rightDoor.style.transform = `translateX(${percent}%)`;
+        if (leftDoor) leftDoor.style.transform = '';
+        if (rightDoor) rightDoor.style.transform = '';
+
+        if (heroWrapper) {
+            if (clamped >= 0.5) {
+                heroWrapper.classList.add('gate-opening');
+            } else {
+                heroWrapper.classList.remove('gate-opening', 'gate-flythrough');
+            }
         }
     }
 
@@ -354,6 +427,7 @@ class MiraiGateEngine {
             this.initCanvasSize();
             this.initSmoke();
             this.initEmbers();
+            this.initSakura();
             this.initClothGrid();
         }
 
@@ -366,6 +440,7 @@ class MiraiGateEngine {
             this.updateCloth(dt);
             this.drawClothGrid();
             this.drawEmbers();
+            this.drawSakura();
         }
 
         requestAnimationFrame(this.animate);

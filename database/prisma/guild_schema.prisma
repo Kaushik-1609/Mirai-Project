@@ -1,0 +1,181 @@
+// ==============================================================================
+// PRISMA SCHEMA: EDUCATIONAL GUILD SYSTEM & MATCHMAKING BRACKETS
+// Level-Based Dynamic Membership [Target-3 to Target+3], Contests & Privacy
+// ==============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum GuildRole {
+  OWNER
+  OFFICER
+  MEMBER
+}
+
+enum ChallengeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ContestType {
+  QUIZ_BATTLE
+  CODING_CHALLENGE
+  XP_BATTLE
+  PROBLEM_SOLVING
+  WEEKLY_LEARNING
+  STREAK_CHALLENGE
+}
+
+enum ContestStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// 1. GUILD ENTITY
+model Guild {
+  id             String            @id @default(uuid())
+  name           String            @unique
+  tag            String            @unique // e.g., "#CW01"
+  description    String?
+  avatar         String            @default("🛡️")
+  
+  // Dynamic Level-Based Membership Restriction
+  targetLevel    Int               @default(1)
+  minLevel       Int               @default(1)  // targetLevel - 3 (min 1)
+  maxLevel       Int               @default(4)  // targetLevel + 3
+  
+  capacity       Int               @default(25)
+  xp             Int               @default(0)
+  contestsWon    Int               @default(0)
+  contestsPlayed Int               @default(0)
+  
+  createdBy      String?
+  
+  // Relations
+  members        GuildMember[]
+  sentChallenges GuildChallenge[]  @relation("SentChallenges")
+  recvChallenges GuildChallenge[]  @relation("ReceivedChallenges")
+  contestsAsA    GuildContest[]    @relation("GuildAContests")
+  contestsAsB    GuildContest[]    @relation("GuildBContests")
+  wonContests    GuildContest[]    @relation("WonContests")
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([xp(sort: Desc)])
+  @@index([minLevel, maxLevel])
+}
+
+// 2. GUILD MEMBER (ONE STUDENT = ONE ACTIVE GUILD)
+model GuildMember {
+  id             String            @id @default(uuid())
+  guildId        String
+  guild          Guild             @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  
+  userId         String            @unique // Enforces 1 Student = 1 Active Guild
+  role           GuildRole         @default(MEMBER)
+  xpContribution Int               @default(0)
+
+  joinedAt       DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([guildId])
+}
+
+// 3. GUILD CHALLENGE REQUEST
+model GuildChallenge {
+  id              String           @id @default(uuid())
+  senderGuildId   String
+  senderGuild     Guild            @relation("SentChallenges", fields: [senderGuildId], references: [id], onDelete: Cascade)
+  
+  receiverGuildId String
+  receiverGuild   Guild            @relation("ReceivedChallenges", fields: [receiverGuildId], references: [id], onDelete: Cascade)
+  
+  contestType     ContestType      @default(QUIZ_BATTLE)
+  title           String
+  description     String?
+  xpStake         Int              @default(250)
+  status          ChallengeStatus  @default(PENDING)
+  
+  createdBy       String
+  createdAt       DateTime         @default(now())
+  resolvedAt      DateTime?
+  
+  contests        GuildContest[]
+
+  @@index([senderGuildId])
+  @@index([receiverGuildId])
+  @@index([status])
+}
+
+// 4. GUILD CONTEST CLASH
+model GuildContest {
+  id             String            @id @default(uuid())
+  challengeId    String?
+  challenge      GuildChallenge?   @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+  
+  contestName    String
+  contestType    ContestType
+  description    String?
+  
+  guildAId       String
+  guildA         Guild             @relation("GuildAContests", fields: [guildAId], references: [id], onDelete: Cascade)
+  
+  guildBId       String
+  guildB         Guild             @relation("GuildBContests", fields: [guildBId], references: [id], onDelete: Cascade)
+  
+  guildAScore    Int               @default(0)
+  guildBScore    Int               @default(0)
+  xpStake        Int               @default(250)
+  
+  winnerGuildId  String?
+  winnerGuild    Guild?            @relation("WonContests", fields: [winnerGuildId], references: [id])
+  
+  status         ContestStatus     @default(ACTIVE)
+  startsAt       DateTime          @default(now())
+  endsAt         DateTime
+  
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  
+  scores         GuildContestScore[]
+
+  @@index([status])
+}
+
+// 5. INDIVIDUAL CONTEST CONTRIBUTIONS
+model GuildContestScore {
+  id             String            @id @default(uuid())
+  contestId      String
+  contest        GuildContest      @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  
+  guildId        String
+  userId         String
+  scorePoints    Int               @default(0)
+  
+  createdAt      DateTime          @default(now())
+
+  @@unique([contestId, userId])
+}
+
+// 6. TWO-WAY ANONYMOUS PRIVACY SETTINGS
+model StudentPrivacySettings {
+  userId          String           @id
+  isAnonymous     Boolean          @default(false)
+  anonymousAlias  String           @unique
+  anonymousAvatar String           @default("🥷")
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}

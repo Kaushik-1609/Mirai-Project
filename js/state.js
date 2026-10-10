@@ -26,11 +26,20 @@ const DEFAULT_XP_RULES = {
     ATTEND_CLASS: {
         id: 'rule-01',
         action_type: 'ATTEND_CLASS',
-        base_xp: 10,
-        max_daily_xp: 30,
+        base_xp: 20,
+        max_daily_xp: 40,
         enabled: true,
         multiplier: 1.0,
-        description: 'Per verified lecture/lab attendance'
+        description: 'Student daily & lecture attendance verified (+20 XP, fuels streak)'
+    },
+    SOLVE_QUESTION: {
+        id: 'rule-solve-q',
+        action_type: 'SOLVE_QUESTION',
+        base_xp: 10,
+        max_daily_xp: 500,
+        enabled: true,
+        multiplier: 1.0,
+        description: 'Per question solved (+10 XP per question)'
     },
     HOMEWORK: {
         id: 'rule-02',
@@ -159,23 +168,36 @@ function calculateLevelData(lifetimeXP) {
     }
 }
 
+function normalizeSection(sec) {
+    if (!sec) return 'Section Alpha';
+    const s = String(sec).trim();
+    if (s === 'Section Beta' || s === 'Beta' || s === 'Section B' || s === 'B') return 'Section Beta';
+    if (s === 'Section Alpha' || s === 'Alpha' || s === 'Section A' || s === 'A') return 'Section Alpha';
+    return s;
+}
+
 // 3. DEFAULT STUDENT STATE (Matching Prompt Dashboard: Level 12, 1,240/1,500 XP, 7-Day Streak)
 const DEFAULT_STUDENT = {
-    id: 'MSOT-2026-482',
+    id: 'ADM-MSOT-001',
     name: 'Utkarsh Raj',
-    alias: 'Anonymous Student #482',
-    avatar: '⚔️',
+    alias: '@utkarsh_admin',
+    avatar: '🛡️',
+    role: 'ADMIN',
+    year: 'System Administrator',
+    semester: 'Master Governance',
     batch: 'Class of 2026',
-    section: 'Section A (Cybernetics)',
+    section: 'Section Alpha',
     campus: 'Mirai Central Campus',
     lifetimeXP: 4490, // Gives Level 12 with 1,240 / 1,500 XP
     weeklyXP: 380,
     streak: 7,
     streakFreezes: 2,
     maxStreak: 18,
+    questionsSolved: 32,
+    weeklyTimeSpentMinutes: 385, // ~6h 25m spent on site
     anonymousMode: false,
     faction: 'crimson',
-    league: 'Gold League',
+    league: 'Cadet League',
     leagueRank: 8,
     badges: [
         'first_quiz', 'recursion_rookie', 'debugging_pro', 'streak_7', 'helpful_peer', 
@@ -352,40 +374,25 @@ const SEED_XP_TRANSACTIONS = [
     }
 ];
 
-// 7. REAL-TIME TEAM BATTLE: SECTION A vs SECTION B (Weekend Coding Sprint)
+// 7. REAL-TIME TEAM BATTLE: SECTION ALPHA vs SECTION BETA (Weekend Coding Sprint)
 const DEFAULT_SECTION_BATTLE = {
     title: 'Weekend Coding Sprint',
     duration: '2 Hours (Live Active)',
-    sectionA: { name: 'SECTION A (Cybernetics)', points: 2840, solvedCount: 114 },
-    sectionB: { name: 'SECTION B (Systems)', points: 2410, solvedCount: 98 },
+    sectionA: { name: 'SECTION ALPHA (Cybernetics)', points: 2840, solvedCount: 114 },
+    sectionB: { name: 'SECTION BETA (Systems & Web)', points: 2410, solvedCount: 98 },
     scoringGuide: 'Easy = 10 XP • Medium = 20 XP • Hard = 40 XP',
     recentSubmissions: [
-        { cadet: 'Section A Cadet', problem: 'Binary Search Tree Balancing', diff: 'Hard', xp: 40, time: '3s ago' },
-        { cadet: 'Section B Cadet', problem: 'Two-Pointer String Reversal', diff: 'Easy', xp: 10, time: '7s ago' },
-        { cadet: 'Section A Cadet', problem: 'Linked List Cycle Detection', diff: 'Medium', xp: 20, time: '12s ago' }
+        { cadet: 'Section Alpha Cadet', problem: 'Binary Search Tree Balancing', diff: 'Hard', xp: 40, time: '3s ago' },
+        { cadet: 'Section Beta Cadet', problem: 'Two-Pointer String Reversal', diff: 'Easy', xp: 10, time: '7s ago' },
+        { cadet: 'Section Alpha Cadet', problem: 'Linked List Cycle Detection', diff: 'Medium', xp: 20, time: '12s ago' }
     ]
 };
 
 // 8. MULTI-DIMENSIONAL FAIRNESS LEADERBOARDS (Section 15)
 const SEED_FAIRNESS_BOARDS = {
-    weeklyXP: [
-        { rank: 1, name: 'Kanna Endo', alias: 'Anonymous Cadet #118', weeklyXP: 670, streak: 12 },
-        { rank: 2, name: 'Yuto Nakagawa', alias: 'Anonymous Cadet #302', weeklyXP: 645, streak: 5 },
-        { rank: 3, name: 'Sora Minato', alias: 'Anonymous Cadet #774', weeklyXP: 610, streak: 8 },
-        { rank: 4, name: 'Maya Sterling', alias: 'Anonymous Cadet #091', weeklyXP: 590, streak: 4 },
-        { rank: 8, name: 'Utkarsh Raj', alias: 'Anonymous Student #482', weeklyXP: 380, streak: 7, isSelf: true }
-    ],
-    mostImproved: [
-        { rank: 1, name: 'Student B (Hikaru V.)', alias: 'Anonymous Cadet #204', improvement: '+34% improvement', reason: 'Jumped from 58% to 92% on recursion lab' },
-        { rank: 2, name: 'Mei Ling Zhou', alias: 'Anonymous Cadet #318', improvement: '+28% improvement', reason: 'Mastered loops & nested pattern logic' },
-        { rank: 3, name: 'Utkarsh Raj', alias: 'Anonymous Student #482', improvement: '+22% improvement', reason: 'Increased daily quiz recall speed', isSelf: true }
-    ],
-    consistency: [
-        { rank: 1, name: 'Student C (Rei A.)', alias: 'Anonymous Cadet #001', streakDays: 19, tag: '19-Day Unbroken Streak' },
-        { rank: 2, name: 'Kanna Endo', alias: 'Anonymous Cadet #118', streakDays: 12, tag: '12-Day Unbroken Streak' },
-        { rank: 3, name: 'Shinichi Izumi', alias: 'Anonymous Cadet #909', streakDays: 9, tag: '9-Day Streak' },
-        { rank: 5, name: 'Utkarsh Raj', alias: 'Anonymous Student #482', streakDays: 7, tag: '7-Day Streak', isSelf: true }
-    ]
+    weeklyXP: [],
+    mostImproved: [],
+    consistency: []
 };
 
 // 9. FACULTY ENGAGEMENT KPIS & TOPIC DIFFICULTY RADAR (Section 18)
@@ -431,9 +438,13 @@ const DEFAULT_AI_QUESTION_QUEUE = [
     }
 ];
 
+// 11. WEEKEND ASSIGNMENTS (Pushed dynamically by instructors)
+const DEFAULT_WEEKEND_ASSIGNMENTS = [];
+
 class MSOTPlatformState {
     constructor() {
         this.currentRole = 'STUDENT'; // 'STUDENT' | 'FACULTY' | 'ADMIN'
+        this.currentUserEmail = null;
         this.load();
     }
 
@@ -443,6 +454,7 @@ class MSOTPlatformState {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 this.currentRole = parsed.currentRole || 'STUDENT';
+                this.currentUserEmail = parsed.currentUserEmail || null;
                 this.student = parsed.student || DEFAULT_STUDENT;
                 this.rules = parsed.rules || DEFAULT_XP_RULES;
                 this.transactions = parsed.transactions || SEED_XP_TRANSACTIONS;
@@ -451,6 +463,18 @@ class MSOTPlatformState {
                 this.fairness = parsed.fairness || SEED_FAIRNESS_BOARDS;
                 this.facultyKPIs = parsed.facultyKPIs || DEFAULT_FACULTY_KPIS;
                 this.aiQueue = parsed.aiQueue || DEFAULT_AI_QUESTION_QUEUE;
+                // Only show assignments genuinely pushed by the user/instructor (exclude any old demo assign-w IDs)
+                this.assignments = (Array.isArray(parsed.assignments))
+                    ? parsed.assignments.filter(a => a && a.id && !String(a.id).startsWith('assign-w'))
+                    : [];
+                this.leagues = [];
+                if (typeof this.student.questionsSolved !== 'number') this.student.questionsSolved = 32;
+                if (typeof this.student.weeklyTimeSpentMinutes !== 'number') this.student.weeklyTimeSpentMinutes = 385;
+                if (!Array.isArray(this.student.completedAssignments)) this.student.completedAssignments = [];
+                this.student.completedAssignments = this.student.completedAssignments.filter(id => !String(id).startsWith('assign-w'));
+                if (!this.student.league || this.student.league.includes('Gold') || this.student.league.includes('Bronze')) {
+                    this.student.league = 'Cadet League';
+                }
                 return;
             }
         } catch (e) {
@@ -458,6 +482,7 @@ class MSOTPlatformState {
         }
         // Defaults
         this.currentRole = 'STUDENT';
+        this.currentUserEmail = null;
         this.student = JSON.parse(JSON.stringify(DEFAULT_STUDENT));
         this.rules = JSON.parse(JSON.stringify(DEFAULT_XP_RULES));
         this.transactions = JSON.parse(JSON.stringify(SEED_XP_TRANSACTIONS));
@@ -466,13 +491,188 @@ class MSOTPlatformState {
         this.fairness = JSON.parse(JSON.stringify(SEED_FAIRNESS_BOARDS));
         this.facultyKPIs = JSON.parse(JSON.stringify(DEFAULT_FACULTY_KPIS));
         this.aiQueue = JSON.parse(JSON.stringify(DEFAULT_AI_QUESTION_QUEUE));
+        this.assignments = [];
+        this.leagues = [];
         this.save();
+    }
+
+    // Dynamic User Switcher: isolates student profile, XP, streak, and badges per user account
+    switchUser(userSession) {
+        if (!userSession || !userSession.email) return;
+        const email = userSession.email.toLowerCase().trim();
+        this.currentUserEmail = email;
+
+        const isDemoStudent = (email === 'student@msot.edu');
+        const isUtkarshAdmin = (
+            (userSession.name && userSession.name.trim().toLowerCase() === 'utkarsh raj') ||
+            (userSession.username && userSession.username.toLowerCase().includes('utkarsh')) ||
+            email.includes('utkarsh') ||
+            email === 'admin@msot.edu' ||
+            (userSession.role && userSession.role.toUpperCase() === 'ADMIN')
+        );
+        const userStoreKey = `MSOT_STUDENT_PROFILE_${email.replace(/[^a-z0-9]/g, '_')}`;
+
+        if (isUtkarshAdmin) {
+            const saved = localStorage.getItem(userStoreKey);
+            this.student = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_STUDENT));
+            this.student.name = 'Utkarsh Raj';
+            this.student.role = 'ADMIN';
+            this.student.avatar = this.student.avatar || '🛡️';
+            this.currentRole = 'ADMIN';
+        } else if (isDemoStudent) {
+            // Built-in Demo student retains demo stats under Cadet Aarav
+            const saved = localStorage.getItem(userStoreKey);
+            this.student = saved ? JSON.parse(saved) : {
+                ...JSON.parse(JSON.stringify(DEFAULT_STUDENT)),
+                name: userSession.name || 'Utkarsh Cadet',
+                username: userSession.username || 'utkarsh_cadet',
+                alias: userSession.alias || '@utkarsh_cadet',
+                id: userSession.studentId || 'MSOT-2026-004',
+                role: 'STUDENT',
+                avatar: userSession.avatar || '⚔️'
+            };
+        } else {
+            // Registered cadet / custom account
+            const saved = localStorage.getItem(userStoreKey);
+            if (saved) {
+                this.student = JSON.parse(saved);
+                // Synchronize any newly provided userSession fields
+                if (userSession.name) this.student.name = userSession.name;
+                if (userSession.username) {
+                    this.student.username = userSession.username.replace(/^@/, '');
+                    this.student.alias = `@${this.student.username}`;
+                }
+                if (userSession.studentId) this.student.id = userSession.studentId;
+                if (userSession.year) this.student.year = userSession.year;
+                if (userSession.semester) this.student.semester = userSession.semester;
+                if (userSession.section) this.student.section = userSession.section;
+                if (userSession.branch) this.student.branch = userSession.branch;
+                if (userSession.phone) this.student.phone = userSession.phone;
+                if (userSession.avatar) this.student.avatar = userSession.avatar;
+                if (userSession.track) this.student.track = userSession.track;
+                if (userSession.role) this.student.role = userSession.role;
+            } else {
+                // Initialize fresh cadet profile with the user's EXACT filled registration details (NO RANDOM VALUES!)
+                const cleanUser = (userSession.username || email.split('@')[0]).replace(/^@/, '');
+                const cadetId = userSession.studentId || userSession.id || `MSOT-${cleanUser.toUpperCase()}`;
+                this.student = {
+                    id: cadetId,
+                    email: email,
+                    name: userSession.name || cleanUser,
+                    username: cleanUser,
+                    alias: `@${cleanUser}`,
+                    avatar: userSession.avatar || '⚔️',
+                    role: userSession.role || 'Student',
+                    year: userSession.year || '2nd Year',
+                    semester: userSession.semester || 'Semester 4',
+                    batch: 'Class of 2026',
+                    section: normalizeSection(userSession.section),
+                    branch: userSession.branch || 'Computer Science & Engineering (CSE)',
+                    phone: userSession.phone || '',
+                    campus: 'Mirai Central Campus',
+                    track: userSession.track || 'C++ Algorithms & DSA',
+                    lifetimeXP: 50,
+                    weeklyXP: 50,
+                    streak: 1,
+                    streakFreezes: 1,
+                    maxStreak: 1,
+                    questionsSolved: 5,
+                    weeklyTimeSpentMinutes: 65,
+                    anonymousMode: false,
+                    faction: (normalizeSection(userSession.section) === 'Section Beta') ? 'emerald' : 'crimson',
+                    league: 'Cadet League',
+                    leagueRank: 18,
+                    badges: ['first_quiz'],
+                    completedGames: [],
+                    lastDailyQuizDate: null,
+                    dailyCodingCount: 0,
+                    dailyHelpCount: 0,
+                    personalBests: [
+                        { metric: 'Quickest Perfect Quiz', value: '5/5 in 45s', date: 'Recent' },
+                        { metric: 'Highest Weekly XP Surge', value: '+50 XP', date: 'This Week' },
+                        { metric: 'Longest Unbroken Streak', value: '1 Day', date: 'Active' }
+                    ]
+                };
+                localStorage.setItem(userStoreKey, JSON.stringify(this.student));
+            }
+        }
+
+        // Safety guarantees: Ensure all fields and arrays exist on loaded or new student profile
+        if (this.student) {
+            const cleanUser = (this.student.username || this.student.alias || email.split('@')[0]).replace(/^@/, '');
+            this.student.username = cleanUser;
+            this.student.alias = `@${cleanUser}`;
+            if (!this.student.id) this.student.id = userSession.studentId || `MSOT-${cleanUser.toUpperCase()}`;
+            if (!this.student.name) this.student.name = userSession.name || cleanUser;
+            if (isUtkarshAdmin) {
+                this.student.name = 'Utkarsh Raj';
+                this.student.role = 'ADMIN';
+                this.student.avatar = this.student.avatar || '🛡️';
+                this.currentRole = 'ADMIN';
+            } else {
+                if (!this.student.role) this.student.role = userSession.role || 'Student';
+            }
+            if (!this.student.year) this.student.year = userSession.year || '2nd Year';
+            if (!this.student.semester) this.student.semester = userSession.semester || 'Semester 4';
+            this.student.section = normalizeSection(this.student.section || userSession.section);
+            this.student.faction = (this.student.section === 'Section Beta') ? 'emerald' : 'crimson';
+            if (!this.student.branch) this.student.branch = userSession.branch || 'Computer Science & Engineering (CSE)';
+            if (userSession.phone) this.student.phone = userSession.phone;
+            if (!this.student.batch) this.student.batch = 'Class of 2026';
+            if (!this.student.campus) this.student.campus = 'Mirai Central Campus';
+            if (!this.student.avatar) this.student.avatar = isUtkarshAdmin ? '🛡️' : (userSession.avatar || '⚔️');
+            this.student.league = 'Cadet League';
+            if (typeof this.student.streak !== 'number') this.student.streak = 1;
+            this.student.isStreakFrozen = !!this.student.isStreakFrozen;
+            this.student.streakFrozenDate = this.student.streakFrozenDate || null;
+            this.student.maxFreezeDays = 2;
+            this.student.lastActiveDate = this.student.lastActiveDate || new Date().toISOString().split('T')[0];
+            if (!Array.isArray(this.student.attendanceHistory)) this.student.attendanceHistory = [];
+            if (typeof this.student.questionsSolved !== 'number') this.student.questionsSolved = 0;
+            if (typeof this.student.weeklyTimeSpentMinutes !== 'number') this.student.weeklyTimeSpentMinutes = 385;
+            if (typeof this.student.leagueRank !== 'number') this.student.leagueRank = 8;
+            if (!Array.isArray(this.student.badges)) this.student.badges = ['first_quiz'];
+            if (!Array.isArray(this.student.completedGames)) this.student.completedGames = [];
+            if (!Array.isArray(this.student.personalBests) || this.student.personalBests.length === 0) {
+                this.student.personalBests = [
+                    { metric: 'Quickest Perfect Quiz', value: '5/5 in 45s', date: 'Recent' },
+                    { metric: 'Highest Weekly XP Surge', value: '+50 XP', date: 'This Week' },
+                    { metric: 'Longest Unbroken Streak', value: `${this.student.streak || 1} Days`, date: 'Current' }
+                ];
+            }
+            this.evaluateStreakStatus();
+        }
+
+        if (userSession.role) {
+            this.currentRole = userSession.role;
+        }
+
+        this.save();
+    }
+
+    updateStudentProfile(updates) {
+        if (!this.student) return;
+        if (updates.section) {
+            updates.section = normalizeSection(updates.section);
+            updates.faction = (updates.section === 'Section Beta') ? 'emerald' : 'crimson';
+        }
+        Object.assign(this.student, updates);
+        this.save();
+        if (window.msotPlatform) {
+            if (window.msotPlatform.renderStudentProfile) window.msotPlatform.renderStudentProfile();
+            if (window.msotPlatform.updateHeaderStats) window.msotPlatform.updateHeaderStats();
+        }
     }
 
     save() {
         try {
+            if (this.currentUserEmail) {
+                const userStoreKey = `MSOT_STUDENT_PROFILE_${this.currentUserEmail.replace(/[^a-z0-9]/g, '_')}`;
+                localStorage.setItem(userStoreKey, JSON.stringify(this.student));
+            }
             const payload = {
                 currentRole: this.currentRole,
+                currentUserEmail: this.currentUserEmail,
                 student: this.student,
                 rules: this.rules,
                 transactions: this.transactions,
@@ -480,12 +680,110 @@ class MSOTPlatformState {
                 battle: this.battle,
                 fairness: this.fairness,
                 facultyKPIs: this.facultyKPIs,
-                aiQueue: this.aiQueue
+                aiQueue: this.aiQueue,
+                assignments: this.assignments,
+                leagues: this.leagues
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         } catch (e) {
             console.error('Failed to save MSOT State', e);
         }
+    }
+
+    // Push new weekend assignment (by faculty, admin, or instructor)
+    pushAssignment(data) {
+        if (!data || !data.title) return null;
+        const curRole = (this.currentRole || this.student?.role || 'STUDENT').toUpperCase();
+        if (curRole !== 'ADMIN' && curRole !== 'FACULTY') {
+            console.warn('Blocked unauthorized assignment push from non-admin role:', curRole);
+            return null;
+        }
+        if (!Array.isArray(this.assignments)) this.assignments = [];
+
+        const newAssignment = {
+            id: 'assign-' + Date.now(),
+            title: data.title.trim(),
+            difficulty: (data.difficulty || 'MEDIUM').toUpperCase(),
+            track: data.track || 'Algorithms & Data Structures',
+            weekNumber: data.weekNumber || `WEEK ${this.assignments.length + 1} WEEKEND`,
+            dueDate: data.dueDate || 'Sunday 23:59 PM',
+            xpReward: Number(data.xpReward) || 50,
+            tags: Array.isArray(data.tags) ? data.tags : (data.tags ? data.tags.split(',').map(t => t.trim()) : ['Algorithm']),
+            description: data.description || 'Solve this algorithmic challenge using optimal time and space complexity.',
+            starterCode: data.starterCode || {
+                javascript: `function solution(input) {\n    // Write your code here\n    return input;\n}`,
+                python: `def solution(input):\n    # Write your code here\n    return input`,
+                cpp: `#include <iostream>\n\nint main() {\n    // Write your code here\n    std::cout << "Done" << std::endl;\n    return 0;\n}`
+            },
+            testCases: Array.isArray(data.testCases) && data.testCases.length > 0 ? data.testCases : [
+                { id: 1, input: 'Sample Input 1', args: ['Sample Input 1'], expected: 'Sample Input 1' }
+            ],
+            createdAt: new Date().toLocaleDateString(),
+            createdBy: this.currentUserEmail || 'System Administrator'
+        };
+
+        this.assignments.unshift(newAssignment);
+        this.save();
+        return newAssignment;
+    }
+
+    // Delete weekend assignment (Admin & Faculty facility)
+    deleteAssignment(id) {
+        if (!id || !Array.isArray(this.assignments)) return false;
+        const curRole = (this.currentRole || this.student?.role || 'STUDENT').toUpperCase();
+        if (curRole !== 'ADMIN' && curRole !== 'FACULTY') {
+            console.warn('Blocked unauthorized assignment delete from non-admin role:', curRole);
+            return false;
+        }
+        const initialLen = this.assignments.length;
+        this.assignments = this.assignments.filter(a => a.id !== id);
+        if (this.assignments.length !== initialLen) {
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    // Submit assignment solution & award verified XP
+    submitAssignment(assignmentId, code, language, passedCount, totalCount) {
+        const assignment = (this.assignments || []).find(a => a.id === assignmentId);
+        if (!assignment) return { success: false, reason: 'Assignment not found' };
+
+        if (!Array.isArray(this.student.completedAssignments)) {
+            this.student.completedAssignments = [];
+        }
+
+        const isNewCompletion = !this.student.completedAssignments.includes(assignmentId);
+        if (isNewCompletion) {
+            this.student.completedAssignments.push(assignmentId);
+        }
+
+        // Award XP
+        const xpAmount = isNewCompletion ? (assignment.xpReward || 50) : 10;
+        const xpRes = this.recordXP(
+            'HOMEWORK',
+            xpAmount,
+            `Weekend Code Sprint: ${assignment.title} (${language})`,
+            {
+                assignmentId: assignmentId,
+                language: language,
+                passedCount: passedCount,
+                totalCount: totalCount,
+                questionCount: isNewCompletion ? 1 : 0
+            }
+        );
+
+        this.save();
+
+        return {
+            success: true,
+            isNewCompletion: isNewCompletion,
+            xpAwarded: xpAmount,
+            assignment: assignment,
+            totalXP: this.student.lifetimeXP,
+            leveledUp: xpRes.leveledUp,
+            newLevel: xpRes.newLevel
+        };
     }
 
     // Role Switcher (STUDENT <-> FACULTY <-> ADMIN)
@@ -529,18 +827,37 @@ class MSOTPlatformState {
         this.student.lifetimeXP += xpAmount;
         this.student.weeklyXP += xpAmount;
 
+        // Track questions solved
+        if (actionKey === 'GAME_TOPIC_CLEAR' || actionKey.startsWith('CODING_') || actionKey === 'DAILY_QUIZ' || actionKey === 'QUIZ_CORRECT' || actionKey === 'SOLVE_QUESTION') {
+            const qInc = metadata.questionCount || (actionKey === 'GAME_TOPIC_CLEAR' ? 5 : (actionKey === 'DAILY_QUIZ' ? 5 : 1));
+            this.student.questionsSolved = (this.student.questionsSolved || 0) + qInc;
+        }
+
+        // Daily activity tracking (maintains daily activeness and streak)
+        if (['ATTEND_CLASS', 'SOLVE_QUESTION', 'GAME_TOPIC_CLEAR', 'DAILY_QUIZ', 'QUIZ_CORRECT', 'HOMEWORK'].includes(actionKey)) {
+            this.recordDailyActivity();
+        }
+
         // Check for Level-Up Celebration
         const oldLevel = calculateLevelData(this.student.lifetimeXP - xpAmount).level;
         const newLevel = calculateLevelData(this.student.lifetimeXP).level;
         const leveledUp = newLevel > oldLevel;
 
-        // Also add to Section A battle tally
-        if (this.battle && this.battle.sectionA) {
-            this.battle.sectionA.points += xpAmount;
-            this.battle.sectionA.solvedCount++;
+        // Also add to Section Alpha / Beta battle tally based on cadet's section
+        const isBeta = (this.student.section === 'Section Beta' || this.student.section === 'Beta' || this.student.section === 'Section B');
+        if (this.battle) {
+            const target = isBeta ? this.battle.sectionB : this.battle.sectionA;
+            if (target) {
+                target.points += xpAmount;
+                target.solvedCount++;
+            }
         }
 
         this.save();
+
+        if (window.msotPlatform && typeof window.msotPlatform.showXPGainToast === 'function') {
+            window.msotPlatform.showXPGainToast(xpAmount, reason || rule.description, actionKey, tx);
+        }
 
         return {
             awarded: xpAmount,
@@ -549,6 +866,322 @@ class MSOTPlatformState {
             newLevel: newLevel,
             totalXP: this.student.lifetimeXP
         };
+    }
+
+    // Evaluate Streak Status (Evaluates active streak & strict 2-Day Freeze limit)
+    evaluateStreakStatus() {
+        if (!this.student) return { status: 'NO_STUDENT' };
+        const todayStr = new Date().toISOString().split('T')[0];
+        const lastActive = this.student.lastActiveDate || todayStr;
+
+        if (this.student.isStreakFrozen) {
+            const frozenTime = this.student.streakFrozenDate ? new Date(this.student.streakFrozenDate).getTime() : Date.now();
+            const elapsedDays = Math.floor((Date.now() - frozenTime) / (1000 * 60 * 60 * 24));
+
+            if (elapsedDays > 2) {
+                // EXCEEDED 2-DAY FREEZE LIMIT: STREAK RESETS TO 1!
+                this.student.isStreakFrozen = false;
+                this.student.streakFrozenDate = null;
+                this.student.streak = 1;
+                this.student.lastActiveDate = todayStr;
+                this.save();
+                return {
+                    status: 'RESET_EXPIRED',
+                    streak: 1,
+                    message: 'Streak Freeze expired after 2 days. Your streak has reset to 1 Day.'
+                };
+            } else {
+                return {
+                    status: 'FROZEN',
+                    streak: this.student.streak,
+                    elapsedDays: elapsedDays,
+                    remainingDays: Math.max(0, 2 - elapsedDays),
+                    message: `Streak is frozen (${elapsedDays} of 2 days used). Return within 2 days to keep your streak unbroken!`
+                };
+            }
+        } else {
+            const diffDays = Math.floor((new Date(todayStr) - new Date(lastActive)) / (1000 * 60 * 60 * 24));
+            if (diffDays > 1) {
+                // Missed day without activating streak freeze: streak resets
+                this.student.streak = 1;
+                this.student.lastActiveDate = todayStr;
+                this.save();
+                return {
+                    status: 'RESET_MISSED',
+                    streak: 1,
+                    message: 'Missed learning activity without activating Streak Freeze. Streak reset to 1 Day.'
+                };
+            }
+            return {
+                status: 'ACTIVE',
+                streak: this.student.streak
+            };
+        }
+    }
+
+    // Toggle Streak Freeze (Protected for up to 2 days)
+    toggleStreakFreeze() {
+        if (!this.student) return { success: false, message: 'No active student profile' };
+
+        if (this.student.isStreakFrozen) {
+            // Unfreeze & resume active streak
+            this.student.isStreakFrozen = false;
+            this.student.streakFrozenDate = null;
+            this.save();
+            return {
+                success: true,
+                isFrozen: false,
+                streak: this.student.streak,
+                message: `🔥 Streak Unfrozen! Your active streak of ${this.student.streak} Days is ready to continue.`
+            };
+        } else {
+            // Activate Streak Freeze for up to 2 days
+            this.student.isStreakFrozen = true;
+            this.student.streakFrozenDate = new Date().toISOString();
+            this.save();
+            return {
+                success: true,
+                isFrozen: true,
+                streak: this.student.streak,
+                message: `🧊 Streak Frozen! Protected for up to 2 days while away. Return within 2 days to continue your streak unbroken!`
+            };
+        }
+    }
+
+    // Record daily activeness (Called on attendance, questions, quizzes, or lab work)
+    recordDailyActivity() {
+        if (!this.student) return;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const lastActive = this.student.lastActiveDate || '';
+
+        if (this.student.isStreakFrozen) {
+            const frozenTime = this.student.streakFrozenDate ? new Date(this.student.streakFrozenDate).getTime() : Date.now();
+            const elapsedDays = Math.floor((Date.now() - frozenTime) / (1000 * 60 * 60 * 24));
+
+            if (elapsedDays <= 2) {
+                // Returned within 2-day limit: Streak continues unbroken!
+                this.student.isStreakFrozen = false;
+                this.student.streakFrozenDate = null;
+                this.student.streak = (this.student.streak || 1) + 1;
+                this.student.lastActiveDate = todayStr;
+                this.save();
+                return {
+                    unfrozen: true,
+                    streak: this.student.streak,
+                    message: `❄️ Welcome Back! You returned within 2 days—your streak was preserved and surged to ${this.student.streak} Days 🔥!`
+                };
+            } else {
+                // Exceeded 2 days while frozen: streak resets
+                this.student.isStreakFrozen = false;
+                this.student.streakFrozenDate = null;
+                this.student.streak = 1;
+                this.student.lastActiveDate = todayStr;
+                this.save();
+                return {
+                    unfrozen: true,
+                    reset: true,
+                    streak: 1,
+                    message: 'Streak Freeze expired after 2 days. Streak restarted at 1 Day.'
+                };
+            }
+        }
+
+        // Standard active streak increment
+        if (lastActive !== todayStr) {
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            if (lastActive === yesterday) {
+                this.student.streak = (this.student.streak || 0) + 1;
+            } else if (!lastActive) {
+                this.student.streak = 1;
+            } else {
+                this.student.streak = 1;
+            }
+            this.student.lastActiveDate = todayStr;
+            this.save();
+        }
+    }
+
+    // Mark daily student attendance (+20 XP, directly fuels daily streak)
+    markDailyAttendance() {
+        if (!this.student) return { success: false, message: 'No active cadet profile' };
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (!Array.isArray(this.student.attendanceHistory)) {
+            this.student.attendanceHistory = [];
+        }
+
+        if (this.student.attendanceHistory.includes(todayStr)) {
+            return {
+                success: false,
+                alreadyMarked: true,
+                streak: this.student.streak,
+                message: `✔ Today's attendance is already verified! Current streak: ${this.student.streak} Days 🔥.`
+            };
+        }
+
+        this.student.attendanceHistory.push(todayStr);
+        this.recordDailyActivity();
+
+        // Award verified attendance XP (+20 XP)
+        const xpRes = this.recordXP('ATTEND_CLASS', 20, 'Daily Student Attendance Verified (+20 XP)', { date: todayStr });
+
+        return {
+            success: true,
+            awarded: 20,
+            streak: this.student.streak,
+            totalXP: this.student.lifetimeXP,
+            message: `🏫 Attendance Verified! Awarded +20 XP. Daily streak is now ${this.student.streak} Days 🔥.`
+        };
+    }
+
+    // Solve Question XP: Every question solved increases XP by +10 XP
+    solveQuestionXP(count = 1, topic = 'Curriculum Practice') {
+        if (!this.student) return { success: false };
+        const xpAmount = count * 10;
+        this.student.questionsSolved = (this.student.questionsSolved || 0) + count;
+        this.recordDailyActivity();
+        const xpRes = this.recordXP('SOLVE_QUESTION', xpAmount, `Solved ${count} question(s) in ${topic} (+${xpAmount} XP)`, {
+            questionCount: count,
+            topic: topic
+        });
+        return {
+            success: true,
+            xpAwarded: xpAmount,
+            questionsSolved: this.student.questionsSolved,
+            streak: this.student.streak,
+            totalXP: this.student.lifetimeXP
+        };
+    }
+
+    // Query ONLY genuinely registered student accounts (excludes demo users)
+    getRegisteredStudents() {
+        const studentMap = new Map();
+
+        // 1. Scan registered accounts from MSOT_LEARN_ACCOUNTS_V2
+        try {
+            const rawAccounts = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+            if (rawAccounts) {
+                const accounts = JSON.parse(rawAccounts);
+                Object.values(accounts).forEach(acc => {
+                    if (!acc || !acc.email) return;
+                    const role = (acc.role || 'STUDENT').toUpperCase();
+                    if (role === 'FACULTY' || role === 'ADMIN') return;
+
+                    const email = acc.email.toLowerCase().trim();
+                    const cleanUser = (acc.username || acc.name || email.split('@')[0]).replace(/^@/, '').trim();
+                    const cadetId = acc.studentId || acc.id || `MSOT-${cleanUser.toUpperCase()}`;
+
+                    const userKey = `MSOT_STUDENT_PROFILE_${email.replace(/[^a-z0-9]/g, '_')}`;
+                    let prof = null;
+                    try {
+                        const profRaw = localStorage.getItem(userKey);
+                        if (profRaw) prof = JSON.parse(profRaw);
+                    } catch(e) {}
+
+                    studentMap.set(email, {
+                        id: cadetId,
+                        email: email,
+                        name: prof?.name || acc.name || cleanUser,
+                        username: cleanUser,
+                        alias: prof?.alias || acc.alias || `@${cleanUser}`,
+                        avatar: prof?.avatar || acc.avatar || '⚔️',
+                        section: prof?.section || acc.section || 'Section Alpha',
+                        handle: `@${cleanUser}`,
+                        questionsSolved: typeof prof?.questionsSolved === 'number' ? prof.questionsSolved : (typeof acc.questionsSolved === 'number' ? acc.questionsSolved : 0),
+                        weeklyXP: typeof prof?.weeklyXP === 'number' ? prof.weeklyXP : (typeof acc.weeklyXP === 'number' ? acc.weeklyXP : 50),
+                        streak: typeof prof?.streak === 'number' ? prof.streak : (typeof acc.streak === 'number' ? acc.streak : 1),
+                        weeklyTimeSpentMinutes: typeof prof?.weeklyTimeSpentMinutes === 'number' ? prof.weeklyTimeSpentMinutes : (typeof acc.weeklyTimeSpentMinutes === 'number' ? acc.weeklyTimeSpentMinutes : 0),
+                        trend: 'same',
+                        isSelf: false
+                    });
+                });
+            }
+        } catch(e) {
+            console.warn('Error reading registered accounts:', e);
+        }
+
+        // 2. Scan localStorage for any other registered student profiles
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('MSOT_STUDENT_PROFILE_')) {
+                    const prof = JSON.parse(localStorage.getItem(key));
+                    if (prof && prof.email) {
+                        const role = (prof.role || 'STUDENT').toUpperCase();
+                        if (role === 'FACULTY' || role === 'ADMIN') continue;
+
+                        const email = prof.email.toLowerCase().trim();
+                        if (!studentMap.has(email)) {
+                            const cleanUser = (prof.username || prof.name || email.split('@')[0]).replace(/^@/, '').trim();
+                            const cadetId = prof.id || `MSOT-${cleanUser.toUpperCase()}`;
+                            studentMap.set(email, {
+                                id: cadetId,
+                                email: email,
+                                name: prof.name || cleanUser,
+                                username: cleanUser,
+                                alias: prof.alias || `@${cleanUser}`,
+                                avatar: prof.avatar || '⚔️',
+                                section: prof.section || 'Section Alpha',
+                                handle: `@${cleanUser}`,
+                                questionsSolved: typeof prof.questionsSolved === 'number' ? prof.questionsSolved : 0,
+                                weeklyXP: typeof prof.weeklyXP === 'number' ? prof.weeklyXP : 50,
+                                streak: typeof prof.streak === 'number' ? prof.streak : 1,
+                                weeklyTimeSpentMinutes: typeof prof.weeklyTimeSpentMinutes === 'number' ? prof.weeklyTimeSpentMinutes : 0,
+                                trend: 'same',
+                                isSelf: false
+                            });
+                        }
+                    }
+                }
+            }
+        } catch(e) {}
+
+        // 3. Always include currently logged-in student if role is STUDENT
+        const s = this.student;
+        if (s && (s.role || '').toUpperCase() === 'STUDENT') {
+            const selfEmail = (s.email || this.currentUserEmail || 'student@msot.edu').toLowerCase().trim();
+            const selfClean = (s.username || s.name || selfEmail.split('@')[0]).replace(/^@/, '').trim();
+            const selfId = s.id || `MSOT-${selfClean.toUpperCase()}`;
+
+            studentMap.set(selfEmail, {
+                id: selfId,
+                email: selfEmail,
+                name: s.name || selfClean,
+                username: selfClean,
+                alias: s.alias || `@${selfClean}`,
+                avatar: s.avatar || '⚔️',
+                section: s.section || 'Section Alpha',
+                handle: `@${selfClean}`,
+                questionsSolved: typeof s.questionsSolved === 'number' ? s.questionsSolved : 0,
+                weeklyXP: typeof s.weeklyXP === 'number' ? s.weeklyXP : 0,
+                streak: typeof s.streak === 'number' ? s.streak : 1,
+                weeklyTimeSpentMinutes: typeof s.weeklyTimeSpentMinutes === 'number' ? s.weeklyTimeSpentMinutes : 0,
+                trend: 'same',
+                isSelf: true
+            });
+        }
+
+        const list = Array.from(studentMap.values());
+
+        // Sort descending by weeklyXP, tiebreaker questionsSolved
+        list.sort((a, b) => {
+            if (b.weeklyXP !== a.weeklyXP) return b.weeklyXP - a.weeklyXP;
+            return (b.questionsSolved || 0) - (a.questionsSolved || 0);
+        });
+
+        // Compute 1-indexed ranks and update current student profile leagueRank
+        list.forEach((cadet, index) => {
+            cadet.rank = index + 1;
+            if (cadet.isSelf && this.student) {
+                this.student.leagueRank = cadet.rank;
+            }
+        });
+
+        return list;
+    }
+
+    // Get live cohort leaderboard containing ONLY registered cadets
+    getLeagueStandings() {
+        return this.getRegisteredStudents();
     }
 
     // Faculty override: Void XP transaction with immutable audit trail

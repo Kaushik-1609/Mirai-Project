@@ -4,13 +4,13 @@
 
 // ─── Supabase Client (Integration Ready) ──────────────────────────────────────
 const SUPABASE_URL = "https://zsxdsyfjlxtcunhqgcdj.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzeGRzeWZqbHh0Y3VuaHFnY2RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MTI0OTksImV4cCI6MjEwNzA4ODQ5OX0.n223hw6kl5iuAEz5llQ6BBhhtXRQkKHU86n2gf_lD8k";
+const SUPABASE_KEY = "sb_publishable_9-cjPrufltHmmdOcI5A_IA_JqQFZxG6";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzeGRzeWZqbHh0Y3VuaHFnY2RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MTI0OTksImV4cCI6MjEwNzA4ODQ5OX0.n223hw6kl5iuAEz5llQ6BBhhtXRQkKHU86n2gf_lD8k";
 
-let supabase = null;
+let supabase = window.supabaseClient || null;
 try {
-    if (window.supabase?.createClient) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log("✅ Supabase client initialized!");
+    if (!supabase && window.supabase?.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY || SUPABASE_ANON_KEY);
     }
 } catch (err) {
     console.warn("Supabase init note:", err.message);
@@ -18,38 +18,79 @@ try {
 
 // ─── Route Registry ──────────────────────────────────────────────────────────
 const ROUTE_MAP = {
+    '#/dashboard': { section: 'dashboardSection', title: 'Dashboard Today • MSOT Learn' },
     '#/gates':     { section: 'heroSection',     title: 'The Gates • MSOT Learn' },
-    '#/home':      { section: 'heroSection',     title: 'The Gates • MSOT Learn' },
+    '#/home':      { section: 'dashboardSection', title: 'Dashboard Today • MSOT Learn' },
     '#/arcade':    { section: 'arcadeSection',   title: '17 Sacred Trials • MSOT Learn' },
     '#/daily':     { section: 'dailySection',    title: 'Daily Speed Trial • MSOT Learn' },
     '#/leagues':   { section: 'leaguesSection',  title: 'Cadet Leagues & Fairness • MSOT Learn' },
     '#/league':    { section: 'leaguesSection',  title: 'Cadet Leagues & Fairness • MSOT Learn' },
-    '#/guild-war': { section: 'battleSection',   title: 'Guild War & Team Clash • MSOT Learn' },
-    '#/battle':    { section: 'battleSection',   title: 'Guild War & Team Clash • MSOT Learn' },
+    '#/guild':     { section: 'leaguesSection',  title: 'My Guild • MSOT Learn', guildTab: 'my-guild' },
+    '#/guilds':    { section: 'leaguesSection',  title: 'Find Guilds • MSOT Learn', guildTab: 'find-guild' },
+    '#/battles':   { section: 'leaguesSection',  title: 'Guild Battles • MSOT Learn', guildTab: 'guild-battles' },
+    '#/rankings':  { section: 'leaguesSection',  title: 'Guild Rankings • MSOT Learn', guildTab: 'guild-rankings' },
+    '#/assignments': { section: 'assignmentsSection', title: 'Weekend Assignments & Compiler • MSOT Learn' },
+    '#/assignment':  { section: 'assignmentsSection', title: 'Weekend Assignments & Compiler • MSOT Learn' },
+    '#/compiler':    { section: 'assignmentsSection', title: 'Weekend Assignments & Compiler • MSOT Learn' },
+    '#/guild-war': { section: 'battleSection',   title: 'Battle Arena • MSOT Learn' },
+    '#/battle':    { section: 'battleSection',   title: 'Battle Arena • MSOT Learn' },
     '#/faculty':   { section: 'facultySection',  title: 'Faculty Dashboard • MSOT Learn' },
     '#/admin':     { section: 'adminSection',    title: 'Admin XP Economy Rules • MSOT Learn' },
     '#/xp-rules':  { section: 'adminSection',    title: 'Admin XP Economy Rules • MSOT Learn' },
+    '#/about':     { section: 'aboutSection',    title: 'About Academy & Pedagogy • MSOT Learn', allowedRoles: ['STUDENT', 'FACULTY', 'ADMIN'] },
     '#/profile':   { section: 'profileSection',  title: 'Cadet Profile & Dossier • MSOT Learn' },
     '#/login':     { authMode: 'signin',         title: 'Sign In • MSOT Learn' },
-    '#/signup':    { authMode: 'signup',         title: 'Register Cadet • MSOT Learn' }
+    '#/signup':    { authMode: 'signup',         title: 'Register Cadet • MSOT Learn' },
+    '#/intro':     { section: 'heroSection',     title: 'Cinematic Gateway • MSOT Learn', isIntro: true }
 };
 
 const SECTION_TO_HASH = {
-    'heroSection':     '#/gates',
-    'arcadeSection':   '#/arcade',
-    'dailySection':    '#/daily',
-    'leaguesSection':  '#/leagues',
-    'battleSection':   '#/guild-war',
-    'facultySection':  '#/faculty',
-    'adminSection':    '#/admin',
-    'profileSection':  '#/profile'
+    'dashboardSection':   '#/dashboard',
+    'heroSection':        '#/gates',
+    'arcadeSection':      '#/arcade',
+    'dailySection':       '#/daily',
+    'assignmentsSection': '#/assignments',
+    'leaguesSection':     '#/leagues',
+    'battleSection':      '#/battle',
+    'facultySection':     '#/faculty',
+    'adminSection':       '#/admin',
+    'aboutSection':       '#/about',
+    'profileSection':     '#/profile'
 };
 
 let _gateEngine = null;
 
+window.updateNavRoleVisibility = function () {
+    const role = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || 'STUDENT')).toUpperCase();
+    const sessionRole = (window.msotAuth?.session?.role || 'STUDENT').toUpperCase();
+    const isTrueAdmin = (role === 'ADMIN' || sessionRole === 'ADMIN' || (window.msotAuth?.session?.name || '').toLowerCase().includes('utkarsh') || (window.msotAuth?.session?.email || '').toLowerCase().includes('admin'));
+
+    document.querySelectorAll('[data-nav-role]').forEach(el => {
+        const requiredRole = el.getAttribute('data-nav-role');
+        if (requiredRole === 'ADMIN') {
+            el.style.display = (role === 'ADMIN' || isTrueAdmin) ? '' : 'none';
+        } else if (requiredRole === 'FACULTY') {
+            // Faculty view is accessible to Admin, Faculty, and evaluators/students
+            el.style.display = '';
+        }
+    });
+};
+
 // ─── Direct Unconditional Section Switcher ───────────────────────────────────
 window.switchSection = function (sectionId, updateHash = true) {
     if (!sectionId) sectionId = 'heroSection';
+
+    // Role-based navigation guard (Three-Role RBAC Enforcement)
+    const effectiveRole = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || window.msotAuth?.session?.role || 'STUDENT')).toUpperCase();
+    if (sectionId === 'adminSection' && effectiveRole !== 'ADMIN') {
+        alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators. Students and Faculty cannot access this control plane.');
+        sectionId = 'dashboardSection';
+    }
+    // Faculty Section is open to Faculty, Admins, and Student preview/inspection mode!
+
+    if (typeof window.updateNavRoleVisibility === 'function') {
+        window.updateNavRoleVisibility();
+    }
 
     // 1. Hide all sections completely (use display:none only — no opacity fighting)
     document.querySelectorAll('.app-section').forEach(sec => {
@@ -61,14 +102,20 @@ window.switchSection = function (sectionId, updateHash = true) {
     // 2. Remove active state from all nav links
     document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(l => l.classList.remove('active'));
 
-    // 3. Show target section immediately - let CSS .active class control display type
-    //    (.app-section.active = display:block; .hero-gate-section = display:flex via CSS)
+    // 3. Show target section immediately
     const targetSec = document.getElementById(sectionId);
     if (targetSec) {
         targetSec.classList.add('active');
-        targetSec.style.display = '';
+        targetSec.style.display = (sectionId === 'heroSection') ? 'flex' : 'block';
         targetSec.style.opacity = '';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (sectionId === 'heroSection') {
+            targetSec.classList.remove('gate-overlay-transition');
+            const hw = document.getElementById('heroGateWrapper');
+            if (hw) hw.classList.remove('gate-opening', 'gate-flythrough');
+        }
+        if (typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }
 
     // 4. Highlight active nav link on both desktop & mobile
@@ -79,24 +126,41 @@ window.switchSection = function (sectionId, updateHash = true) {
     if (activeMobileLink) activeMobileLink.classList.add('active');
 
     // 5. Reactive renders for dynamic views
-    if (sectionId === 'arcadeSection') {
-        window.msotPlatform?.renderArcade?.();
-    } else if (sectionId === 'leaguesSection') {
-        window.msotPlatform?.renderLeagues?.();
-        window.msotPlatform?.renderFairnessBoards?.();
-        window.msotPlatform?.renderQuests?.();
-    } else if (sectionId === 'battleSection') {
-        window.msotPlatform?.renderTeamBattles?.();
-    } else if (sectionId === 'dailySection') {
-        window.msotPlatform?.renderDailyQuizCard?.();
-    } else if (sectionId === 'facultySection') {
-        window.msotPlatform?.renderFacultyDashboard?.();
-    } else if (sectionId === 'adminSection') {
-        window.msotPlatform?.renderAdminRules?.();
-    } else if (sectionId === 'profileSection') {
-        window.msotPlatform?.renderStudentProfile?.();
-        window.msotPlatform?.renderBadgesVault?.();
-        window.msotPlatform?.renderXPLedger?.();
+    const p = window.msotPlatform || window.miraiPlatform;
+    if (p) {
+        if (sectionId === 'dashboardSection') {
+            p.renderDashboard?.();
+        } else if (sectionId === 'arcadeSection') {
+            p.renderArcade?.();
+        } else if (sectionId === 'assignmentsSection') {
+            p.renderAssignments?.();
+        } else if (sectionId === 'leaguesSection') {
+            p.renderLeagues?.();
+            p.renderFairnessBoards?.();
+            p.renderQuests?.();
+            const curRoute = typeof ROUTE_MAP !== 'undefined' ? ROUTE_MAP[(window.location.hash || '').toLowerCase()] : null;
+            if (curRoute && curRoute.guildTab && window.msotGuild) {
+                window.msotGuild.switchLeagueSubTab(curRoute.guildTab);
+            }
+        } else if (sectionId === 'aboutSection') {
+            p.renderAboutSection?.();
+        } else if (sectionId === 'battleSection') {
+            if (window.msotBattle && window.msotBattle.renderBattleArena) {
+                window.msotBattle.renderBattleArena();
+            } else {
+                p.renderTeamBattles?.();
+            }
+        } else if (sectionId === 'dailySection') {
+            p.renderDailyQuizCard?.();
+        } else if (sectionId === 'facultySection') {
+            p.renderFacultyDashboard?.();
+        } else if (sectionId === 'adminSection') {
+            p.renderAdminRules?.();
+        } else if (sectionId === 'profileSection') {
+            p.renderStudentProfile?.();
+            p.renderBadgesVault?.();
+            p.renderXPLedger?.();
+        }
     }
 
     // 6. CRITICAL: Force all scroll-reveal elements inside the active section to become
@@ -121,7 +185,11 @@ window.switchSection = function (sectionId, updateHash = true) {
     if (updateHash && SECTION_TO_HASH[sectionId]) {
         const targetHash = SECTION_TO_HASH[sectionId];
         if (window.location.hash.toLowerCase() !== targetHash) {
-            history.pushState(null, '', targetHash);
+            if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+                window.history.pushState(null, '', targetHash);
+            } else {
+                window.location.hash = targetHash;
+            }
         }
     }
 
@@ -130,21 +198,53 @@ window.switchSection = function (sectionId, updateHash = true) {
         document.title = ROUTE_MAP[SECTION_TO_HASH[sectionId]].title;
     }
 
-    // 9. Gate canvas parting simulation
+    // 9. Gate canvas parting simulation & reset
     if (_gateEngine && _gateEngine.setGateParting) {
         if (sectionId === 'heroSection') {
-            _gateEngine.setGateParting(0.70, false);
+            _gateEngine.setGateParting(0.0, false);
+            const heroWrapper = document.getElementById('heroGateWrapper');
+            if (heroWrapper) heroWrapper.classList.remove('gate-opening', 'gate-flythrough');
             if (_gateEngine.initCanvasSize) {
                 _gateEngine.initCanvasSize();
             }
-        } else {
-            _gateEngine.setGateParting(1.0, false);
         }
     }
 
     // 10. Close mobile drawer
     const drawer = document.getElementById('mobileNavDrawer');
     if (drawer) drawer.classList.remove('open');
+};
+
+// ─── 3D Anime Torii Gate Opening & Direct Arcade Transition ──────────────────
+window.openGateAndEnterArcade = function (e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    // Guard: Cadet MUST be authenticated before entering the game world!
+    if (!window.msotAuth || !window.msotAuth.session) {
+        if (window.miraiAudio && window.miraiAudio.playError) {
+            window.miraiAudio.playError();
+        }
+        if (window.msotAuth) {
+            window.msotAuth.showAuthScreen(true);
+            window.msotAuth.switchAuthTab('signin');
+        }
+        window.location.hash = '#/login';
+        return;
+    }
+
+    const heroSec = document.getElementById('heroSection');
+    const heroWrapper = document.getElementById('heroGateWrapper');
+    const arcadeSec = document.getElementById('arcadeSection');
+
+    try {
+        if (window.miraiAudio && window.miraiAudio.playTempleBell) {
+            window.miraiAudio.playTempleBell();
+        }
+    } catch (err) {}
+
+    window.switchSection('arcadeSection', true);
+    window.location.hash = '#/arcade';
 };
 
 // ─── Route Dispatcher ────────────────────────────────────────────────────────
@@ -155,17 +255,65 @@ function handleRoute() {
 
     const route = ROUTE_MAP[hash];
 
-    // Auth screen routes
+    // Auth screen routes: always display auth modal
     if (route && route.authMode) {
         if (window.msotAuth) {
             window.msotAuth.showAuthScreen(true);
             window.msotAuth.switchAuthTab(route.authMode);
+            const rawHash = window.location.hash.toLowerCase();
+            if (rawHash.includes('role=admin')) {
+                window.msotAuth.selectLoginRole('ADMIN');
+            } else if (rawHash.includes('role=faculty')) {
+                window.msotAuth.selectLoginRole('FACULTY');
+            } else if (rawHash.includes('role=student')) {
+                window.msotAuth.selectLoginRole('STUDENT');
+            }
         }
         document.title = route.title;
         return;
     }
 
-    // Standard application routes
+    // AUTH GUARD: Require active cadet session for all application routes!
+    const session = window.msotAuth?.session;
+    if (!session) {
+        if (window.msotAuth) {
+            window.msotAuth.showAuthScreen(true);
+            window.msotAuth.switchAuthTab(hash === '#/signup' ? 'signup' : 'signin');
+            const rawHash = window.location.hash.toLowerCase();
+            if (rawHash.includes('role=admin')) {
+                window.msotAuth.selectLoginRole('ADMIN');
+            } else if (rawHash.includes('role=faculty')) {
+                window.msotAuth.selectLoginRole('FACULTY');
+            } else if (rawHash.includes('role=student')) {
+                window.msotAuth.selectLoginRole('STUDENT');
+            }
+        }
+        window.location.hash = (hash === '#/signup') ? '#/signup' : '#/login';
+        document.title = 'Cadet Authentication • MSOT Learn';
+        return;
+    }
+
+    // ROLE ACCESS GUARD for protected URL paths
+    const userRole = (session.role || 'STUDENT').toUpperCase();
+    if (hash === '#/admin' && userRole !== 'ADMIN') {
+        alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
+        window.location.hash = '#/assignments';
+        return;
+    }
+    // Faculty Terminal is accessible to all for viewing cadet character flashcards and dossiers!
+
+    // Intro route -> direct to The Gates
+    if (hash === '#/intro' || route?.isIntro) {
+        window.switchSection('heroSection', false);
+        document.title = 'The Gates • MSOT Learn';
+        return;
+    }
+
+    // Standard application routes for authenticated cadets: close auth modal
+    if (window.msotAuth) {
+        window.msotAuth.showAuthScreen(false);
+    }
+
     if (route && route.section) {
         window.switchSection(route.section, false);
         document.title = route.title;
@@ -233,18 +381,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 7. Hero CTA "ENTER THE GATES" button
+    // 7. Hero CTA "ENTER THE GATE" button (3D Anime Torii Opening -> Arcade)
     const enterGateBtn = document.getElementById('enterGateBtn');
     if (enterGateBtn) {
-        enterGateBtn.addEventListener('click', () => {
-            try {
-                if (_gateEngine) _gateEngine.setGateParting(1.0, true);
-                if (window.miraiAudio) window.miraiAudio.playClick?.();
-            } catch (e) {}
-            setTimeout(() => {
-                window.switchSection('arcadeSection', true);
-            }, 650);
-        });
+        enterGateBtn.onclick = window.openGateAndEnterArcade;
+        enterGateBtn.addEventListener('click', window.openGateAndEnterArcade);
     }
 
     // 8. Mobile Navigation Drawer Controls
@@ -337,8 +478,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (roleIcon) {
                 roleIcon.textContent = role === 'STUDENT' ? '⚔️' : (role === 'FACULTY' ? '🎓' : '🛡️');
             }
+            if (window.msotRBAC?.setCurrentRole) {
+                window.msotRBAC.setCurrentRole(role);
+            }
             if (window.msotState?.setRole) {
                 window.msotState.setRole(role);
+            }
+            if (typeof window.updateNavRoleVisibility === 'function') {
+                window.updateNavRoleVisibility();
             }
             if (role === 'FACULTY') {
                 window.switchSection('facultySection', true);
@@ -348,5 +495,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.switchSection('heroSection', true);
             }
         });
+        if (typeof window.updateNavRoleVisibility === 'function') {
+            window.updateNavRoleVisibility();
+        }
     }
 });

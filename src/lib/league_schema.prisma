@@ -1,0 +1,119 @@
+// ==============================================================================
+// PRISMA SCHEMA: MATCHMAKING LEAGUES & PROMOTION/RELEGATION SYSTEM
+// Micro-leagues of 20 cadets with Sunday midnight resolution & Incognito Mode
+// ==============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum LeagueTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+enum MovementZone {
+  PROMOTION   // Top 5: Advances to higher tier next week
+  SAFE        // Middle 10: Retains current tier
+  RELEGATION  // Bottom 5: Drops to lower tier next week
+}
+
+enum LeaderboardStatus {
+  ACTIVE
+  RESOLVED
+}
+
+// ------------------------------------------------------------------------------
+// 1. UPDATED USER / CADET MODEL WITH ANONYMOUS PRIVACY FIELDS
+// ------------------------------------------------------------------------------
+model User {
+  id                 String             @id @default(cuid())
+  email              String             @unique
+  name               String
+  avatarUrl          String?
+  
+  // Privacy & Incognito Gamertag Fields
+  isAnonymous        Boolean            @default(false)
+  anonymousGamerTag  String             @default("Ghost_Cadet_007")
+  anonymousAvatar    String             @default("🥷")
+
+  // Current League Standing
+  currentTier        LeagueTier         @default(BRONZE)
+  lifetimeXP         Int                @default(0)
+  weeklyXP           Int                @default(0)
+
+  // Relations
+  leagueEntries      LeaderboardEntry[]
+  
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([currentTier])
+}
+
+// ------------------------------------------------------------------------------
+// 2. WEEKLY MICRO-LEAGUE GROUP (20 CADETS MATCHED BY LEVEL/XP)
+// ------------------------------------------------------------------------------
+model WeeklyLeaderboard {
+  id             String             @id @default(cuid())
+  tier           LeagueTier         @default(BRONZE)
+  groupCode      String             // e.g., "GOLD-ROOM-042" (isolated cohort of 20 students)
+  weekNumber     Int                // Calendar week number (e.g., 41)
+  year           Int                // e.g., 2026
+  
+  status         LeaderboardStatus  @default(ACTIVE)
+  startsAt       DateTime           @default(now())
+  endsAt         DateTime           // Sunday 23:59:59 PM UTC
+  
+  // Exactly 20 cadets per match group
+  maxCapacity    Int                @default(20)
+  entries        LeaderboardEntry[]
+
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([groupCode, weekNumber, year])
+  @@index([tier, status])
+}
+
+// ------------------------------------------------------------------------------
+// 3. LEADERBOARD ENTRY (CADET'S REAL-TIME SCORE IN THEIR 20-STUDENT ROOM)
+// ------------------------------------------------------------------------------
+model LeaderboardEntry {
+  id              String            @id @default(cuid())
+  
+  leaderboardId   String
+  leaderboard     WeeklyLeaderboard @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
+  
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Live Weekly Metric
+  weeklyXP        Int               @default(0)
+  questionsSolved Int               @default(0)
+  studyStreakDays Int               @default(1)
+  timeSpentMins   Int               @default(0)
+
+  // Dynamic Standing Computed at Sunday Resolution
+  currentRank     Int               @default(20)
+  zone            MovementZone      @default(SAFE)
+  
+  // Snapshot of anonymous status at time of render
+  renderedName    String            // Real name or GamerTag
+  renderedAvatar  String            // Real photo URL or Ninja avatar
+  isIncognito     Boolean           @default(false)
+
+  updatedAt       DateTime          @updatedAt
+  createdAt       DateTime          @default(now())
+
+  @@unique([leaderboardId, userId])
+  @@index([leaderboardId, weeklyXP(sort: Desc)])
+}

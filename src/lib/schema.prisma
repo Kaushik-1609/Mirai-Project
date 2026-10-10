@@ -1,0 +1,159 @@
+// ==============================================================================
+// PRISMA SCHEMA: INCLUSIVE GAMIFICATION ENGINE (MSOT LEARN)
+// Models: Badge, StudentBadge, Quest, StudentQuest
+// Designed for equitable progression: Growth, Consistency, Mastery, Community, Fun
+// ==============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum BadgeCategory {
+  IMPROVEMENT   // Rewarding delta / score recovery (e.g. +15% test growth)
+  CONSISTENCY   // Rewarding daily activeness & study streaks (e.g. 7-day streak)
+  MASTERY       // Algorithmic competence & bug triage
+  COMMUNITY     // Peer mentoring, forum explanations, team battles
+  FUN           // Easter eggs, curious explorations, night-owl sprints
+}
+
+enum RarityTier {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+  MYTHIC
+}
+
+enum CriteriaType {
+  TEST_IMPROVEMENT_PERCENT  // Delta improvement between tests
+  STREAK_DAYS               // Unbroken or freeze-protected active days
+  QUESTIONS_SOLVED          // Absolute problems conquered
+  PEER_HELP_COUNT           // Accepted solutions helping classmates
+  ATTENDANCE_COUNT          // Class & lab attendance records
+  SPEED_ACCURACY            // Solving trials within time benchmarks
+  SPECIAL_EVENT             // Weekend sprints or hackathon clear
+}
+
+enum QuestType {
+  DAILY
+  WEEKLY
+  MILESTONE
+  SPECIAL
+}
+
+// ------------------------------------------------------------------------------
+// 1. BADGE CATALOG MODEL
+// ------------------------------------------------------------------------------
+model Badge {
+  id                 String         @id @default(cuid())
+  slug               String         @unique // e.g. "comeback-kid", "iron-will"
+  title              String
+  description        String
+  unlockInstruction  String         // Explicit, student-friendly instructions
+  category           BadgeCategory
+  rarity             RarityTier     @default(COMMON)
+  iconName           String         // Lucide icon key or SVG path (e.g., "TrendingUp", "Flame")
+  badgeColorHex      String         @default("#00f0ff")
+  xpReward           Int            @default(50)
+  
+  // Criteria definition for automated progression checks
+  criteriaType       CriteriaType
+  criteriaThreshold  Float          // e.g. 15 for 15% increase, 7 for 7 days
+  criteriaMetadata   Json?          // Optional filter rules, e.g. { "topic": "Recursion" }
+  isSecret           Boolean        @default(false) // Hidden until unlocked
+  
+  // Relations
+  studentBadges      StudentBadge[]
+  rewardQuests       Quest[]        @relation("QuestRewardBadge")
+  
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@index([category])
+  @@index([rarity])
+}
+
+// ------------------------------------------------------------------------------
+// 2. STUDENT BADGE MAPPING (UNLOCKED / IN-PROGRESS LEDGER)
+// ------------------------------------------------------------------------------
+model StudentBadge {
+  id                 String       @id @default(cuid())
+  studentId          String       // References Student / User ID
+  badgeId            String
+  badge              Badge        @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  unlockedAt         DateTime     @default(now())
+  progressValue      Float        @default(0)   // e.g. 5/7 days toward Iron Will
+  isUnlocked         Boolean      @default(false)
+  hasSeenCelebration Boolean      @default(false) // Triggers unlock modal once
+  
+  // Context snapshot for transcripts & transparency
+  contextData        Json?        // e.g. { "previousScore": 60, "newScore": 75 }
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@unique([studentId, badgeId])
+  @@index([studentId, isUnlocked])
+}
+
+// ------------------------------------------------------------------------------
+// 3. QUEST MISSION CATALOG
+// ------------------------------------------------------------------------------
+model Quest {
+  id                 String         @id @default(cuid())
+  slug               String         @unique
+  title              String
+  description        String
+  category           BadgeCategory  @default(IMPROVEMENT)
+  questType          QuestType      @default(DAILY)
+  targetCount        Int            @default(5)
+  unitLabel          String         @default("Problems") // e.g. "Recursion problems solved"
+  xpReward           Int            @default(30)
+  
+  // Optional link to award a specific badge upon quest completion
+  rewardBadgeId      String?
+  rewardBadge        Badge?         @relation("QuestRewardBadge", fields: [rewardBadgeId], references: [id])
+  
+  criteriaType       CriteriaType   @default(QUESTIONS_SOLVED)
+  criteriaMetadata   Json?
+  
+  // Expiration / Reset schedule
+  startsAt           DateTime       @default(now())
+  expiresAt          DateTime?      // e.g., midnight for daily, Sunday for weekly
+  
+  // Relations
+  studentQuests      StudentQuest[]
+  
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@index([questType])
+}
+
+// ------------------------------------------------------------------------------
+// 4. STUDENT QUEST PROGRESS TRACKER
+// ------------------------------------------------------------------------------
+model StudentQuest {
+  id              String       @id @default(cuid())
+  studentId       String
+  questId         String
+  quest           Quest        @relation(fields: [questId], references: [id], onDelete: Cascade)
+  
+  currentProgress Int          @default(0)
+  isCompleted     Boolean      @default(false)
+  completedAt     DateTime?
+  isClaimed       Boolean      @default(false)
+  claimedAt       DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([studentId, questId])
+  @@index([studentId, isCompleted])
+}

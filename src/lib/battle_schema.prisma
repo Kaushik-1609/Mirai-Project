@@ -1,0 +1,152 @@
+// Prisma Schema for MSOT Learn Battle Engine
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum BattleMode {
+  solo
+  team
+  large_scale
+  war
+}
+
+enum BattleStatus {
+  draft
+  open_registration
+  pending_acceptance
+  accepted
+  scheduled
+  active
+  completed
+  rejected
+  cancelled
+}
+
+enum TeamFormat {
+  format_1v1 @map("1v1")
+  format_2v2 @map("2v2")
+  format_3v3 @map("3v3")
+  format_4v4 @map("4v4")
+  multi_team
+}
+
+enum WarCategory {
+  section_war
+  campus_war
+}
+
+model Battle {
+  id                    String              @id @default(cuid())
+  title                 String
+  description           String?
+  mode                  BattleMode
+  format                TeamFormat          @default(format_1v1)
+  warCategory           WarCategory?        @map("war_category")
+  status                BattleStatus        @default(pending_acceptance)
+  
+  creatorId             String              @map("creator_id")
+  creatorEmail          String              @map("creator_email")
+  creatorName           String              @map("creator_name")
+  targetOpponentId      String?             @map("target_opponent_id")
+  targetTeamLeaderId    String?             @map("target_team_leader_id")
+  
+  teamAName             String?             @default("Team Alpha") @map("team_a_name")
+  teamBName             String?             @default("Team Beta") @map("team_b_name")
+  requiredTeamSize      Int                 @default(1) @map("required_team_size")
+  maxParticipants       Int?                @default(2) @map("max_participants")
+  durationMinutes       Int                 @default(15) @map("duration_minutes")
+  
+  scheduledStart        DateTime?           @map("scheduled_start")
+  startedAt             DateTime?           @map("started_at")
+  endedAt               DateTime?           @map("ended_at")
+  
+  teamAScore            Int                 @default(0) @map("team_a_score")
+  teamBScore            Int                 @default(0) @map("team_b_score")
+  winnerTeam            String?             @map("winner_team")
+  winnerName            String?             @map("winner_name")
+  
+  rulesConfig           Json?               @default("{}") @map("rules_config")
+  isOfficialAdminEvent  Boolean             @default(false) @map("is_official_admin_event")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  participants          BattleParticipant[]
+  challenges            BattleChallenge[]
+  scoreEvents           BattleScoreEvent[]
+  campusScores          CampusWarScore[]
+
+  @@map("battles")
+}
+
+model BattleParticipant {
+  id               String    @id @default(cuid())
+  battleId         String    @map("battle_id")
+  battle           Battle    @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  userId           String    @map("user_id")
+  userEmail        String    @map("user_email")
+  userName         String    @map("user_name")
+  userAvatar       String?   @default("⚔️") @map("user_avatar")
+  teamSide         String    @default("A") @map("team_side")
+  isTeamLeader     Boolean   @default(false) @map("is_team_leader")
+  score            Int       @default(0)
+  questionsSolved  Int       @default(0) @map("questions_solved")
+  accuracyPercent  Float?    @default(0.0) @map("accuracy_percent")
+  isWinner         Boolean   @default(false) @map("is_winner")
+  joinedAt         DateTime  @default(now()) @map("joined_at")
+
+  @@unique([battleId, userId])
+  @@map("battle_participants")
+}
+
+model BattleChallenge {
+  id                 String     @id @default(cuid())
+  battleId           String     @map("battle_id")
+  battle             Battle     @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  challengerId       String     @map("challenger_id")
+  challengerName     String     @map("challenger_name")
+  challengedUserId   String     @map("challenged_user_id")
+  challengedUserName String     @map("challenged_user_name")
+  format             TeamFormat
+  status             String     @default("PENDING")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  respondedAt        DateTime?  @map("responded_at")
+
+  @@map("battle_challenges")
+}
+
+model BattleScoreEvent {
+  id                 String    @id @default(cuid())
+  battleId           String    @map("battle_id")
+  battle             Battle    @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  userId             String    @map("user_id")
+  teamSide           String    @map("team_side")
+  questionId         String?   @map("question_id")
+  selectedOption     String?   @map("selected_option")
+  isCorrect          Boolean   @default(true) @map("is_correct")
+  scoreDelta         Int       @default(0) @map("score_delta")
+  submissionTime     DateTime  @default(now()) @map("submission_time")
+  verifiedByServer   Boolean   @default(true) @map("verified_by_server")
+
+  @@map("battle_score_events")
+}
+
+model CampusWarScore {
+  id           String    @id @default(cuid())
+  battleId     String    @map("battle_id")
+  battle       Battle    @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  campusName   String    @map("campus_name")
+  campusCode   String    @map("campus_code")
+  totalScore   Int       @default(0) @map("total_score")
+  activeCadets Int       @default(0) @map("active_cadets")
+  rank         Int       @default(1)
+  leadMargin   Int?      @default(0) @map("lead_margin")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@unique([battleId, campusCode])
+  @@map("campus_war_scores")
+}
