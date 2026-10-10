@@ -191,15 +191,11 @@ window.switchSection = function (sectionId, updateHash = true) {
         }, 80);
     }
 
-    // 7. Sync URL hash without triggering duplicate events
+    // 7. Sync URL hash cleanly
     if (updateHash && SECTION_TO_HASH[sectionId]) {
         const targetHash = SECTION_TO_HASH[sectionId];
         if (window.location.hash.toLowerCase() !== targetHash) {
-            if (typeof window !== 'undefined' && window.history && window.history.pushState) {
-                window.history.pushState(null, '', targetHash);
-            } else {
-                window.location.hash = targetHash;
-            }
+            window.location.hash = targetHash;
         }
     }
 
@@ -255,16 +251,16 @@ function handleRoute() {
 
     // Auth screen routes: explicitly display auth modal
     if (route && route.authMode) {
-        if (window.msotAuth) {
+        if (window.msotAuth && typeof window.msotAuth.showAuthScreen === 'function') {
             window.msotAuth.showAuthScreen(true);
-            window.msotAuth.switchAuthTab(route.authMode);
+            window.msotAuth.switchAuthTab?.(route.authMode);
             const rawHash = window.location.hash.toLowerCase();
             if (rawHash.includes('role=admin')) {
-                window.msotAuth.selectLoginRole('ADMIN');
+                window.msotAuth.selectLoginRole?.('ADMIN');
             } else if (rawHash.includes('role=faculty')) {
-                window.msotAuth.selectLoginRole('FACULTY');
+                window.msotAuth.selectLoginRole?.('FACULTY');
             } else if (rawHash.includes('role=student')) {
-                window.msotAuth.selectLoginRole('STUDENT');
+                window.msotAuth.selectLoginRole?.('STUDENT');
             }
         }
         document.title = route.title;
@@ -291,7 +287,7 @@ function handleRoute() {
     }
 
     // Standard application routes: close auth modal
-    if (window.msotAuth) {
+    if (window.msotAuth && typeof window.msotAuth.showAuthScreen === 'function') {
         window.msotAuth.showAuthScreen(false);
     }
 
@@ -311,8 +307,12 @@ function handleRoute() {
     }
 }
 
+// ─── Immediate Route Listener Registration ───────────────────────────────────
+window.addEventListener('hashchange', handleRoute);
+window.addEventListener('popstate', handleRoute);
+
 // ─── Initializer & Event Listeners ───────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
 
     // 1. Three.js 3D Viewport & Scroll Animator
     try {
@@ -340,17 +340,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Attach DIRECT CLICK LISTENERS to all navigation items
     document.querySelectorAll('.nav-link[data-section], .mobile-nav-link[data-section]').forEach(link => {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
             const targetSection = link.getAttribute('data-section');
             if (window.miraiAudio) window.miraiAudio.playClick?.();
             window.switchSection(targetSection, true);
         });
     });
 
-    // 5. Initial route dispatch and history listeners
+    // 5. Initial route dispatch
     handleRoute();
-    window.addEventListener('hashchange', handleRoute);
-    window.addEventListener('popstate', handleRoute);
 
     // 6. Sound atmospheric toggle
     const soundBtn = document.getElementById('soundToggleBtn');
@@ -487,4 +484,10 @@ document.addEventListener('DOMContentLoaded', () => {
             window.updateNavRoleVisibility();
         }
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}

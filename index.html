@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="css/main.css?v=31">
     <link rel="stylesheet" href="css/hero-gate.css?v=31">
     <link rel="stylesheet" href="css/games.css?v=31">
-    <link rel="stylesheet" href="css/auth.css?v=40">
+    <link rel="stylesheet" href="css/auth.css?v=42">
     <link rel="stylesheet" href="css/dashboard.css?v=33">
     <link rel="stylesheet" href="css/faculty-flashcard.css?v=2">
 
@@ -35,12 +35,9 @@
                 var savedTheme = localStorage.getItem('MSOT_THEME') || 'lavender';
                 document.documentElement.setAttribute('data-theme', savedTheme);
 
-                var s = localStorage.getItem('MSOT_LEARN_AUTH_SESSION_V1') || sessionStorage.getItem('MSOT_LEARN_AUTH_SESSION_V1');
-                if (s) {
-                    var parsed = JSON.parse(s);
-                    if (parsed && !parsed.isDemo && parsed.email) {
-                        document.documentElement.classList.add('has-session');
-                    }
+                var curHash = (window.location.hash || '').toLowerCase();
+                if (curHash !== '#/login' && curHash !== '#/signup') {
+                    document.documentElement.classList.add('has-session');
                 }
             } catch(e) {}
         })();
@@ -421,17 +418,17 @@
             </div>
 
             <nav class="main-nav" id="mainNav">
-                <a href="#/gates"     class="nav-link active" data-section="heroSection"    onclick="window.switchSection('heroSection', true); return false;">GATEWAY</a>
-                <a href="#/dashboard" class="nav-link"        data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); return false;">DASHBOARD</a>
-                <a href="#/arcade"    class="nav-link"        data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); return false;">ARCADE (17)</a>
-                <a href="#/daily"     class="nav-link"        data-section="dailySection"   onclick="window.switchSection('dailySection', true); return false;">DAILY TRIAL</a>
-                <a href="#/assignments" class="nav-link"      data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); return false;">WEEKEND LAB</a>
-                <a href="#/leagues"   class="nav-link"        data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); return false;">LEAGUES</a>
-                <a href="#/battle"    class="nav-link"        data-section="battleSection"  onclick="window.switchSection('battleSection', true); return false;">BATTLE</a>
-                <a href="#/faculty"   class="nav-link"        data-section="facultySection" data-nav-role="FACULTY" style="display: none;" onclick="window.switchSection('facultySection', true); return false;">FACULTY</a>
-                <a href="#/admin"     class="nav-link"        data-section="adminSection"   data-nav-role="ADMIN"   style="display: none;" onclick="window.switchSection('adminSection', true); return false;">ADMIN</a>
-                <a href="#/about"     class="nav-link"        data-section="aboutSection"   onclick="window.switchSection('aboutSection', true); return false;">ABOUT</a>
-                <a href="#/profile"   class="nav-link"        data-section="profileSection" onclick="window.switchSection('profileSection', true); return false;">PROFILE</a>
+                <a href="#/gates"     class="nav-link active" data-section="heroSection"    onclick="window.switchSection('heroSection', true);">GATEWAY</a>
+                <a href="#/dashboard" class="nav-link"        data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true);">DASHBOARD</a>
+                <a href="#/arcade"    class="nav-link"        data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true);">ARCADE (17)</a>
+                <a href="#/daily"     class="nav-link"        data-section="dailySection"   onclick="window.switchSection('dailySection', true);">DAILY TRIAL</a>
+                <a href="#/assignments" class="nav-link"      data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true);">WEEKEND LAB</a>
+                <a href="#/leagues"   class="nav-link"        data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true);">LEAGUES</a>
+                <a href="#/battle"    class="nav-link"        data-section="battleSection"  onclick="window.switchSection('battleSection', true);">BATTLE</a>
+                <a href="#/faculty"   class="nav-link"        data-section="facultySection" data-nav-role="FACULTY" style="display: none;" onclick="window.switchSection('facultySection', true);">FACULTY</a>
+                <a href="#/admin"     class="nav-link"        data-section="adminSection"   data-nav-role="ADMIN"   style="display: none;" onclick="window.switchSection('adminSection', true);">ADMIN</a>
+                <a href="#/about"     class="nav-link"        data-section="aboutSection"   onclick="window.switchSection('aboutSection', true);">ABOUT</a>
+                <a href="#/profile"   class="nav-link"        data-section="profileSection" onclick="window.switchSection('profileSection', true);">PROFILE</a>
             </nav>
 
             <div class="header-hud">
@@ -492,17 +489,17 @@
                 <button type="button" class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">✕</button>
             </div>
             <div class="mobile-nav-links">
-                <a href="#/gates"     class="mobile-nav-link active" data-section="heroSection"    onclick="window.switchSection('heroSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⛩️ GATEWAY</a>
-                <a href="#/dashboard" class="mobile-nav-link"        data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📊 DASHBOARD</a>
-                <a href="#/arcade"    class="mobile-nav-link" data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎮 ARCADE (17 GAMES)</a>
-                <a href="#/daily"     class="mobile-nav-link" data-section="dailySection"   onclick="window.switchSection('dailySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⚡ DAILY TRIAL</a>
-                <a href="#/assignments" class="mobile-nav-link" data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">💻 WEEKEND LAB & COMPILER</a>
-                <a href="#/leagues"   class="mobile-nav-link" data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🏆 LEAGUES</a>
-                <a href="#/battle"    class="mobile-nav-link" data-section="battleSection"  onclick="window.switchSection('battleSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⚔️ BATTLE</a>
-                <a href="#/faculty"   class="mobile-nav-link" data-section="facultySection" data-nav-role="FACULTY" style="display: none;" onclick="window.switchSection('facultySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎓 FACULTY DASHBOARD</a>
-                <a href="#/admin"     class="mobile-nav-link" data-section="adminSection"   data-nav-role="ADMIN"   style="display: none;" onclick="window.switchSection('adminSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🛡️ ADMIN CONSOLE</a>
-                <a href="#/about"     class="mobile-nav-link" data-section="aboutSection"   onclick="window.switchSection('aboutSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📖 ABOUT ACADEMY</a>
-                <a href="#/profile"   class="mobile-nav-link" data-section="profileSection" onclick="window.switchSection('profileSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">👤 CADET PROFILE</a>
+                <a href="#/gates"     class="mobile-nav-link active" data-section="heroSection"    onclick="window.switchSection('heroSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">⛩️ GATEWAY</a>
+                <a href="#/dashboard" class="mobile-nav-link"        data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">📊 DASHBOARD</a>
+                <a href="#/arcade"    class="mobile-nav-link" data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">🎮 ARCADE (17 GAMES)</a>
+                <a href="#/daily"     class="mobile-nav-link" data-section="dailySection"   onclick="window.switchSection('dailySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">⚡ DAILY TRIAL</a>
+                <a href="#/assignments" class="mobile-nav-link" data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">💻 WEEKEND LAB & COMPILER</a>
+                <a href="#/leagues"   class="mobile-nav-link" data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">🏆 LEAGUES</a>
+                <a href="#/battle"    class="mobile-nav-link" data-section="battleSection"  onclick="window.switchSection('battleSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">⚔️ BATTLE</a>
+                <a href="#/faculty"   class="mobile-nav-link" data-section="facultySection" data-nav-role="FACULTY" style="display: none;" onclick="window.switchSection('facultySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">🎓 FACULTY DASHBOARD</a>
+                <a href="#/admin"     class="mobile-nav-link" data-section="adminSection"   data-nav-role="ADMIN"   style="display: none;" onclick="window.switchSection('adminSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">🛡️ ADMIN CONSOLE</a>
+                <a href="#/about"     class="mobile-nav-link" data-section="aboutSection"   onclick="window.switchSection('aboutSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">📖 ABOUT ACADEMY</a>
+                <a href="#/profile"   class="mobile-nav-link" data-section="profileSection" onclick="window.switchSection('profileSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open');">👤 CADET PROFILE</a>
             </div>
             <div style="padding-top: 15px; border-top: 1px solid rgba(255,42,75,0.25); margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
                 <button type="button" class="how-xp-btn" style="width: 100%; justify-content: center; padding: 10px; font-size: 11px;" onclick="window.msotPlatform && window.msotPlatform.openXPExplainedModal(); document.getElementById('mobileNavDrawer')?.classList.remove('open');">💡 HOW XP INCREASES (GUIDE)</button>
@@ -531,11 +528,11 @@
                 <div class="gaming-top-bar">
                     <div class="gaming-top-nav-links">
                         <span class="top-pill-link" style="border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.1);">⛩️ 未来工科大学 // MIRAI GATEWAY</span>
-                        <a href="#/about" class="top-pill-link" onclick="window.switchSection('aboutSection', true); return false;">ABOUT THE ACADEMY</a>
-                        <a href="#/profile" class="top-pill-link" onclick="window.switchSection('profileSection', true); return false;">CADET DOSSIER</a>
-                        <a href="#/arcade" class="top-pill-link" onclick="window.switchSection('arcadeSection', true); return false;">17 SACRED TRIALS</a>
-                        <a href="#/assignments" class="top-pill-link" onclick="window.switchSection('assignmentsSection', true); return false;">WEEKEND LAB</a>
-                        <a href="#/battle" class="top-pill-link" onclick="window.switchSection('battleSection', true); return false;">BATTLE ARENA</a>
+                        <a href="#/about" class="top-pill-link" onclick="window.switchSection('aboutSection', true);">ABOUT THE ACADEMY</a>
+                        <a href="#/profile" class="top-pill-link" onclick="window.switchSection('profileSection', true);">CADET DOSSIER</a>
+                        <a href="#/arcade" class="top-pill-link" onclick="window.switchSection('arcadeSection', true);">17 SACRED TRIALS</a>
+                        <a href="#/assignments" class="top-pill-link" onclick="window.switchSection('assignmentsSection', true);">WEEKEND LAB</a>
+                        <a href="#/battle" class="top-pill-link" onclick="window.switchSection('battleSection', true);">BATTLE ARENA</a>
                     </div>
                     <button type="button" class="top-action-btn-dash" onclick="window.switchSection('dashboardSection', true)">
                         <span>📊 OPEN DASHBOARD ➔</span>
@@ -919,9 +916,48 @@
     <!-- Live XP Gain Toast Notification Container -->
     <div class="xp-toast-container" id="xpToastContainer"></div>
 
-    <!-- Earliest possible switchSection definition — guarantees nav works even if external scripts fail -->
+    <!-- Earliest possible switchSection & Hash Router definition — guarantees nav & routes work under all conditions -->
     <script>
+        var SECTION_TO_HASH_MAP = {
+            'heroSection': '#/gates',
+            'dashboardSection': '#/dashboard',
+            'arcadeSection': '#/arcade',
+            'dailySection': '#/daily',
+            'assignmentsSection': '#/assignments',
+            'leaguesSection': '#/leagues',
+            'battleSection': '#/battle',
+            'facultySection': '#/faculty',
+            'adminSection': '#/admin',
+            'aboutSection': '#/about',
+            'profileSection': '#/profile'
+        };
+
+        var HASH_TO_SECTION_MAP = {
+            '#/gates': 'heroSection',
+            '#/dashboard': 'dashboardSection',
+            '#/home': 'dashboardSection',
+            '#/arcade': 'arcadeSection',
+            '#/daily': 'dailySection',
+            '#/assignments': 'assignmentsSection',
+            '#/assignment': 'assignmentsSection',
+            '#/compiler': 'assignmentsSection',
+            '#/leagues': 'leaguesSection',
+            '#/league': 'leaguesSection',
+            '#/guild': 'leaguesSection',
+            '#/guilds': 'leaguesSection',
+            '#/battles': 'leaguesSection',
+            '#/rankings': 'leaguesSection',
+            '#/battle': 'battleSection',
+            '#/guild-war': 'battleSection',
+            '#/faculty': 'facultySection',
+            '#/admin': 'adminSection',
+            '#/xp-rules': 'adminSection',
+            '#/about': 'aboutSection',
+            '#/profile': 'profileSection'
+        };
+
         window.switchSection = function(sectionId, updateHash) {
+            if (updateHash === undefined) updateHash = true;
             if (!sectionId) sectionId = 'heroSection';
 
             // Role guard
@@ -942,35 +978,42 @@
             document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(function(l){
                 l.classList.remove('active');
             });
+
             var sec = document.getElementById(sectionId);
             if (sec) {
                 sec.classList.add('active');
                 sec.style.display = (sectionId === 'heroSection') ? 'flex' : 'block';
-                window.scrollTo({top:0,behavior:'smooth'});
+                if (typeof window.scrollTo === 'function') {
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                }
 
-                var p = window.msotPlatform || window.miraiPlatform;
-                if (p) {
-                    if (sectionId === 'dashboardSection') p.renderDashboard && p.renderDashboard();
-                    else if (sectionId === 'arcadeSection') p.renderArcade && p.renderArcade();
-                    else if (sectionId === 'dailySection') p.renderDailyQuizCard && p.renderDailyQuizCard();
-                    else if (sectionId === 'assignmentsSection') p.renderAssignments && p.renderAssignments();
-                    else if (sectionId === 'battleSection') {
-                        if (window.msotBattle && window.msotBattle.renderBattleArena) window.msotBattle.renderBattleArena();
-                        else if (p.renderTeamBattles) p.renderTeamBattles();
+                try {
+                    var p = window.msotPlatform || window.miraiPlatform;
+                    if (p) {
+                        if (sectionId === 'dashboardSection') p.renderDashboard && p.renderDashboard();
+                        else if (sectionId === 'arcadeSection') p.renderArcade && p.renderArcade();
+                        else if (sectionId === 'dailySection') p.renderDailyQuizCard && p.renderDailyQuizCard();
+                        else if (sectionId === 'assignmentsSection') p.renderAssignments && p.renderAssignments();
+                        else if (sectionId === 'battleSection') {
+                            if (window.msotBattle && window.msotBattle.renderBattleArena) window.msotBattle.renderBattleArena();
+                            else if (p.renderTeamBattles) p.renderTeamBattles();
+                        }
+                        else if (sectionId === 'leaguesSection') {
+                            p.renderLeagues && p.renderLeagues();
+                            p.renderFairnessBoards && p.renderFairnessBoards();
+                            p.renderQuests && p.renderQuests();
+                        }
+                        else if (sectionId === 'aboutSection') p.renderAboutSection && p.renderAboutSection();
+                        else if (sectionId === 'facultySection') p.renderFacultyDashboard && p.renderFacultyDashboard();
+                        else if (sectionId === 'adminSection') p.renderAdminRules && p.renderAdminRules();
+                        else if (sectionId === 'profileSection') {
+                            p.renderStudentProfile && p.renderStudentProfile();
+                            p.renderBadgesVault && p.renderBadgesVault();
+                            p.renderXPLedger && p.renderXPLedger();
+                        }
                     }
-                    else if (sectionId === 'leaguesSection') {
-                        p.renderLeagues && p.renderLeagues();
-                        p.renderFairnessBoards && p.renderFairnessBoards();
-                        p.renderQuests && p.renderQuests();
-                    }
-                    else if (sectionId === 'aboutSection') p.renderAboutSection && p.renderAboutSection();
-                    else if (sectionId === 'facultySection') p.renderFacultyDashboard && p.renderFacultyDashboard();
-                    else if (sectionId === 'adminSection') p.renderAdminRules && p.renderAdminRules();
-                    else if (sectionId === 'profileSection') {
-                        p.renderStudentProfile && p.renderStudentProfile();
-                        p.renderBadgesVault && p.renderBadgesVault();
-                        p.renderXPLedger && p.renderXPLedger();
-                    }
+                } catch(renderErr) {
+                    console.warn("Early render note:", renderErr);
                 }
 
                 var heroWrapper = document.getElementById('heroGateWrapper');
@@ -987,11 +1030,43 @@
                     el.classList.add('in-view');
                 });
             }
+
             var lnk = document.querySelector('.nav-link[data-section="'+sectionId+'"]');
             if (lnk) lnk.classList.add('active');
             var mobLnk = document.querySelector('.mobile-nav-link[data-section="'+sectionId+'"]');
             if (mobLnk) mobLnk.classList.add('active');
+
+            // Sync URL hash
+            if (updateHash && SECTION_TO_HASH_MAP[sectionId]) {
+                var targetHash = SECTION_TO_HASH_MAP[sectionId];
+                if ((window.location.hash || '').toLowerCase() !== targetHash) {
+                    window.location.hash = targetHash;
+                }
+            }
         };
+
+        function routeFromHashEarly() {
+            var raw = (window.location.hash || '').toLowerCase().split('?')[0];
+            if (!raw || raw === '#' || raw === '#/') raw = '#/gates';
+            if (raw === '#/login' || raw === '#/signup') {
+                if (window.msotAuth && window.msotAuth.showAuthScreen) {
+                    window.msotAuth.showAuthScreen(true);
+                }
+                return;
+            }
+            if (HASH_TO_SECTION_MAP[raw]) {
+                window.switchSection(HASH_TO_SECTION_MAP[raw], false);
+            }
+        }
+
+        window.addEventListener('hashchange', routeFromHashEarly);
+        window.addEventListener('popstate', routeFromHashEarly);
+
+        // Pre-run on initial load if hash is present
+        if (window.location.hash && window.location.hash !== '#/gates') {
+            routeFromHashEarly();
+        }
+    </script>
 
         // Guaranteed Gate-Opening 3D Animation & Direct Arcade Transition (Cinematic Pace with Page in Background)
         window.openGateAndEnterArcade = function(e) {
@@ -1027,22 +1102,22 @@
     <!-- Framer Motion (v10 UMD) -->
     <script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
 
-    <!-- Application Scripts (v=40 busts any browser/Live Server cache) -->
-    <script src="js/auth.js?v=40"></script>
-    <script src="js/audio.js?v=40"></script>
-    <script src="js/state.js?v=40"></script>
-    <script src="js/games-data.js?v=40"></script>
-    <script src="js/three-viewport.js?v=40"></script>
-    <script src="js/gate-canvas.js?v=40"></script>
-    <script src="js/game-engine.js?v=40"></script>
-    <script src="js/scroll-animations.js?v=40"></script>
-    <script src="js/pixel-grid-trail.js?v=40"></script>
-    <script src="js/guild.js?v=40"></script>
-    <script src="js/rbac.js?v=40"></script>
-    <script src="js/battle.js?v=40"></script>
-    <script src="js/react-league-module.js?v=40"></script>
-    <script src="js/dashboard-service.js?v=40"></script>
-    <script src="js/platform.js?v=40"></script>
-    <script src="js/app.js?v=40"></script>
+    <!-- Application Scripts (v=42 busts any browser/Live Server cache) -->
+    <script src="js/auth.js?v=42"></script>
+    <script src="js/audio.js?v=42"></script>
+    <script src="js/state.js?v=42"></script>
+    <script src="js/games-data.js?v=42"></script>
+    <script src="js/three-viewport.js?v=42"></script>
+    <script src="js/gate-canvas.js?v=42"></script>
+    <script src="js/game-engine.js?v=42"></script>
+    <script src="js/scroll-animations.js?v=42"></script>
+    <script src="js/pixel-grid-trail.js?v=42"></script>
+    <script src="js/guild.js?v=42"></script>
+    <script src="js/rbac.js?v=42"></script>
+    <script src="js/battle.js?v=42"></script>
+    <script src="js/react-league-module.js?v=42"></script>
+    <script src="js/dashboard-service.js?v=42"></script>
+    <script src="js/platform.js?v=42"></script>
+    <script src="js/app.js?v=42"></script>
 </body>
 </html>
