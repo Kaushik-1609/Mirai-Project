@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="css/main.css?v=31">
     <link rel="stylesheet" href="css/hero-gate.css?v=31">
     <link rel="stylesheet" href="css/games.css?v=31">
-    <link rel="stylesheet" href="css/auth.css?v=31">
+    <link rel="stylesheet" href="css/auth.css?v=40">
     <link rel="stylesheet" href="css/dashboard.css?v=33">
     <link rel="stylesheet" href="css/faculty-flashcard.css?v=2">
 
@@ -46,15 +46,18 @@
         })();
     </script>
 </head>
-<body class="auth-locked" data-user-role="STUDENT">
+<body data-user-role="STUDENT">
 
     <!-- Pixel Grid Cursor Trail Canvas (Full-Screen Ambient Grid) -->
     <canvas id="pixel-trail" class="pixel-trail-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
 
-    <section class="auth-screen" id="authScreen" aria-label="MSOT Learn Gateway">
+    <section class="auth-screen hidden" id="authScreen" style="display: none;" aria-label="MSOT Learn Gateway">
         <div class="auth-noise"></div>
         <div class="auth-grid"></div>
         <div class="auth-card">
+            <!-- Close / Dismiss Auth Screen Button -->
+            <button type="button" class="auth-close-btn" id="authCloseBtn" onclick="window.msotAuth && window.msotAuth.showAuthScreen(false)" aria-label="Close Authentication Screen" title="Close / Continue to Platform">✕</button>
+
             <!-- Brand Crest -->
             <div class="auth-brand">
                 <div class="auth-crest">⛩️</div>
@@ -995,17 +998,9 @@
             if (e && e.preventDefault) e.preventDefault();
             if (e && e.stopPropagation) e.stopPropagation();
 
-            // Guard: Cadet MUST be authenticated before entering the game world!
-            if (!window.msotAuth || !window.msotAuth.session) {
-                if (window.miraiAudio && window.miraiAudio.playError) {
-                    window.miraiAudio.playError();
-                }
-                if (window.msotAuth) {
-                    window.msotAuth.showAuthScreen(true);
-                    window.msotAuth.switchAuthTab('signin');
-                }
-                window.location.hash = '#/login';
-                return;
+            // Seamless authentication fallback
+            if ((!window.msotAuth || !window.msotAuth.session) && window.msotAuth && window.msotAuth.ensureDefaultStudentSession) {
+                window.msotAuth.ensureDefaultStudentSession();
             }
 
             try {
@@ -1032,22 +1027,22 @@
     <!-- Framer Motion (v10 UMD) -->
     <script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
 
-    <!-- Application Scripts (v=30 busts any browser/Live Server cache) -->
-    <script src="js/auth.js?v=30"></script>
-    <script src="js/audio.js?v=30"></script>
-    <script src="js/state.js?v=30"></script>
-    <script src="js/games-data.js?v=30"></script>
-    <script src="js/three-viewport.js?v=30"></script>
-    <script src="js/gate-canvas.js?v=30"></script>
-    <script src="js/game-engine.js?v=30"></script>
-    <script src="js/scroll-animations.js?v=30"></script>
-    <script src="js/pixel-grid-trail.js?v=30"></script>
-    <script src="js/guild.js?v=31"></script>
-    <script src="js/rbac.js?v=33"></script>
-    <script src="js/battle.js?v=33"></script>
-    <script src="js/react-league-module.js?v=33"></script>
-    <script src="js/dashboard-service.js?v=35"></script>
-    <script src="js/platform.js?v=35"></script>
-    <script src="js/app.js?v=35"></script>
+    <!-- Application Scripts (v=40 busts any browser/Live Server cache) -->
+    <script src="js/auth.js?v=40"></script>
+    <script src="js/audio.js?v=40"></script>
+    <script src="js/state.js?v=40"></script>
+    <script src="js/games-data.js?v=40"></script>
+    <script src="js/three-viewport.js?v=40"></script>
+    <script src="js/gate-canvas.js?v=40"></script>
+    <script src="js/game-engine.js?v=40"></script>
+    <script src="js/scroll-animations.js?v=40"></script>
+    <script src="js/pixel-grid-trail.js?v=40"></script>
+    <script src="js/guild.js?v=40"></script>
+    <script src="js/rbac.js?v=40"></script>
+    <script src="js/battle.js?v=40"></script>
+    <script src="js/react-league-module.js?v=40"></script>
+    <script src="js/dashboard-service.js?v=40"></script>
+    <script src="js/platform.js?v=40"></script>
+    <script src="js/app.js?v=40"></script>
 </body>
 </html>

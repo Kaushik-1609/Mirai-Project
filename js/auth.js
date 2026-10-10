@@ -286,11 +286,6 @@
             const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
             if (!raw) return null;
             const sess = JSON.parse(raw);
-            // Invalidate legacy auto-demo sessions so every cadet is required to authenticate
-            if (sess && sess.isDemo) {
-                clearSession();
-                return null;
-            }
             if (sess) {
                 // Ensure role is consistent without overriding student/faculty roles
                 if (!sess.role) {
@@ -305,6 +300,23 @@
         }
     }
 
+    function ensureDefaultStudentSession() {
+        let sess = getSession();
+        if (!sess) {
+            sess = {
+                ...BUILTIN_USERS['student@msot.edu'],
+                loginAt: new Date().toISOString()
+            };
+            setSession(sess, true);
+        }
+        activeSession = sess;
+        if (window.msotAuth) {
+            window.msotAuth.session = sess;
+        }
+        applySessionToUI(sess);
+        return sess;
+    }
+
     function setSession(session, remember = true) {
         try {
             const str = JSON.stringify(session);
@@ -315,7 +327,7 @@
                 sessionStorage.setItem(SESSION_KEY, str);
                 localStorage.removeItem(SESSION_KEY);
             }
-            if (session && !session.isDemo) {
+            if (session) {
                 document.documentElement.classList.add('has-session');
             }
         } catch (e) {}
@@ -333,9 +345,10 @@
         const screen = $('authScreen');
         if (screen) {
             screen.classList.toggle('hidden', !show);
+            screen.classList.toggle('active', Boolean(show));
             screen.style.display = show ? 'flex' : 'none';
         }
-        document.body.classList.toggle('auth-locked', show);
+        document.body.classList.toggle('auth-locked', Boolean(show));
         if (show) {
             document.documentElement.classList.remove('has-session');
         } else {
@@ -1042,10 +1055,12 @@
         showAuthScreen,
         selectLoginRole,
         showPortalSelector,
+        ensureDefaultStudentSession,
         get currentLoginRole() { return currentLoginRole; },
         set currentLoginRole(r) { currentLoginRole = (r || 'STUDENT').toUpperCase(); },
         isUsernameTaken,
-        session: getSession(),
+        get session() { return activeSession || getSession(); },
+        set session(s) { activeSession = s; },
         supabaseClient
     };
 
@@ -1094,21 +1109,35 @@
             activeSession = getSession();
         }
 
-        // 3. User MUST be authenticated to access the platform!
+        const curHash = (window.location.hash || '').toLowerCase();
+        const isAuthRoute = (curHash === '#/login' || curHash === '#/signup');
+
+        // 3. User session initialization & seamless access
         if (activeSession) {
             applySessionToUI(activeSession);
-        } else {
-            // NO ACTIVE SESSION: Lock application and require cadet sign in or sign up!
-            clearSession();
-            if (window.msotAuth) window.msotAuth.session = null;
-            showAuthScreen(true);
-            const curHash = (window.location.hash || '').toLowerCase();
-            if (curHash === '#/signup') {
-                switchAuthTab('signup');
+            if (isAuthRoute) {
+                showAuthScreen(true);
+                if (curHash === '#/signup') switchAuthTab('signup');
+                else {
+                    switchAuthTab('signin');
+                    showPortalSelector();
+                }
             } else {
-                switchAuthTab('signin');
-                showPortalSelector();
-                window.location.hash = '#/login';
+                showAuthScreen(false);
+            }
+        } else {
+            if (isAuthRoute) {
+                showAuthScreen(true);
+                if (curHash === '#/signup') {
+                    switchAuthTab('signup');
+                } else {
+                    switchAuthTab('signin');
+                    showPortalSelector();
+                }
+            } else {
+                // Seamlessly provide default student cadet session so platform sections are interactive
+                activeSession = ensureDefaultStudentSession();
+                showAuthScreen(false);
             }
         }
 

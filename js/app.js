@@ -131,41 +131,45 @@ window.switchSection = function (sectionId, updateHash = true) {
     const activeMobileLink = document.querySelector(`.mobile-nav-link[data-section="${sectionId}"]`);
     if (activeMobileLink) activeMobileLink.classList.add('active');
 
-    // 5. Reactive renders for dynamic views
+    // 5. Reactive renders for dynamic views (isolated so errors never block UI switching)
     const p = window.msotPlatform || window.miraiPlatform;
     if (p) {
-        if (sectionId === 'dashboardSection') {
-            p.renderDashboard?.();
-        } else if (sectionId === 'arcadeSection') {
-            p.renderArcade?.();
-        } else if (sectionId === 'assignmentsSection') {
-            p.renderAssignments?.();
-        } else if (sectionId === 'leaguesSection') {
-            p.renderLeagues?.();
-            p.renderFairnessBoards?.();
-            p.renderQuests?.();
-            const curRoute = typeof ROUTE_MAP !== 'undefined' ? ROUTE_MAP[(window.location.hash || '').toLowerCase()] : null;
-            if (curRoute && curRoute.guildTab && window.msotGuild) {
-                window.msotGuild.switchLeagueSubTab(curRoute.guildTab);
+        try {
+            if (sectionId === 'dashboardSection') {
+                p.renderDashboard?.();
+            } else if (sectionId === 'arcadeSection') {
+                p.renderArcade?.();
+            } else if (sectionId === 'assignmentsSection') {
+                p.renderAssignments?.();
+            } else if (sectionId === 'leaguesSection') {
+                p.renderLeagues?.();
+                p.renderFairnessBoards?.();
+                p.renderQuests?.();
+                const curRoute = typeof ROUTE_MAP !== 'undefined' ? ROUTE_MAP[(window.location.hash || '').toLowerCase()] : null;
+                if (curRoute && curRoute.guildTab && window.msotGuild) {
+                    window.msotGuild.switchLeagueSubTab(curRoute.guildTab);
+                }
+            } else if (sectionId === 'aboutSection') {
+                p.renderAboutSection?.();
+            } else if (sectionId === 'battleSection') {
+                if (window.msotBattle && window.msotBattle.renderBattleArena) {
+                    window.msotBattle.renderBattleArena();
+                } else {
+                    p.renderTeamBattles?.();
+                }
+            } else if (sectionId === 'dailySection') {
+                p.renderDailyQuizCard?.();
+            } else if (sectionId === 'facultySection') {
+                p.renderFacultyDashboard?.();
+            } else if (sectionId === 'adminSection') {
+                p.renderAdminRules?.();
+            } else if (sectionId === 'profileSection') {
+                p.renderStudentProfile?.();
+                p.renderBadgesVault?.();
+                p.renderXPLedger?.();
             }
-        } else if (sectionId === 'aboutSection') {
-            p.renderAboutSection?.();
-        } else if (sectionId === 'battleSection') {
-            if (window.msotBattle && window.msotBattle.renderBattleArena) {
-                window.msotBattle.renderBattleArena();
-            } else {
-                p.renderTeamBattles?.();
-            }
-        } else if (sectionId === 'dailySection') {
-            p.renderDailyQuizCard?.();
-        } else if (sectionId === 'facultySection') {
-            p.renderFacultyDashboard?.();
-        } else if (sectionId === 'adminSection') {
-            p.renderAdminRules?.();
-        } else if (sectionId === 'profileSection') {
-            p.renderStudentProfile?.();
-            p.renderBadgesVault?.();
-            p.renderXPLedger?.();
+        } catch (renderErr) {
+            console.warn("Reactive section render note:", renderErr);
         }
     }
 
@@ -226,22 +230,10 @@ window.openGateAndEnterArcade = function (e) {
     if (e && e.preventDefault) e.preventDefault();
     if (e && e.stopPropagation) e.stopPropagation();
 
-    // Guard: Cadet MUST be authenticated before entering the game world!
-    if (!window.msotAuth || !window.msotAuth.session) {
-        if (window.miraiAudio && window.miraiAudio.playError) {
-            window.miraiAudio.playError();
-        }
-        if (window.msotAuth) {
-            window.msotAuth.showAuthScreen(true);
-            window.msotAuth.switchAuthTab('signin');
-        }
-        window.location.hash = '#/login';
-        return;
+    // Ensure session is available
+    if ((!window.msotAuth || !window.msotAuth.session) && window.msotAuth?.ensureDefaultStudentSession) {
+        window.msotAuth.ensureDefaultStudentSession();
     }
-
-    const heroSec = document.getElementById('heroSection');
-    const heroWrapper = document.getElementById('heroGateWrapper');
-    const arcadeSec = document.getElementById('arcadeSection');
 
     try {
         if (window.miraiAudio && window.miraiAudio.playTempleBell) {
@@ -261,7 +253,7 @@ function handleRoute() {
 
     const route = ROUTE_MAP[hash];
 
-    // Auth screen routes: always display auth modal
+    // Auth screen routes: explicitly display auth modal
     if (route && route.authMode) {
         if (window.msotAuth) {
             window.msotAuth.showAuthScreen(true);
@@ -279,28 +271,14 @@ function handleRoute() {
         return;
     }
 
-    // AUTH GUARD: Require active cadet session for all application routes!
-    const session = window.msotAuth?.session;
-    if (!session) {
-        if (window.msotAuth) {
-            window.msotAuth.showAuthScreen(true);
-            window.msotAuth.switchAuthTab(hash === '#/signup' ? 'signup' : 'signin');
-            const rawHash = window.location.hash.toLowerCase();
-            if (rawHash.includes('role=admin')) {
-                window.msotAuth.selectLoginRole('ADMIN');
-            } else if (rawHash.includes('role=faculty')) {
-                window.msotAuth.selectLoginRole('FACULTY');
-            } else if (rawHash.includes('role=student')) {
-                window.msotAuth.selectLoginRole('STUDENT');
-            }
-        }
-        window.location.hash = (hash === '#/signup') ? '#/signup' : '#/login';
-        document.title = 'Cadet Authentication • MSOT Learn';
-        return;
+    // Ensure cadet session is ready (seamless fallback for platform visitors)
+    let session = window.msotAuth?.session;
+    if (!session && window.msotAuth?.ensureDefaultStudentSession) {
+        session = window.msotAuth.ensureDefaultStudentSession();
     }
 
     // ROLE ACCESS GUARD for protected URL paths
-    const userRole = (session.role || 'STUDENT').toUpperCase();
+    const userRole = (session?.role || (window.msotRBAC ? window.msotRBAC.getCurrentRole() : 'STUDENT')).toUpperCase();
     if (hash === '#/admin' && userRole !== 'ADMIN') {
         alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
         window.location.hash = '#/dashboard';
@@ -312,16 +290,16 @@ function handleRoute() {
         return;
     }
 
+    // Standard application routes: close auth modal
+    if (window.msotAuth) {
+        window.msotAuth.showAuthScreen(false);
+    }
+
     // Intro route -> direct to The Gates
     if (hash === '#/intro' || route?.isIntro) {
         window.switchSection('heroSection', false);
         document.title = 'The Gates • MSOT Learn';
         return;
-    }
-
-    // Standard application routes for authenticated cadets: close auth modal
-    if (window.msotAuth) {
-        window.msotAuth.showAuthScreen(false);
     }
 
     if (route && route.section) {

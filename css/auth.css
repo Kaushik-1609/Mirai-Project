@@ -8,7 +8,7 @@
     position: fixed;
     inset: 0;
     z-index: 99999;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     padding: 24px 16px;
@@ -16,13 +16,22 @@
                 radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.06), transparent 45%),
                 #07080e;
     overflow-y: auto;
-    transition: opacity 0.4s ease, visibility 0.4s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.auth-screen.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
+.auth-screen.active {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+.auth-screen.hidden,
+.auth-screen:not(.active) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 /* Background Animated Grid & Cyber Noise */
@@ -518,25 +527,63 @@
     letter-spacing: 1.2px;
 }
 
-/* Locked state prevents scrolling and hides page underneath */
+/* Close / Dismiss Auth Button */
+.auth-close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #e2e8f0;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.auth-close-btn:hover {
+    background: rgba(244, 63, 94, 0.25);
+    border-color: #f43f5e;
+    color: #fff;
+    transform: scale(1.08);
+}
+
+/* Locked state prevents scrolling only when auth screen is actively visible */
 body.auth-locked {
     overflow: hidden;
 }
 
-body.auth-locked > :not(#authScreen) {
-    filter: blur(8px);
-    pointer-events: none;
+body.auth-locked #authScreen.active {
+    display: flex !important;
 }
 
-html.has-session .auth-screen {
+/* Ensure header, main, and nav are always interactive */
+body > header,
+body > main,
+.site-header,
+.main-nav,
+.nav-link,
+.mobile-nav-link,
+.app-section {
+    pointer-events: auto !important;
+}
+
+html.has-session .auth-screen:not(.active) {
     display: none !important;
 }
 
-html.has-session body.auth-locked {
+html.has-session body {
     overflow: auto;
 }
 
-html.has-session body.auth-locked > :not(#authScreen) {
+html.has-session body > :not(#authScreen) {
     filter: none;
     pointer-events: auto;
 }
