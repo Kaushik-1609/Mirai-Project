@@ -762,8 +762,33 @@
                 const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
                 if (stored) {
                     const parsed = JSON.parse(stored);
+                    const isCustomUrl = (url) => Boolean(url && typeof url === 'string' && (url.startsWith('data:') || url.startsWith('http') || url.startsWith('blob:') || url.startsWith('/storage')) && !url.includes('cadet_') && !url.includes('gateway_') && !url.includes('default'));
+
                     for (const [em, acc] of Object.entries(parsed)) {
                         const emailKey = em.toLowerCase();
+                        let customPhoto = null;
+                        if (isCustomUrl(acc.customPhotoUrl)) customPhoto = acc.customPhotoUrl;
+                        else if (isCustomUrl(acc.profile_pic)) customPhoto = acc.profile_pic;
+                        else if (isCustomUrl(acc.profilePic)) customPhoto = acc.profilePic;
+                        else if (isCustomUrl(acc.avatar_url)) customPhoto = acc.avatar_url;
+                        else if (isCustomUrl(acc.avatar)) customPhoto = acc.avatar;
+
+                        try {
+                            const userStoreKey = `MSOT_STUDENT_PROFILE_${emailKey.replace(/[^a-z0-9]/g, '_')}`;
+                            const localProf = JSON.parse(localStorage.getItem(userStoreKey) || 'null');
+                            if (localProf) {
+                                if (isCustomUrl(localProf.customPhotoUrl)) customPhoto = localProf.customPhotoUrl;
+                                else if (isCustomUrl(localProf.profilePic)) customPhoto = localProf.profilePic;
+                                else if (isCustomUrl(localProf.avatar_url)) customPhoto = localProf.avatar_url;
+                                else if (isCustomUrl(localProf.avatar)) customPhoto = localProf.avatar;
+                                else if (localProf.customPhotoUrl === null || localProf.customPhotoUrl === '') customPhoto = null;
+                            }
+                        } catch(e) {}
+
+                        if (acc.customPhotoUrl === null || acc.customPhotoUrl === '') {
+                            customPhoto = null;
+                        }
+
                         if (!builtin[emailKey]) {
                             builtin[emailKey] = {
                                 id: acc.id || `usr_${Date.now()}`,
@@ -778,7 +803,9 @@
                                 rejection_reason: acc.rejection_reason || '',
                                 approved_at: acc.approved_at || null,
                                 approved_by: acc.approved_by || null,
-                                avatar: acc.avatar || '⚔️',
+                                avatar: customPhoto || acc.avatar || '⚔️',
+                                profilePic: customPhoto || 'assets/images/cadets/cadet_aarav.jpg',
+                                customPhotoUrl: customPhoto || null,
                                 branch: acc.branch || 'Computer Science & Engineering (CSE)',
                                 section: acc.section || 'Section Alpha',
                                 semester: acc.semester || 'Semester 4',
@@ -803,6 +830,14 @@
                             if (acc.approval_status) builtin[emailKey].approval_status = acc.approval_status;
                             if (acc.rejection_reason !== undefined) builtin[emailKey].rejection_reason = acc.rejection_reason;
                             if (acc.lastActive) builtin[emailKey].lastActive = acc.lastActive;
+                            if (customPhoto) {
+                                builtin[emailKey].profilePic = customPhoto;
+                                builtin[emailKey].customPhotoUrl = customPhoto;
+                                builtin[emailKey].avatar = customPhoto;
+                            } else {
+                                delete builtin[emailKey].customPhotoUrl;
+                                builtin[emailKey].profilePic = 'assets/images/cadets/cadet_aarav.jpg';
+                            }
                         }
                     }
                 }
@@ -812,6 +847,14 @@
             const sess = this.getCurrentUser();
             if (sess && sess.email) {
                 const sKey = sess.email.toLowerCase();
+                const isCustomUrl = (url) => Boolean(url && typeof url === 'string' && (url.startsWith('data:') || url.startsWith('http') || url.startsWith('blob:') || url.startsWith('/storage')) && !url.includes('cadet_') && !url.includes('gateway_') && !url.includes('default'));
+                let sessPhoto = null;
+                if (isCustomUrl(sess.customPhotoUrl)) sessPhoto = sess.customPhotoUrl;
+                else if (isCustomUrl(sess.profile_pic)) sessPhoto = sess.profile_pic;
+                else if (isCustomUrl(sess.profilePic)) sessPhoto = sess.profilePic;
+                else if (isCustomUrl(sess.avatar_url)) sessPhoto = sess.avatar_url;
+                else if (isCustomUrl(sess.avatar)) sessPhoto = sess.avatar;
+
                 if (!builtin[sKey]) {
                     builtin[sKey] = {
                         id: sess.id || `usr_curr_${Date.now()}`,
@@ -822,7 +865,9 @@
                         studentId: sess.studentId || 'MSOT-CADET',
                         role: (sess.role || 'STUDENT').toUpperCase(),
                         status: 'ACTIVE',
-                        avatar: sess.avatar || '⚔️',
+                        avatar: sessPhoto || sess.avatar || '⚔️',
+                        profilePic: sessPhoto || 'assets/images/cadets/cadet_aarav.jpg',
+                        customPhotoUrl: sessPhoto || null,
                         branch: sess.branch || 'Computer Science & Engineering (CSE)',
                         section: sess.section || 'Section Alpha',
                         semester: sess.semester || 'Semester 1',
@@ -834,7 +879,6 @@
                         attendanceNum: sess.attendanceNum || 94,
                         attendancePresent: 38,
                         attendanceTotal: 40,
-                        profilePic: sess.profilePic || 'assets/images/cadets/cadet_aarav.jpg',
                         lastActive: new Date().toISOString(),
                         registeredAt: sess.registeredAt || new Date().toISOString()
                     };
@@ -842,6 +886,14 @@
                     if (sess.name) builtin[sKey].name = sess.name;
                     if (sess.role) builtin[sKey].role = sess.role.toUpperCase();
                     if (sess.studentId) builtin[sKey].studentId = sess.studentId;
+                    if (sessPhoto) {
+                        builtin[sKey].profilePic = sessPhoto;
+                        builtin[sKey].customPhotoUrl = sessPhoto;
+                        builtin[sKey].avatar = sessPhoto;
+                    } else if (sess.customPhotoUrl === null || sess.customPhotoUrl === '') {
+                        delete builtin[sKey].customPhotoUrl;
+                        builtin[sKey].profilePic = 'assets/images/cadets/cadet_aarav.jpg';
+                    }
                 }
             }
 
@@ -918,6 +970,136 @@
                 this.logAudit('USER_ROLE_UPDATED', 'user', cleanEmail, { new_role: newRole });
                 return true;
             } catch (e) {
+                return false;
+            }
+        }
+
+        updateUserPhoto(email, photoUrl) {
+            const cleanEmail = (email || '').toLowerCase().trim();
+            if (!cleanEmail) return false;
+
+            const sessionEmail = (window.msotAuth?.session?.email || '').toLowerCase().trim();
+            const isAdmin = this.isAdmin();
+
+            // Security constraint: Students can only change their own photo; Admin can manage all
+            if (!isAdmin && sessionEmail !== cleanEmail) {
+                alert('⚠️ Access Denied: You are only authorized to modify your own profile photo.');
+                return false;
+            }
+
+            try {
+                const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+                const accounts = stored ? JSON.parse(stored) : {};
+                if (!accounts[cleanEmail]) {
+                    const existing = this.getUserByEmail(cleanEmail);
+                    accounts[cleanEmail] = existing ? { ...existing } : { email: cleanEmail, name: email.split('@')[0] };
+                }
+
+                if (photoUrl) {
+                    accounts[cleanEmail].customPhotoUrl = photoUrl;
+                    accounts[cleanEmail].profilePic = photoUrl;
+                    accounts[cleanEmail].avatar_url = photoUrl;
+                    accounts[cleanEmail].avatar = photoUrl;
+                } else {
+                    delete accounts[cleanEmail].customPhotoUrl;
+                    delete accounts[cleanEmail].profilePic;
+                    delete accounts[cleanEmail].avatar_url;
+                    // Revert to default AI avatar
+                    accounts[cleanEmail].profilePic = 'assets/images/cadets/cadet_aarav.jpg';
+                    accounts[cleanEmail].avatar = accounts[cleanEmail].defaultAvatar || '⚔️';
+                }
+                localStorage.setItem('MSOT_LEARN_ACCOUNTS_V2', JSON.stringify(accounts));
+
+                // Synchronize student profile state store
+                const userStoreKey = `MSOT_STUDENT_PROFILE_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`;
+                const savedProfile = localStorage.getItem(userStoreKey);
+                if (savedProfile) {
+                    try {
+                        const parsed = JSON.parse(savedProfile);
+                        if (photoUrl) {
+                            parsed.customPhotoUrl = photoUrl;
+                            parsed.profilePic = photoUrl;
+                            parsed.avatar_url = photoUrl;
+                            parsed.avatar = photoUrl;
+                        } else {
+                            delete parsed.customPhotoUrl;
+                            delete parsed.profilePic;
+                            delete parsed.avatar_url;
+                            parsed.avatar = parsed.defaultAvatar || '⚔️';
+                        }
+                        localStorage.setItem(userStoreKey, JSON.stringify(parsed));
+                    } catch (err) {}
+                }
+
+                // Update active user session if applicable
+                const sess = window.msotAuth?.session;
+                if (sess && sess.email.toLowerCase() === cleanEmail) {
+                    if (photoUrl) {
+                        sess.customPhotoUrl = photoUrl;
+                        sess.profilePic = photoUrl;
+                        sess.avatar_url = photoUrl;
+                        sess.avatar = photoUrl;
+                    } else {
+                        delete sess.customPhotoUrl;
+                        delete sess.profilePic;
+                        delete sess.avatar_url;
+                        sess.avatar = sess.defaultAvatar || '⚔️';
+                    }
+                    localStorage.setItem('MSOT_LEARN_AUTH_SESSION_V1', JSON.stringify(sess));
+                }
+
+                // Update active platform state
+                if (window.msotState?.student && (window.msotState.student.email || '').toLowerCase() === cleanEmail) {
+                    if (photoUrl) {
+                        window.msotState.student.customPhotoUrl = photoUrl;
+                        window.msotState.student.profilePic = photoUrl;
+                        window.msotState.student.avatar_url = photoUrl;
+                        window.msotState.student.avatar = photoUrl;
+                    } else {
+                        delete window.msotState.student.customPhotoUrl;
+                        delete window.msotState.student.profilePic;
+                        delete window.msotState.student.avatar_url;
+                        window.msotState.student.avatar = window.msotState.student.defaultAvatar || '⚔️';
+                    }
+                    if (window.msotState.save) window.msotState.save();
+                }
+
+                // Sync with remote Supabase database if connected
+                if (window.msotAuth?.supabaseClient) {
+                    window.msotAuth.supabaseClient
+                        .from('profiles')
+                        .update({
+                            avatar_url: photoUrl || null,
+                            custom_photo_url: photoUrl || null,
+                            profile_pic: photoUrl || null,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('email', cleanEmail)
+                        .then(() => {})
+                        .catch(() => {});
+                }
+
+                // Audit logging
+                this.logAudit(photoUrl ? 'USER_PHOTO_UPDATED' : 'USER_PHOTO_REMOVED', 'user', cleanEmail, {
+                    hasCustomPhoto: Boolean(photoUrl)
+                });
+
+                // Trigger seamless re-renders across views
+                if (window.msotPlatform) {
+                    if (window.msotPlatform.updateHeaderStats) window.msotPlatform.updateHeaderStats();
+                    if (window.location.hash === '#/profile' && window.msotPlatform.renderStudentProfile) {
+                        window.msotPlatform.renderStudentProfile();
+                    }
+                    const facultyDashboard = document.getElementById('facultyDashboardSection');
+                    if (facultyDashboard && facultyDashboard.style.display !== 'none' && window.msotPlatform.renderFacultyDashboard) {
+                        window.msotPlatform.renderFacultyDashboard();
+                    }
+                }
+
+                window.dispatchEvent(new CustomEvent('msot:profile-photo-updated', { detail: { email: cleanEmail, photoUrl } }));
+                return true;
+            } catch (e) {
+                console.error('Failed to update user profile photo:', e);
                 return false;
             }
         }
@@ -1858,7 +2040,10 @@
                         <div class="rm-title-box">
                             <span class="rm-tag">${isAdminView ? 'ADMIN CONTROL // STUDENT DOSSIER' : 'FACULTY ACADEMIC MONITOR // STUDENT DOSSIER'}</span>
                             <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
-                                <span style="font-size:28px;">${dossier.avatar || '⚔️'}</span>
+                                ${(dossier.customPhotoUrl || dossier.profilePic) && ((dossier.customPhotoUrl || dossier.profilePic).startsWith('data:') || (dossier.customPhotoUrl || dossier.profilePic).startsWith('http') || (dossier.customPhotoUrl || dossier.profilePic).startsWith('/'))
+                                    ? `<img src="${dossier.customPhotoUrl || dossier.profilePic}" alt="${dossier.name}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">`
+                                    : `<span style="font-size:28px;">${dossier.avatar || '⚔️'}</span>`
+                                }
                                 <div>
                                     <h3 style="margin:0;">${dossier.name}</h3>
                                     <span style="font-size:12px; color:var(--text-dim); font-family:'JetBrains Mono', monospace;">${dossier.studentId || 'MSOT-CADET'} • ${dossier.email}</span>
@@ -2048,7 +2233,7 @@
                         <!-- Left Column: Portrait & Ornate Gold Banner -->
                         <div class="flash-portrait-col">
                             <div class="flash-portrait-frame">
-                                <img src="${user.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${user.name}" class="flash-portrait-img" onerror="this.src='assets/images/gateway_hero_full_bg.jpg'">
+                                <img src="${user.customPhotoUrl || user.profilePic || user.profile_pic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${user.name}" class="flash-portrait-img" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
                             </div>
                             <div class="ornate-gold-nameplate">
                                 <span class="ornate-callsign-text">${user.callsign || user.name.split(' ')[0]}</span>

@@ -73,6 +73,9 @@ ALTER TABLE profiles
     ADD COLUMN IF NOT EXISTS rejection_reason TEXT,
     ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ,
     ADD COLUMN IF NOT EXISTS approved_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS avatar_url TEXT,
+    ADD COLUMN IF NOT EXISTS profile_pic TEXT,
+    ADD COLUMN IF NOT EXISTS custom_photo_url TEXT,
     ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
@@ -443,3 +446,92 @@ CREATE POLICY "Admins read audit logs" ON audit_logs
 DROP POLICY IF EXISTS "Insert audit logs" ON audit_logs;
 CREATE POLICY "Insert audit logs" ON audit_logs
     FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- ==============================================================================
+-- 7. SUPABASE STORAGE BUCKET: AVATARS & PROFILE PHOTOS
+-- ==============================================================================
+-- Ensure avatars bucket exists with 5MB size limit & image mime types
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'avatars',
+    'avatars',
+    true,
+    5242880,
+    ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+)
+ON CONFLICT (id) DO UPDATE SET
+    public = true,
+    file_size_limit = 5242880,
+    allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+-- Storage Objects Policies for avatars bucket
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Access Avatars'
+    ) THEN
+        CREATE POLICY "Public Access Avatars" ON storage.objects
+            FOR SELECT USING (bucket_id = 'avatars');
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Authenticated Users Upload Avatars'
+    ) THEN
+        CREATE POLICY "Authenticated Users Upload Avatars" ON storage.objects
+            FOR INSERT TO authenticated
+            WITH CHECK (bucket_id = 'avatars');
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Authenticated Users Update Avatars'
+    ) THEN
+        CREATE POLICY "Authenticated Users Update Avatars" ON storage.objects
+            FOR UPDATE TO authenticated
+            USING (bucket_id = 'avatars');
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Authenticated Users Delete Avatars'
+    ) THEN
+        CREATE POLICY "Authenticated Users Delete Avatars" ON storage.objects
+            FOR DELETE TO authenticated
+            USING (bucket_id = 'avatars');
+    END IF;
+END $$;
+
+-- 8. Stored Procedure: Update Authenticated User Avatar
+CREATE OR REPLACE FUNCTION public.update_my_avatar(
+    p_avatar_url TEXT
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_user_id UUID;
+BEGIN
+    v_user_id := auth.uid();
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Authentication required to update profile photo.';
+    END IF;
+
+    UPDATE public.profiles
+    SET avatar_url = p_avatar_url,
+        profile_pic = p_avatar_url,
+        custom_photo_url = p_avatar_url,
+        avatar = COALESCE(p_avatar_url, '⚔️'),
+        updated_at = NOW()
+    WHERE id = v_user_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'user_id', v_user_id,
+        'avatar_url', p_avatar_url
+    );
+END;
+$$;
+

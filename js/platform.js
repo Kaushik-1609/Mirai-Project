@@ -1920,7 +1920,7 @@ class MSOTPlatformController {
                             <div style="display: flex; align-items: center; gap: 14px;">
                                 <div style="display: flex;">
                                     ${students.slice(0, 4).map(s => `
-                                        <img src="${s.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #f59e0b; margin-right: -10px; cursor: pointer;" onclick="window.msotRBAC.openStudentFlashCardModal('${s.email}')" title="${s.name} (${s.attendance || '90%'} Attendance)">
+                                        <img src="${s.customPhotoUrl || s.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #f59e0b; margin-right: -10px; cursor: pointer;" onclick="window.msotRBAC.openStudentFlashCardModal('${s.email}')" title="${s.name} (${s.attendance || '90%'} Attendance)" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
                                     `).join('')}
                                 </div>
                                 <div style="margin-left: 14px;">
@@ -2123,7 +2123,7 @@ class MSOTPlatformController {
                                                     const isSelected = selectedStudent && (s.email.toLowerCase() === selectedStudent.email.toLowerCase());
                                                     return `
                                                         <div class="cadet-avatar-node ${isSelected ? 'active' : ''}" onclick="window.msotPlatform.selectFacultyStudent('${s.email}')" title="${s.name} (${s.section || 'Section Alpha'})">
-                                                            <img src="${s.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${s.name}" onerror="this.src='assets/images/gateway_hero_full_bg.jpg'">
+                                                            <img src="${s.customPhotoUrl || s.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${s.name}" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
                                                             ${isSelected ? `
                                                                 <div class="node-connector-line">
                                                                     <div class="node-connector-dot"></div>
@@ -2140,7 +2140,7 @@ class MSOTPlatformController {
                                                     <!-- Left Side: Portrait & Ornate Gold Callsign Plate (Clickable to Pop Up) -->
                                                     <div class="flash-portrait-col">
                                                         <div class="flash-portrait-frame" onclick="window.msotRBAC.openStudentFlashCardModal('${selectedStudent.email}')" style="cursor:pointer;" title="Click to pop up full-screen flash card modal">
-                                                            <img src="${selectedStudent.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${selectedStudent.name}" class="flash-portrait-img" onerror="this.src='assets/images/gateway_hero_full_bg.jpg'">
+                                                            <img src="${selectedStudent.customPhotoUrl || selectedStudent.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${selectedStudent.name}" class="flash-portrait-img" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
                                                         </div>
                                                         <div class="ornate-gold-nameplate" onclick="window.msotRBAC.openStudentFlashCardModal('${selectedStudent.email}')" style="cursor:pointer;" title="Click to pop up full-screen flash card modal">
                                                             <span class="ornate-callsign-text">${selectedStudent.callsign || selectedStudent.name.split(' ')[0]}</span>
@@ -2274,7 +2274,7 @@ class MSOTPlatformController {
                                                 <tr>
                                                     <td>
                                                         <div style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="window.msotRBAC.openStudentFlashCardModal('${s.email}')">
-                                                            <img src="${s.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #f59e0b;" onerror="this.src='assets/images/gateway_hero_full_bg.jpg'">
+                                                            <img src="${s.customPhotoUrl || s.profilePic || 'assets/images/cadets/cadet_aarav.jpg'}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #f59e0b;" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
                                                             <div>
                                                                 <strong style="color:#fff;">${s.name}</strong>
                                                                 <div style="font-size:11px;color:#f59e0b;">@${s.username || 'cadet'}</div>
@@ -4048,8 +4048,10 @@ class MSOTPlatformController {
         const rank = s.leagueRank || 8;
         const id = s.id || 'MSOT-2026-482';
         const name = s.name || 'Cadet';
-        const avatar = s.avatar || '⚔️';
+        const avatar = s.customPhotoUrl || s.avatar || s.profilePic || '⚔️';
         const isPhoto = (avatar.startsWith('data:') || avatar.startsWith('http') || avatar.startsWith('/'));
+        const hasCustomPhoto = Boolean(s.customPhotoUrl || (isPhoto && !avatar.includes('cadet_aarav')));
+        const displayPhoto = s.customPhotoUrl || (isPhoto ? avatar : 'assets/images/cadets/cadet_aarav.jpg');
 
         const pbList = (Array.isArray(s.personalBests) && s.personalBests.length > 0) ? s.personalBests : [
             { metric: 'Quickest Perfect Quiz', value: '5/5 in 38s', date: 'Yesterday' },
@@ -4063,14 +4065,24 @@ class MSOTPlatformController {
                 <div class="profile-header-banner">
                     <!-- Profile Picture Frame with Edit Trigger -->
                     <div class="profile-avatar-frame-wrap">
-                        <div class="profile-avatar-box" id="profileAvatarDisplay" onclick="window.msotPlatform.openAvatarModal()" title="Click to Change Photo / Avatar">
+                        <div class="profile-avatar-box" id="profileAvatarDisplay" onclick="window.msotPlatform.openPhotoStudioModal()" title="Click to Change Photo / Avatar">
                             ${isPhoto 
-                                ? `<img src="${avatar}" alt="Cadet Avatar" class="avatar-img-view">` 
+                                ? `<img src="${avatar}" alt="Cadet Avatar" class="avatar-img-view" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">` 
                                 : `<span class="p-avatar">${avatar}</span>`
                             }
                             <div class="avatar-edit-overlay">
                                 <span>📷 CHANGE</span>
                             </div>
+                        </div>
+                        <div class="profile-avatar-actions-strip">
+                            <button type="button" class="btn-avatar-pill upload" onclick="window.msotPlatform.openPhotoStudioModal()" title="Upload or customize photo">
+                                📷 Change Photo
+                            </button>
+                            ${hasCustomPhoto ? `
+                                <button type="button" class="btn-avatar-pill remove" onclick="window.msotPlatform.removeProfilePhoto()" title="Remove custom photo and restore default cadet avatar">
+                                    🗑️ Remove Photo
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
 
@@ -4208,33 +4220,136 @@ class MSOTPlatformController {
                     </div>
                 </div>
 
-                <!-- Avatar & Profile Photo Modal -->
-                <div class="avatar-modal-overlay" id="avatarPickerModal" style="display:none;" onclick="if(event.target===this) window.msotPlatform.closeAvatarModal()">
-                    <div class="avatar-modal-card">
+                <!-- Student Profile Photo Studio & Avatar Modal -->
+                <div class="avatar-modal-overlay" id="photoStudioModal" style="display:none;" onclick="if(event.target===this) window.msotPlatform.closePhotoStudioModal()">
+                    <div class="avatar-modal-card photo-studio-modal-card" style="max-width: 680px; width: 100%;">
                         <div class="am-header">
-                            <h3>🎨 CHOOSE PROFILE PICTURE / AVATAR</h3>
-                            <button type="button" class="am-close-btn" onclick="window.msotPlatform.closeAvatarModal()">✕</button>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 24px;">📸</span>
+                                <div>
+                                    <h3 style="margin: 0; color: #fff; font-size: 18px;">STUDENT PROFILE PHOTO STUDIO</h3>
+                                    <div style="font-size: 11px; color: #ffd700; letter-spacing: 0.5px; font-family: var(--font-mono, monospace);">FACULTY DASHBOARD & PLATFORM AVATAR SYNCHRONIZATION</div>
+                                </div>
+                            </div>
+                            <button type="button" class="am-close-btn" onclick="window.msotPlatform.closePhotoStudioModal()" title="Close Studio">✕</button>
                         </div>
-                        <p class="am-subtitle">Pick an anime/cyberpunk cadet avatar, upload a picture, or paste an image URL.</p>
-                        
-                        <div class="am-presets-title">⚡ CADET AVATAR PRESETS</div>
-                        <div class="avatar-presets-grid">
+
+                        <p class="am-subtitle" style="margin-bottom: 12px; font-size: 12.5px; color: #94a3b8;">
+                            Upload your personal photo to appear on your student profile and faculty character dossiers. Supports JPEG, PNG, and WebP (Max 5.0 MB).
+                        </p>
+
+                        <!-- Validation Error Message Banner -->
+                        <div id="photoStudioAlert" class="photo-studio-alert" style="display: none;">
+                            <span id="photoStudioAlertIcon">⚠️</span>
+                            <span id="photoStudioAlertMsg">Invalid file selected.</span>
+                        </div>
+
+                        <!-- Main Studio Area -->
+                        <div class="photo-studio-workspace">
+                            <!-- 1. Drag & Drop Upload Zone -->
+                            <div id="photoDropZone" class="photo-dropzone">
+                                <input type="file" id="photoStudioFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="window.msotPlatform.handlePhotoFileSelect(this)">
+                                <div class="dropzone-content">
+                                    <div class="dropzone-icon">📷</div>
+                                    <div class="dropzone-text">
+                                        <strong>Drag & drop your photo here</strong>
+                                        <span>or choose a file from your device</span>
+                                    </div>
+                                    <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; justify-content:center;">
+                                        <button type="button" class="primary-btn-sm" onclick="document.getElementById('photoStudioFileInput').click()" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #000; font-weight: 800; padding: 7px 18px; border-radius: 8px; cursor: pointer;">
+                                            📁 Browse Device Photo
+                                        </button>
+                                        ${hasCustomPhoto ? `
+                                            <button type="button" class="btn-avatar-pill remove" onclick="window.msotPlatform.removeProfilePhoto()">
+                                                🗑️ Remove Custom Photo
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                    <div class="dropzone-hint">
+                                        JPG • PNG • WEBP • Max 5 MB • Frames face squarely without distortion
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Interactive Cropper & Live Previews Studio -->
+                            <div id="photoCropperSection" class="photo-cropper-section" style="display: none;">
+                                <div class="cropper-layout">
+                                    <!-- Left: Interactive Canvas Viewport -->
+                                    <div class="cropper-viewport-wrap">
+                                        <div class="cropper-canvas-box" id="cropperCanvasContainer" title="Drag to reposition photo within crop frame">
+                                            <canvas id="photoCropCanvas" width="320" height="320"></canvas>
+                                            <div class="cropper-guide-overlay">
+                                                <div class="guide-circle"></div>
+                                                <div class="guide-crosshair-h"></div>
+                                                <div class="guide-crosshair-v"></div>
+                                            </div>
+                                        </div>
+                                        <div class="cropper-pan-hint">✋ Drag image inside frame to center face • Zoom with slider</div>
+
+                                        <!-- Zoom Toolbar -->
+                                        <div class="cropper-zoom-toolbar">
+                                            <button type="button" class="zoom-btn" onclick="window.msotPlatform.adjustZoom(-0.1)" title="Zoom Out">−</button>
+                                            <input type="range" id="photoZoomSlider" min="1" max="3" step="0.05" value="1" oninput="window.msotPlatform.onZoomSliderChange(this.value)" class="zoom-slider">
+                                            <button type="button" class="zoom-btn" onclick="window.msotPlatform.adjustZoom(0.1)" title="Zoom In">+</button>
+                                            <button type="button" class="reset-zoom-btn" onclick="window.msotPlatform.resetPhotoFraming()" title="Reset Framing">↺ Reset</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right: Live Synchronized Previews -->
+                                    <div class="cropper-previews-col">
+                                        <div class="preview-panel-title">LIVE EMBED PREVIEWS</div>
+
+                                        <!-- 1. Circular Avatar (Profile & HUD) -->
+                                        <div class="preview-item">
+                                            <div class="preview-circle-badge">
+                                                <img id="circlePreviewImg" src="${displayPhoto}" alt="Circle Preview" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
+                                            </div>
+                                            <span class="preview-lbl">Circular Avatar</span>
+                                        </div>
+
+                                        <!-- 2. Faculty Witcher Dossier Card Preview -->
+                                        <div class="preview-item">
+                                            <div class="preview-witcher-card">
+                                                <div class="preview-card-frame">
+                                                    <img id="cardPreviewImg" src="${displayPhoto}" alt="Faculty Card Preview" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
+                                                </div>
+                                                <div class="preview-card-nameplate">
+                                                    <span>${s.name ? s.name.split(' ')[0] : 'CADET'}</span>
+                                                </div>
+                                                <span class="preview-badge-pill">FACULTY VIEW</span>
+                                            </div>
+                                            <span class="preview-lbl">Faculty Flashcard</span>
+                                        </div>
+
+                                        <button type="button" class="btn-avatar-pill" onclick="document.getElementById('photoStudioFileInput').click()" style="margin-top:auto; width:100%; justify-content:center;">
+                                            🔄 Change Image
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Cadet Avatar Presets Divider & Grid -->
+                        <div class="am-divider" style="margin: 14px 0 10px;"><span>OR CHOOSE CADET PRESET AVATAR</span></div>
+                        <div class="avatar-presets-grid" style="margin-bottom: 14px;">
                             ${['⚔️', '🛡️', '🧙‍♂️', '👾', '🤖', '🦊', '⚡', '🌸', '👑', '🎯', '🐱', '🔥', '🐉', '🔮', '🚀', '🥋'].map(av => `
                                 <button type="button" class="av-preset-btn ${avatar === av ? 'active' : ''}" onclick="window.msotPlatform.selectAvatarPreset('${av}')">${av}</button>
                             `).join('')}
                         </div>
 
-                        <div class="am-divider"><span>OR UPLOAD CUSTOM PHOTO</span></div>
-
-                        <div class="am-upload-block">
-                            <label class="am-file-label">
-                                📁 Upload Photo from Device
-                                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="window.msotPlatform.handlePhotoUpload(this)">
-                            </label>
-                            <div class="am-url-row">
-                                <input type="text" id="avatarUrlInput" placeholder="Or paste image URL (https://...)" class="am-url-field">
-                                <button type="button" class="am-url-btn" onclick="window.msotPlatform.saveAvatarFromUrl()">APPLY</button>
-                            </div>
+                        <!-- 4. Footer Action Buttons -->
+                        <div class="photo-studio-footer">
+                            <button type="button" class="secondary-btn" onclick="window.msotPlatform.closePhotoStudioModal()">
+                                Cancel
+                            </button>
+                            ${hasCustomPhoto ? `
+                                <button type="button" class="danger-btn" onclick="window.msotPlatform.removeProfilePhoto()">
+                                    🗑️ Remove Photo
+                                </button>
+                            ` : ''}
+                            <button type="button" id="savePhotoSubmitBtn" class="primary-btn" onclick="window.msotPlatform.saveProfilePhoto()" disabled style="background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; font-weight: 800; border: none; padding: 10px 22px; border-radius: 8px;">
+                                💾 Save Changes
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -4393,43 +4508,379 @@ class MSOTPlatformController {
         if (window.miraiAudio && window.miraiAudio.playLevelUp) window.miraiAudio.playLevelUp();
     }
 
-    openAvatarModal() {
-        const m = document.getElementById('avatarPickerModal');
-        if (m) m.style.display = 'flex';
+    openPhotoStudioModal() {
+        const m = document.getElementById('photoStudioModal') || document.getElementById('avatarPickerModal');
+        if (m) {
+            m.style.display = 'flex';
+            this.setupPhotoDropZone();
+            this.clearPhotoStudioAlert();
+
+            // Pre-load current student photo if already exists and no image in cropper
+            const s = window.msotState?.student || {};
+            const photo = s.customPhotoUrl || (s.avatar && (s.avatar.startsWith('data:') || s.avatar.startsWith('http') || s.avatar.startsWith('/')) ? s.avatar : null);
+            if (photo && !this.cropperImage) {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    this.cropperImage = img;
+                    this.cropperScale = 1.0;
+                    this.cropperOffsetX = 0;
+                    this.cropperOffsetY = 0;
+                    const cropperSec = document.getElementById('photoCropperSection');
+                    if (cropperSec) cropperSec.style.display = 'block';
+                    const saveBtn = document.getElementById('savePhotoSubmitBtn');
+                    if (saveBtn) saveBtn.removeAttribute('disabled');
+                    this.initCropperCanvasInteractions();
+                    this.renderPhotoCropCanvas();
+                };
+                img.src = photo;
+            }
+        }
         if (window.miraiAudio && window.miraiAudio.playClick) window.miraiAudio.playClick();
+    }
+
+    openAvatarModal() {
+        this.openPhotoStudioModal();
+    }
+
+    closePhotoStudioModal() {
+        const m = document.getElementById('photoStudioModal') || document.getElementById('avatarPickerModal');
+        if (m) m.style.display = 'none';
+        this.clearPhotoStudioAlert();
     }
 
     closeAvatarModal() {
-        const m = document.getElementById('avatarPickerModal');
-        if (m) m.style.display = 'none';
+        this.closePhotoStudioModal();
     }
 
-    selectAvatarPreset(av) {
-        window.msotState.updateStudentProfile({ avatar: av });
-        this.closeAvatarModal();
-        if (window.miraiAudio && window.miraiAudio.playClick) window.miraiAudio.playClick();
+    setupPhotoDropZone() {
+        const dropZone = document.getElementById('photoDropZone');
+        if (!dropZone || this._dropzoneBound) return;
+        this._dropzoneBound = true;
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt?.files;
+            if (files && files.length > 0) {
+                this.handlePhotoFileSelect({ files: [files[0]] });
+            }
+        }, false);
     }
 
-    handlePhotoUpload(input) {
-        if (!input || !input.files || !input.files[0]) return;
-        const file = input.files[0];
+    showPhotoStudioAlert(msg, isError = true) {
+        const alertEl = document.getElementById('photoStudioAlert');
+        const msgEl = document.getElementById('photoStudioAlertMsg');
+        const iconEl = document.getElementById('photoStudioAlertIcon');
+        if (alertEl && msgEl) {
+            msgEl.textContent = msg;
+            if (iconEl) iconEl.textContent = isError ? '⚠️' : '✅';
+            alertEl.style.display = 'flex';
+            if (!isError) {
+                alertEl.style.borderColor = '#10b981';
+                alertEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                alertEl.style.color = '#6ee7b7';
+            } else {
+                alertEl.style.borderColor = '#ef4444';
+                alertEl.style.background = 'rgba(239, 68, 68, 0.18)';
+                alertEl.style.color = '#fca5a5';
+            }
+        }
+    }
+
+    clearPhotoStudioAlert() {
+        const alertEl = document.getElementById('photoStudioAlert');
+        if (alertEl) alertEl.style.display = 'none';
+    }
+
+    handlePhotoFileSelect(inputOrObj) {
+        this.clearPhotoStudioAlert();
+        const file = inputOrObj?.files ? inputOrObj.files[0] : inputOrObj;
+        if (!file) return;
+
+        // 1. Validate File Format (JPEG, PNG, WebP)
+        const validMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const fileName = (file.name || '').toLowerCase();
+        const hasValidExt = /\.(jpe?g|png|webp)$/i.test(fileName);
+        if (!validMimes.includes(file.type) && !hasValidExt) {
+            this.showPhotoStudioAlert('⚠️ Unsupported file format. Please choose a JPEG, PNG, or WebP image.');
+            return;
+        }
+
+        // 2. Validate File Size (Maximum 5 MB = 5,242,880 bytes)
+        const maxBytes = 5 * 1024 * 1024;
+        if (file.size > maxBytes) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            this.showPhotoStudioAlert(`⚠️ File size (${sizeMB} MB) exceeds the 5.0 MB maximum limit. Please choose a smaller photo.`);
+            return;
+        }
+
+        // Read and load image
         const reader = new FileReader();
         reader.onload = (e) => {
-            const dataUrl = e.target.result;
-            window.msotState.updateStudentProfile({ avatar: dataUrl });
-            this.closeAvatarModal();
-            if (window.miraiAudio && window.miraiAudio.playLevelUp) window.miraiAudio.playLevelUp();
+            const img = new Image();
+            img.onload = () => {
+                this.cropperImage = img;
+                this.cropperScale = 1.0;
+                this.cropperOffsetX = 0;
+                this.cropperOffsetY = 0;
+
+                const slider = document.getElementById('photoZoomSlider');
+                if (slider) slider.value = 1.0;
+
+                const cropperSec = document.getElementById('photoCropperSection');
+                if (cropperSec) cropperSec.style.display = 'block';
+
+                const saveBtn = document.getElementById('savePhotoSubmitBtn');
+                if (saveBtn) saveBtn.removeAttribute('disabled');
+
+                this.initCropperCanvasInteractions();
+                this.renderPhotoCropCanvas();
+            };
+            img.onerror = () => {
+                this.showPhotoStudioAlert('⚠️ Failed to parse image file. Please try a different photo.');
+            };
+            img.src = e.target.result;
+        };
+        reader.onerror = () => {
+            this.showPhotoStudioAlert('⚠️ Failed to read the selected file from disk.');
         };
         reader.readAsDataURL(file);
     }
 
-    saveAvatarFromUrl() {
-        const urlInput = document.getElementById('avatarUrlInput');
-        if (!urlInput || !urlInput.value.trim()) return;
-        const url = urlInput.value.trim();
-        window.msotState.updateStudentProfile({ avatar: url });
-        this.closeAvatarModal();
-        if (window.miraiAudio && window.miraiAudio.playLevelUp) window.miraiAudio.playLevelUp();
+    initCropperCanvasInteractions() {
+        const container = document.getElementById('cropperCanvasContainer');
+        if (!container || this._cropperInteractionsBound) return;
+        this._cropperInteractionsBound = true;
+
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let origOffsetX = 0;
+        let origOffsetY = 0;
+
+        const onPointerDown = (e) => {
+            isDragging = true;
+            startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+            startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+            origOffsetX = this.cropperOffsetX || 0;
+            origOffsetY = this.cropperOffsetY || 0;
+            container.style.cursor = 'grabbing';
+            e.preventDefault();
+        };
+
+        const onPointerMove = (e) => {
+            if (!isDragging || !this.cropperImage) return;
+            const curX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+            const curY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+            const dx = curX - startX;
+            const dy = curY - startY;
+
+            this.cropperOffsetX = origOffsetX + dx;
+            this.cropperOffsetY = origOffsetY + dy;
+            this.renderPhotoCropCanvas();
+        };
+
+        const onPointerUp = () => {
+            if (isDragging) {
+                isDragging = false;
+                container.style.cursor = 'grab';
+            }
+        };
+
+        container.addEventListener('mousedown', onPointerDown);
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerUp);
+
+        container.addEventListener('touchstart', onPointerDown, { passive: false });
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
+    }
+
+    renderPhotoCropCanvas() {
+        const canvas = document.getElementById('photoCropCanvas');
+        if (!canvas || !this.cropperImage) return;
+        const ctx = canvas.getContext('2d');
+        const img = this.cropperImage;
+
+        const cw = canvas.width;
+        const ch = canvas.height;
+
+        // Base scale to ensure image completely covers the canvas
+        const baseScale = Math.max(cw / img.width, ch / img.height);
+        const effectiveScale = baseScale * (this.cropperScale || 1.0);
+
+        const drawnW = img.width * effectiveScale;
+        const drawnH = img.height * effectiveScale;
+
+        // Clamp offsets so no black borders appear
+        const maxPanX = Math.max(0, (drawnW - cw) / 2);
+        const maxPanY = Math.max(0, (drawnH - ch) / 2);
+
+        this.cropperOffsetX = Math.max(-maxPanX, Math.min(maxPanX, this.cropperOffsetX || 0));
+        this.cropperOffsetY = Math.max(-maxPanY, Math.min(maxPanY, this.cropperOffsetY || 0));
+
+        ctx.clearRect(0, 0, cw, ch);
+        const drawX = (cw - drawnW) / 2 + this.cropperOffsetX;
+        const drawY = (ch - drawnH) / 2 + this.cropperOffsetY;
+
+        ctx.drawImage(img, drawX, drawY, drawnW, drawnH);
+
+        // Update live previews
+        const previewDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+        const circle = document.getElementById('circlePreviewImg');
+        if (circle) circle.src = previewDataUrl;
+        const card = document.getElementById('cardPreviewImg');
+        if (card) card.src = previewDataUrl;
+    }
+
+    adjustZoom(delta) {
+        this.cropperScale = Math.max(1.0, Math.min(3.0, (this.cropperScale || 1.0) + delta));
+        const slider = document.getElementById('photoZoomSlider');
+        if (slider) slider.value = this.cropperScale.toFixed(2);
+        this.renderPhotoCropCanvas();
+    }
+
+    onZoomSliderChange(val) {
+        this.cropperScale = parseFloat(val) || 1.0;
+        this.renderPhotoCropCanvas();
+    }
+
+    resetPhotoFraming() {
+        this.cropperScale = 1.0;
+        this.cropperOffsetX = 0;
+        this.cropperOffsetY = 0;
+        const slider = document.getElementById('photoZoomSlider');
+        if (slider) slider.value = 1.0;
+        this.renderPhotoCropCanvas();
+    }
+
+    async saveProfilePhoto() {
+        if (this._isSavingPhoto) return;
+        const canvas = document.getElementById('photoCropCanvas');
+        if (!canvas || !this.cropperImage) {
+            this.showPhotoStudioAlert('⚠️ Please select and frame an image first.');
+            return;
+        }
+
+        const submitBtn = document.getElementById('savePhotoSubmitBtn');
+        const origBtnText = submitBtn ? submitBtn.innerHTML : '💾 Save Changes';
+
+        try {
+            this._isSavingPhoto = true;
+            if (submitBtn) {
+                submitBtn.setAttribute('disabled', 'true');
+                submitBtn.innerHTML = '⏳ Saving & Uploading...';
+            }
+
+            const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+            const s = window.msotState?.student || {};
+            const cleanEmail = (window.msotAuth?.session?.email || s.email || 'student@msot.edu').toLowerCase().trim();
+
+            let finalUrl = croppedDataUrl;
+
+            // Attempt Supabase Storage Upload if Supabase client is connected
+            if (window.msotAuth?.supabaseClient) {
+                try {
+                    const response = await fetch(croppedDataUrl);
+                    const blob = await response.blob();
+                    const sanitizedName = cleanEmail.replace(/[^a-z0-9]/g, '_');
+                    const filePath = `avatars/${sanitizedName}_${Date.now()}.jpg`;
+
+                    const { data: uploadData, error: uploadErr } = await window.msotAuth.supabaseClient.storage
+                        .from('avatars')
+                        .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+                    if (!uploadErr && uploadData) {
+                        const { data: pubData } = window.msotAuth.supabaseClient.storage
+                            .from('avatars')
+                            .getPublicUrl(filePath);
+                        if (pubData?.publicUrl) {
+                            finalUrl = pubData.publicUrl;
+                        }
+                    }
+                } catch (stErr) {
+                    console.warn('Storage upload fallback triggered:', stErr);
+                }
+            }
+
+            // Persist through RBAC controller & state management
+            if (window.msotRBAC && window.msotRBAC.updateUserPhoto) {
+                window.msotRBAC.updateUserPhoto(cleanEmail, finalUrl);
+            } else {
+                window.msotState.updateStudentProfile({
+                    avatar: finalUrl,
+                    customPhotoUrl: finalUrl,
+                    profilePic: finalUrl
+                });
+            }
+
+            if (window.miraiAudio && window.miraiAudio.playLevelUp) window.miraiAudio.playLevelUp();
+
+            this.closePhotoStudioModal();
+            alert('✅ Profile photo successfully updated and synchronized across all views!');
+        } catch (err) {
+            console.error('Error saving profile photo:', err);
+            this.showPhotoStudioAlert('⚠️ An error occurred while saving the photo. Please try again.');
+        } finally {
+            this._isSavingPhoto = false;
+            if (submitBtn) {
+                submitBtn.removeAttribute('disabled');
+                submitBtn.innerHTML = origBtnText;
+            }
+        }
+    }
+
+    removeProfilePhoto() {
+        if (!confirm('Are you sure you want to remove your custom profile photo and restore the default cadet avatar?')) {
+            return;
+        }
+
+        const s = window.msotState?.student || {};
+        const cleanEmail = (window.msotAuth?.session?.email || s.email || 'student@msot.edu').toLowerCase().trim();
+
+        if (window.msotRBAC && window.msotRBAC.updateUserPhoto) {
+            window.msotRBAC.updateUserPhoto(cleanEmail, null);
+        } else {
+            window.msotState.updateStudentProfile({
+                avatar: '⚔️',
+                customPhotoUrl: null,
+                profilePic: 'assets/images/cadets/cadet_aarav.jpg'
+            });
+        }
+
+        this.cropperImage = null;
+        this.closePhotoStudioModal();
+        alert('Default cadet character avatar restored.');
+    }
+
+    selectAvatarPreset(av) {
+        const s = window.msotState?.student || {};
+        const cleanEmail = (window.msotAuth?.session?.email || s.email || 'student@msot.edu').toLowerCase().trim();
+
+        if (window.msotRBAC && window.msotRBAC.updateUserPhoto) {
+            window.msotRBAC.updateUserPhoto(cleanEmail, av);
+        } else {
+            window.msotState.updateStudentProfile({ avatar: av, customPhotoUrl: null });
+        }
+        this.closePhotoStudioModal();
+        if (window.miraiAudio && window.miraiAudio.playClick) window.miraiAudio.playClick();
     }
 
     // =========================================================================
