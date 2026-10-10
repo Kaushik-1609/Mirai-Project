@@ -201,12 +201,20 @@ class MSOTPlatformController {
         document.querySelectorAll('[data-nav-role]').forEach(el => {
             const reqRoles = (el.getAttribute('data-nav-role') || '').split(',').map(r => r.trim().toUpperCase());
             if (effectiveRole === 'ADMIN') {
-                el.style.display = '';
+                el.style.removeProperty('display');
             } else if (effectiveRole === 'FACULTY') {
-                el.style.display = reqRoles.includes('FACULTY') ? '' : 'none';
+                if (reqRoles.includes('FACULTY')) {
+                    el.style.removeProperty('display');
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
             } else {
                 // STUDENT: Hide faculty, admin, and staff-only tabs
-                el.style.display = reqRoles.includes('STUDENT') ? '' : 'none';
+                if (reqRoles.includes('STUDENT')) {
+                    el.style.removeProperty('display');
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
             }
         });
 

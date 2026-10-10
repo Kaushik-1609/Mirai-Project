@@ -13,11 +13,6 @@
 
 class MiraiGateEngine {
     constructor(canvasId, containerId) {
-        this.canvas = document.getElementById(canvasId);
-        if (!this.canvas) return;
-        this.ctx = this.canvas.getContext('2d');
-        this.container = document.getElementById(containerId);
-
         // Parameters matching reference controls
         this.params = {
             gateParting: 0.0,       // 0 to 1 — closed by default in the center
@@ -31,6 +26,11 @@ class MiraiGateEngine {
             clothStiffness: 0.85,
             heatIntensity: 1.0
         };
+
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext('2d');
+        this.container = document.getElementById(containerId);
 
         this.particles = [];
         this.smokePuffs = [];
@@ -54,6 +54,7 @@ class MiraiGateEngine {
     }
 
     initCanvasSize() {
+        if (!this.canvas) return;
         const rect = this.container ? this.container.getBoundingClientRect() : null;
         const w = (rect && rect.width > 50) ? rect.width : (window.innerWidth || 1200);
         const h = (rect && rect.height > 50) ? rect.height : (window.innerHeight || 800);
@@ -396,8 +397,9 @@ class MiraiGateEngine {
     }
 
     setGateParting(val, triggerAudio = true) {
+        if (!this.params) return;
         const clamped = Math.max(0, Math.min(1, val));
-        if (Math.abs(this.params.gateParting - clamped) > 0.05 && triggerAudio && window.miraiAudio) {
+        if (Math.abs((this.params.gateParting || 0) - clamped) > 0.05 && triggerAudio && window.miraiAudio) {
             window.miraiAudio.playGateOpening();
         }
         this.params.gateParting = clamped;

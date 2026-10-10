@@ -598,7 +598,7 @@ class MSOTPlatformState {
             this.student.alias = `@${cleanUser}`;
             if (!this.student.id) this.student.id = userSession.studentId || `MSOT-${cleanUser.toUpperCase()}`;
             if (!this.student.name) this.student.name = userSession.name || cleanUser;
-            if (isUtkarshAdmin) {
+            if (isAdmin) {
                 this.student.name = 'Utkarsh Raj';
                 this.student.role = 'ADMIN';
                 this.student.avatar = this.student.avatar || '🛡️';
@@ -614,7 +614,7 @@ class MSOTPlatformState {
             if (userSession.phone) this.student.phone = userSession.phone;
             if (!this.student.batch) this.student.batch = 'Class of 2026';
             if (!this.student.campus) this.student.campus = 'Mirai Central Campus';
-            if (!this.student.avatar) this.student.avatar = isUtkarshAdmin ? '🛡️' : (userSession.avatar || '⚔️');
+            if (!this.student.avatar) this.student.avatar = isAdmin ? '🛡️' : (userSession.avatar || '⚔️');
             this.student.league = 'Cadet League';
             if (typeof this.student.streak !== 'number') this.student.streak = 1;
             this.student.isStreakFrozen = !!this.student.isStreakFrozen;

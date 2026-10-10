@@ -18,6 +18,7 @@
     const SESSION_KEY = 'MSOT_LEARN_AUTH_SESSION_V1';
     const ACCOUNTS_KEY = 'MSOT_LEARN_ACCOUNTS_V2';
     const DEFAULT_PASS = 'msot1234';
+    let activeSession = null;
 
     // ─── Initialize Supabase Client ──────────────────────────────────────────
     let supabaseClient = null;
@@ -535,12 +536,20 @@
         document.querySelectorAll('[data-nav-role]').forEach(el => {
             const reqRoles = (el.getAttribute('data-nav-role') || '').split(',').map(r => r.trim().toUpperCase());
             if (curRole === 'ADMIN') {
-                el.style.display = '';
+                el.style.removeProperty('display');
             } else if (curRole === 'FACULTY') {
-                el.style.display = reqRoles.includes('FACULTY') ? '' : 'none';
+                if (reqRoles.includes('FACULTY')) {
+                    el.style.removeProperty('display');
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
             } else {
                 // STUDENT: Hide faculty, admin, and staff-only options
-                el.style.display = reqRoles.includes('STUDENT') ? '' : 'none';
+                if (reqRoles.includes('STUDENT')) {
+                    el.style.removeProperty('display');
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
             }
         });
 
@@ -1067,7 +1076,7 @@
     // ─── Initialize Listeners & Session Recovery on DOM Load ─────────────────
     window.addEventListener('DOMContentLoaded', async () => {
         // 1. Try restoring session from Supabase
-        let activeSession = null;
+        activeSession = null;
         if (supabaseClient) {
             try {
                 const { data } = await supabaseClient.auth.getSession();

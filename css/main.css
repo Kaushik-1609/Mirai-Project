@@ -101,7 +101,8 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 1000;
+    z-index: 99990 !important;
+    pointer-events: auto !important;
     background: rgba(7, 8, 14, 0.86);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);

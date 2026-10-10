@@ -107,10 +107,20 @@
     -webkit-backdrop-filter: blur(10px) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     justify-content: center !important;
     text-transform: uppercase !important;
+}
+
+/* Strict role-based visibility guarantee: Students never see Faculty or Admin tabs */
+[data-nav-role="FACULTY"][style*="display: none"],
+[data-nav-role="ADMIN"][style*="display: none"],
+body[data-user-role="STUDENT"] [data-nav-role="FACULTY"],
+body[data-user-role="STUDENT"] [data-nav-role="ADMIN"],
+body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-role="FACULTY"],
+body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-role="ADMIN"] {
+    display: none !important;
 }
 
 [data-theme="lavender"] .nav-link:hover,

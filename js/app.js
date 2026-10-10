@@ -7,10 +7,10 @@ const SUPABASE_URL = "https://zsxdsyfjlxtcunhqgcdj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_9-cjPrufltHmmdOcI5A_IA_JqQFZxG6";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzeGRzeWZqbHh0Y3VuaHFnY2RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MTI0OTksImV4cCI6MjEwNzA4ODQ5OX0.n223hw6kl5iuAEz5llQ6BBhhtXRQkKHU86n2gf_lD8k";
 
-let supabase = window.supabaseClient || null;
+var appSupabase = window.supabaseClient || null;
 try {
-    if (!supabase && window.supabase?.createClient) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY || SUPABASE_ANON_KEY);
+    if (!appSupabase && window.supabase?.createClient) {
+        appSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY || SUPABASE_ANON_KEY);
     }
 } catch (err) {
     console.warn("Supabase init note:", err.message);
@@ -70,12 +70,20 @@ window.updateNavRoleVisibility = function () {
     document.querySelectorAll('[data-nav-role]').forEach(el => {
         const reqRoles = (el.getAttribute('data-nav-role') || '').split(',').map(r => r.trim().toUpperCase());
         if (isAdmin) {
-            el.style.display = '';
+            el.style.removeProperty('display');
         } else if (role === 'FACULTY' || (sessionRole === 'FACULTY' && role !== 'STUDENT')) {
-            el.style.display = reqRoles.includes('FACULTY') ? '' : 'none';
+            if (reqRoles.includes('FACULTY')) {
+                el.style.removeProperty('display');
+            } else {
+                el.style.setProperty('display', 'none', 'important');
+            }
         } else {
             // STUDENT: Completely hide Admin and Faculty navigation
-            el.style.display = reqRoles.includes('STUDENT') ? '' : 'none';
+            if (reqRoles.includes('STUDENT')) {
+                el.style.removeProperty('display');
+            } else {
+                el.style.setProperty('display', 'none', 'important');
+            }
         }
     });
 };
@@ -340,6 +348,7 @@ function initApp() {
     // 4. Attach DIRECT CLICK LISTENERS to all navigation items
     document.querySelectorAll('.nav-link[data-section], .mobile-nav-link[data-section]').forEach(link => {
         link.addEventListener('click', (e) => {
+            if (e && e.preventDefault) e.preventDefault();
             const targetSection = link.getAttribute('data-section');
             if (window.miraiAudio) window.miraiAudio.playClick?.();
             window.switchSection(targetSection, true);
