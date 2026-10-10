@@ -2728,6 +2728,9 @@ class MSOTPlatformController {
     renderAdminRules() {
         const container = document.getElementById('adminRulesSection');
         if (!container) return;
+        if (window.msotRBAC?.syncFromSupabase) {
+            window.msotRBAC.syncFromSupabase();
+        }
 
         const currentRole = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (this.activeRole || window.msotState?.currentRole || 'STUDENT')).toUpperCase();
         if (currentRole !== 'ADMIN') {
@@ -2818,7 +2821,7 @@ class MSOTPlatformController {
                         🛡️ OVERVIEW & CONTROL
                     </button>
                     <button type="button" class="admin-subnav-btn ${activeTab === 'approvals' ? 'active' : ''}" style="${pendingApprovals.length > 0 ? 'border-color: #f59e0b; color: #f59e0b; font-weight: 800;' : ''}" onclick="window.msotPlatform.switchAdminSubTab('approvals')">
-                        ⏳ APPROVALS (${pendingApprovals.length})
+                        ⏳ PENDING APPROVALS (${pendingApprovals.length})
                     </button>
                     <button type="button" class="admin-subnav-btn ${activeTab === 'notifications' ? 'active' : ''}" style="${unreadNotifsCount > 0 ? 'border-color: #ff2a4b; color: #ff2a4b; font-weight: 800;' : ''}" onclick="window.msotPlatform.switchAdminSubTab('notifications')">
                         🔔 NOTIFICATIONS (${unreadNotifsCount})

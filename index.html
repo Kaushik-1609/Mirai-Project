@@ -10,14 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Noto+Serif+JP:wght@600;700;900&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Stylesheets & Favicon (v=45 forces clean load across GitHub and Live Server) -->
+    <!-- Stylesheets & Favicon (v=46 forces clean load across GitHub and Live Server) -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="css/main.css?v=45">
-    <link rel="stylesheet" href="css/hero-gate.css?v=45">
-    <link rel="stylesheet" href="css/games.css?v=45">
-    <link rel="stylesheet" href="css/auth.css?v=45">
-    <link rel="stylesheet" href="css/dashboard.css?v=45">
-    <link rel="stylesheet" href="css/faculty-flashcard.css?v=45">
+    <link rel="stylesheet" href="css/main.css?v=46">
+    <link rel="stylesheet" href="css/hero-gate.css?v=46">
+    <link rel="stylesheet" href="css/games.css?v=46">
+    <link rel="stylesheet" href="css/auth.css?v=46">
+    <link rel="stylesheet" href="css/dashboard.css?v=46">
+    <link rel="stylesheet" href="css/faculty-flashcard.css?v=46">
 
     <!-- Tailwind CSS (core preflight disabled to guarantee zero conflict with custom styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -35,9 +35,14 @@
                 var savedTheme = localStorage.getItem('MSOT_THEME') || 'lavender';
                 document.documentElement.setAttribute('data-theme', savedTheme);
 
-                var curHash = (window.location.hash || '').toLowerCase();
-                if (curHash !== '#/login' && curHash !== '#/signup') {
-                    document.documentElement.classList.add('has-session');
+                var rawSession = localStorage.getItem('MSOT_LEARN_AUTH_SESSION_V1');
+                if (rawSession) {
+                    try {
+                        var parsed = JSON.parse(rawSession);
+                        if (parsed && (parsed.approval_status || 'APPROVED').toUpperCase() === 'APPROVED') {
+                            document.documentElement.classList.add('has-session');
+                        }
+                    } catch(e) {}
                 }
             } catch(e) {}
         })();
@@ -1196,22 +1201,22 @@
     <!-- Framer Motion (v10 UMD) -->
     <script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
 
-    <!-- Application Scripts (v=45 busts any browser/Live Server cache) -->
-    <script src="js/auth.js?v=45"></script>
-    <script src="js/audio.js?v=45"></script>
-    <script src="js/state.js?v=45"></script>
-    <script src="js/games-data.js?v=45"></script>
-    <script src="js/three-viewport.js?v=45"></script>
-    <script src="js/gate-canvas.js?v=45"></script>
-    <script src="js/game-engine.js?v=45"></script>
-    <script src="js/scroll-animations.js?v=45"></script>
-    <script src="js/pixel-grid-trail.js?v=45"></script>
-    <script src="js/guild.js?v=45"></script>
-    <script src="js/rbac.js?v=45"></script>
-    <script src="js/battle.js?v=45"></script>
-    <script src="js/react-league-module.js?v=45"></script>
-    <script src="js/dashboard-service.js?v=45"></script>
-    <script src="js/platform.js?v=45"></script>
-    <script src="js/app.js?v=45"></script>
+    <!-- Application Scripts (v=46 busts any browser/Live Server cache) -->
+    <script src="js/auth.js?v=46"></script>
+    <script src="js/audio.js?v=46"></script>
+    <script src="js/state.js?v=46"></script>
+    <script src="js/games-data.js?v=46"></script>
+    <script src="js/three-viewport.js?v=46"></script>
+    <script src="js/gate-canvas.js?v=46"></script>
+    <script src="js/game-engine.js?v=46"></script>
+    <script src="js/scroll-animations.js?v=46"></script>
+    <script src="js/pixel-grid-trail.js?v=46"></script>
+    <script src="js/guild.js?v=46"></script>
+    <script src="js/rbac.js?v=46"></script>
+    <script src="js/battle.js?v=46"></script>
+    <script src="js/react-league-module.js?v=46"></script>
+    <script src="js/dashboard-service.js?v=46"></script>
+    <script src="js/platform.js?v=46"></script>
+    <script src="js/app.js?v=46"></script>
 </body>
 </html>

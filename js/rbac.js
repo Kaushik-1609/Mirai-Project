@@ -18,6 +18,15 @@
     const STORAGE_INACTIVITY_KEY      = 'MSOT_INACTIVITY_REASONS_V2';
     const STORAGE_MESSAGES_KEY        = 'MSOT_ACADEMIC_MESSAGES_V2';
 
+    function safeAlert(msg) {
+        console.warn("[RBAC Notice]", msg);
+        try {
+            if (typeof window.showToast === 'function') {
+                window.showToast(msg);
+            }
+        } catch(e){}
+    }
+
     // ─── Seed Questions ────────────────────────────────────────────────────────
     const SEED_QUESTIONS = [
         {
@@ -232,6 +241,7 @@
             this.sectionFilter         = 'ALL';
 
             window.msotRBAC = this;
+            setTimeout(() => { this.syncFromSupabase(); }, 500);
             console.log("⚡ MSOT RBAC & Governance Engine Initialized!");
         }
 
@@ -762,7 +772,12 @@
                                 username: acc.username,
                                 studentId: acc.studentId || 'MSOT-CADET',
                                 role: (acc.role || 'STUDENT').toUpperCase(),
+                                requested_role: (acc.requested_role || acc.role || 'STUDENT').toUpperCase(),
+                                approval_status: (acc.approval_status || (acc.status === 'PENDING' ? 'PENDING' : 'APPROVED')).toUpperCase(),
                                 status: acc.status || 'ACTIVE',
+                                rejection_reason: acc.rejection_reason || '',
+                                approved_at: acc.approved_at || null,
+                                approved_by: acc.approved_by || null,
                                 avatar: acc.avatar || '⚔️',
                                 branch: acc.branch || 'Computer Science & Engineering (CSE)',
                                 section: acc.section || 'Section Alpha',
@@ -784,6 +799,9 @@
                         } else {
                             if (acc.status) builtin[emailKey].status = acc.status;
                             if (acc.role) builtin[emailKey].role = acc.role;
+                            if (acc.requested_role) builtin[emailKey].requested_role = acc.requested_role;
+                            if (acc.approval_status) builtin[emailKey].approval_status = acc.approval_status;
+                            if (acc.rejection_reason !== undefined) builtin[emailKey].rejection_reason = acc.rejection_reason;
                             if (acc.lastActive) builtin[emailKey].lastActive = acc.lastActive;
                         }
                     }
@@ -844,6 +862,10 @@
 
         getFacultyOnly() {
             return this.getAllUsers().filter(u => u.role === 'FACULTY');
+        }
+
+        getFacultyUsers() {
+            return this.getFacultyOnly();
         }
 
         getUser(email) {
@@ -950,6 +972,75 @@
         }
 
         // ─── Registration Approvals & Notifications Governance ────────────────
+        async syncFromSupabase() {
+            if (!window.supabaseClient) return;
+            try {
+                const { data: profiles, error: pErr } = await window.supabaseClient
+                    .from('profiles')
+                    .select('*');
+                if (profiles && !pErr && profiles.length > 0) {
+                    const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+                    const accounts = stored ? JSON.parse(stored) : {};
+                    profiles.forEach(p => {
+                        const em = (p.email || '').toLowerCase().trim();
+                        if (em) {
+                            accounts[em] = {
+                                ...(accounts[em] || {}),
+                                id: p.id,
+                                email: p.email,
+                                name: p.display_name || p.full_name || accounts[em]?.name || em.split('@')[0],
+                                username: p.username || accounts[em]?.username,
+                                studentId: p.student_id || accounts[em]?.studentId,
+                                role: (p.role || accounts[em]?.role || 'STUDENT').toUpperCase(),
+                                requested_role: (p.requested_role || accounts[em]?.requested_role || p.role || 'STUDENT').toUpperCase(),
+                                approval_status: (p.approval_status || accounts[em]?.approval_status || 'PENDING').toUpperCase(),
+                                status: (p.status || accounts[em]?.status || 'ACTIVE').toUpperCase(),
+                                rejection_reason: p.rejection_reason || accounts[em]?.rejection_reason || null,
+                                year: p.year || accounts[em]?.year,
+                                semester: p.semester || accounts[em]?.semester,
+                                section: p.section || accounts[em]?.section,
+                                branch: p.branch || accounts[em]?.branch,
+                                phone: p.phone || accounts[em]?.phone,
+                                avatar: p.avatar || accounts[em]?.avatar,
+                                registeredAt: p.created_at || accounts[em]?.registeredAt || new Date().toISOString(),
+                                approvedAt: p.approved_at || accounts[em]?.approvedAt,
+                                approvedBy: p.approved_by || accounts[em]?.approvedBy
+                            };
+                        }
+                    });
+                    localStorage.setItem('MSOT_LEARN_ACCOUNTS_V2', JSON.stringify(accounts));
+                }
+
+                const { data: notifs, error: nErr } = await window.supabaseClient
+                    .from('admin_notifications')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                if (notifs && !nErr && notifs.length > 0) {
+                    const localNotifs = this.loadAdminNotifications();
+                    const notifMap = new Map();
+                    localNotifs.forEach(n => notifMap.set(n.id || n.userEmail || n.user_email, n));
+                    notifs.forEach(n => {
+                        notifMap.set(n.id, {
+                            id: n.id,
+                            userId: n.user_id,
+                            userName: n.user_name,
+                            userEmail: (n.user_email || '').toLowerCase(),
+                            requestedRole: (n.requested_role || 'STUDENT').toUpperCase(),
+                            type: n.notification_type || 'REGISTRATION_REQUEST',
+                            title: n.title || `New ${(n.requested_role || 'STUDENT').toUpperCase()} registration requires approval.`,
+                            message: n.message,
+                            read: !!n.read,
+                            createdAt: n.created_at
+                        });
+                    });
+                    const merged = Array.from(notifMap.values()).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    this.saveAdminNotifications(merged);
+                }
+            } catch (err) {
+                console.warn("Supabase RBAC sync note:", err);
+            }
+        }
+
         loadAdminNotifications() {
             try {
                 const raw = localStorage.getItem('MSOT_ADMIN_NOTIFICATIONS_V1');
@@ -1093,7 +1184,7 @@
 
         async approveRegistration(emailOrId) {
             if (!this.isAdmin()) {
-                alert('⚠️ Access Denied: Only Administrators can approve registrations.');
+                safeAlert('⚠️ Access Denied: Only Administrators can approve registrations.');
                 return false;
             }
             const cleanTarget = (emailOrId || '').toLowerCase().trim();
@@ -1109,7 +1200,7 @@
             }
 
             if (!targetKey) {
-                alert(`Registration record not found for [${emailOrId}].`);
+                safeAlert(`Registration record not found for [${emailOrId}].`);
                 return false;
             }
 
@@ -1129,14 +1220,21 @@
             // Sync with Supabase profiles table
             if (window.supabaseClient) {
                 try {
-                    await window.supabaseClient.from('profiles').update({
-                        role: assignedRole.toLowerCase(),
-                        status: 'active',
-                        approval_status: 'approved',
-                        rejection_reason: null,
-                        approved_at: acc.approved_at,
-                        updated_at: new Date().toISOString()
-                    }).eq('email', acc.email);
+                    if (acc.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(acc.id)) {
+                        await window.supabaseClient.rpc('admin_decide_registration', {
+                            p_user_id: acc.id,
+                            p_decision: 'approve'
+                        });
+                    } else {
+                        await window.supabaseClient.from('profiles').update({
+                            role: assignedRole.toLowerCase(),
+                            status: 'active',
+                            approval_status: 'approved',
+                            rejection_reason: null,
+                            approved_at: acc.approved_at,
+                            updated_at: new Date().toISOString()
+                        }).eq('email', acc.email);
+                    }
                 } catch(e) {
                     console.warn("Supabase approval sync note:", e.message);
                 }
@@ -1168,7 +1266,7 @@
 
         async rejectRegistration(emailOrId, reason) {
             if (!this.isAdmin()) {
-                alert('⚠️ Access Denied: Only Administrators can reject registrations.');
+                safeAlert('⚠️ Access Denied: Only Administrators can reject registrations.');
                 return false;
             }
             const cleanTarget = (emailOrId || '').toLowerCase().trim();
@@ -1184,7 +1282,7 @@
             }
 
             if (!targetKey) {
-                alert(`Registration record not found for [${emailOrId}].`);
+                safeAlert(`Registration record not found for [${emailOrId}].`);
                 return false;
             }
 
@@ -1201,12 +1299,20 @@
             // Sync with Supabase profiles table
             if (window.supabaseClient) {
                 try {
-                    await window.supabaseClient.from('profiles').update({
-                        status: 'inactive',
-                        approval_status: 'rejected',
-                        rejection_reason: rejectReason,
-                        updated_at: new Date().toISOString()
-                    }).eq('email', acc.email);
+                    if (acc.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(acc.id)) {
+                        await window.supabaseClient.rpc('admin_decide_registration', {
+                            p_user_id: acc.id,
+                            p_decision: 'reject',
+                            p_reason: rejectReason
+                        });
+                    } else {
+                        await window.supabaseClient.from('profiles').update({
+                            status: 'inactive',
+                            approval_status: 'rejected',
+                            rejection_reason: rejectReason,
+                            updated_at: new Date().toISOString()
+                        }).eq('email', acc.email);
+                    }
                 } catch(e) {
                     console.warn("Supabase rejection sync note:", e.message);
                 }

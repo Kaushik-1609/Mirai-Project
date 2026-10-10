@@ -39,62 +39,8 @@
         console.warn("Supabase init note:", e.message);
     }
 
-    // Helper: Create Supabase user via Admin API (bypasses 3/hr SMTP rate limit & auto-confirms email)
-    async function createSupabaseUserAdmin(email, password, metadata) {
-        try {
-            const resp = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
-                method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_SECRET_KEY,
-                    'Authorization': `Bearer ${SUPABASE_SECRET_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    email_confirm: true,
-                    user_metadata: metadata
-                })
-            });
-            const data = await resp.json();
-            if (!resp.ok) {
-                return { error: data };
-            }
-            return { data: { user: data } };
-        } catch (e) {
-            return { error: e };
-        }
-    }
-
-    // Helper: Auto-confirm user in Supabase if marked unconfirmed
-    async function autoConfirmSupabaseUser(email) {
-        try {
-            const listResp = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
-                headers: {
-                    'apikey': SUPABASE_SECRET_KEY,
-                    'Authorization': `Bearer ${SUPABASE_SECRET_KEY}`
-                }
-            });
-            if (!listResp.ok) return false;
-            const listData = await listResp.json();
-            const user = (listData.users || []).find(u => u.email?.toLowerCase() === email.toLowerCase());
-            if (user && user.id) {
-                const updResp = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${user.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'apikey': SUPABASE_SECRET_KEY,
-                        'Authorization': `Bearer ${SUPABASE_SECRET_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email_confirm: true })
-                });
-                return updResp.ok;
-            }
-        } catch (e) {
-            console.warn("Auto-confirm error:", e);
-        }
-        return false;
-    }
+    // Notice: Client-side operations strictly use public anon/publishable credentials.
+    // Privileged admin functions are handled via PostgreSQL RLS & stored procedures.
 
     const BUILTIN_USERS = {
         'admin@msot.edu': {
@@ -596,6 +542,7 @@
 
     function applySessionToUI(session) {
         if (!session) return;
+        closeAccountStatusModal();
         if (session.section) session.section = normalizeSection(session.section);
         window.msotAuth.session = session;
 
@@ -699,12 +646,13 @@
     }
 
     function navigateToRoleDefault(role) {
-        if (role === 'FACULTY') {
+        const cleanRole = (role || 'STUDENT').toUpperCase();
+        if (cleanRole === 'FACULTY') {
             window.location.hash = '#/faculty';
-        } else if (role === 'ADMIN') {
+        } else if (cleanRole === 'ADMIN') {
             window.location.hash = '#/admin';
         } else {
-            window.location.hash = '#/gates';
+            window.location.hash = '#/dashboard';
         }
     }
 
@@ -753,17 +701,6 @@
                     password
                 });
 
-                // Auto-confirm if Supabase complains about unconfirmed email
-                if (error && (error.message?.includes('Email not confirmed') || error.code === 'email_not_confirmed')) {
-                    console.log("⚡ Auto-confirming cadet email via Supabase Admin API...");
-                    const confirmed = await autoConfirmSupabaseUser(email);
-                    if (confirmed) {
-                        const retry = await supabaseClient.auth.signInWithPassword({ email, password });
-                        data = retry.data;
-                        error = retry.error;
-                    }
-                }
-
                 if (error) {
                     supaError = error;
                 } else if (data?.session) {
@@ -775,30 +712,34 @@
             }
         }
 
-        // 2. If it is one of the Demo accounts and not yet in Supabase, auto-create in Supabase & retry
+        // 2. Demo accounts check
         const builtIn = BUILTIN_USERS[email];
-        if (!supaSession && builtIn && password === DEFAULT_PASS) {
-            console.log("⚡ Auto-provisioning demo cadet in Supabase:", email);
-            await createSupabaseUserAdmin(email, password, {
-                name: builtIn.name,
-                username: builtIn.username,
-                studentId: builtIn.studentId,
-                year: builtIn.year,
-                semester: builtIn.semester,
-                section: builtIn.section,
-                role: builtIn.role,
-                avatar: builtIn.avatar,
-                track: builtIn.track
-            });
-            if (supabaseClient) {
-                try {
-                    const retry = await supabaseClient.auth.signInWithPassword({ email, password });
-                    if (retry.data?.session) {
-                        supaSession = retry.data.session;
-                        supaError = null;
+        if (!supaSession && builtIn && password === DEFAULT_PASS && supabaseClient) {
+            try {
+                const retry = await supabaseClient.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            name: builtIn.name,
+                            username: builtIn.username,
+                            studentId: builtIn.studentId,
+                            year: builtIn.year,
+                            semester: builtIn.semester,
+                            section: builtIn.section,
+                            role: builtIn.role,
+                            requested_role: builtIn.role,
+                            approval_status: 'APPROVED',
+                            avatar: builtIn.avatar,
+                            track: builtIn.track
+                        }
                     }
-                } catch(e) {}
-            }
+                });
+                if (retry.data?.session) {
+                    supaSession = retry.data.session;
+                    supaError = null;
+                }
+            } catch(e) {}
         }
 
         if (submitBtn) {
@@ -943,8 +884,8 @@
             return true;
         }
 
-        // 3. Fallback to locally registered accounts (only if offline)
-        const localAccounts = getStoredAccounts();
+        // 3. Fallback to locally registered and builtin accounts (resilient authentication)
+        const localAccounts = getAllAccounts();
         const localUser = localAccounts[email];
         if (localUser && localUser.password === password) {
             const cleanUser = (localUser.username || localUser.name || email.split('@')[0]).replace(/^@/, '');
@@ -1132,7 +1073,7 @@
         let supaSession = null;
         let supaError = null;
 
-        // Step 1: Use Supabase Admin API to create user with requested_role and pending status
+        // Step 1: Use Supabase Client Auth to create user with requested_role and pending status
         const userMetadata = {
             name,
             username,
@@ -1150,40 +1091,34 @@
             avatar
         };
 
-        const adminResult = await createSupabaseUserAdmin(email, password, userMetadata);
+        if (supabaseClient) {
+            try {
+                const { data: authData, error } = await supabaseClient.auth.signUp({
+                    email,
+                    password,
+                    options: { data: userMetadata }
+                });
 
-        if (adminResult.data?.user) {
-            supaUser = adminResult.data.user;
-        } else if (
-            adminResult.error?.error_code === 'email_exists' ||
-            adminResult.error?.code === 422 ||
-            adminResult.error?.msg?.includes('already been registered')
-        ) {
-            supaError = new Error("This email is already registered in the system. Please sign in with your password, or use a different email.");
-        } else {
-            if (supabaseClient) {
-                try {
-                    const { data: authData, error } = await supabaseClient.auth.signUp({
-                        email,
-                        password,
-                        options: { data: userMetadata }
-                    });
-
-                    if (error) {
-                        if (error.message?.includes('rate limit')) {
-                            console.warn("Supabase rate limited, saving registration locally");
-                            supaError = null;
-                        } else {
-                            supaError = error;
-                        }
-                    } else if (authData?.user) {
-                        supaUser = authData.user;
-                        supaSession = authData.session;
+                if (error) {
+                    if (
+                        error.message?.includes('already registered') ||
+                        error.message?.includes('User already registered') ||
+                        error.status === 422
+                    ) {
+                        supaError = new Error("This email is already registered in the system. Please sign in with your password, or use a different email.");
+                    } else if (error.message?.includes('rate limit')) {
+                        console.warn("Supabase rate limited, saving registration locally");
+                        supaError = null;
+                    } else {
+                        supaError = error;
                     }
-                } catch (err) {
-                    console.warn("Supabase signup error:", err);
-                    supaError = err;
+                } else if (authData?.user) {
+                    supaUser = authData.user;
+                    supaSession = authData.session;
                 }
+            } catch (err) {
+                console.warn("Supabase signup error:", err);
+                supaError = err;
             }
         }
 
@@ -1198,24 +1133,27 @@
             return false;
         }
 
-        // Step 2: Sync to Supabase profiles table with approval_status = 'PENDING'
+        // Step 2: Sync to Supabase profiles table with approval_status = 'pending'
         if (supabaseClient && supaUser?.id) {
             try {
                 await supabaseClient.from('profiles').upsert({
                     id: supaUser.id,
                     email: email,
+                    display_name: name,
                     full_name: name,
                     username: username,
                     student_id: studentId,
-                    role: requestedRole,
-                    requested_role: requestedRole,
-                    approval_status: 'PENDING',
+                    role: requestedRole.toLowerCase(),
+                    requested_role: requestedRole.toLowerCase(),
+                    approval_status: 'pending',
+                    status: 'pending',
                     year: year,
                     semester: semester,
                     section: section,
                     branch: branch,
                     phone: phone,
                     avatar: avatar,
+                    track: track,
                     updated_at: new Date().toISOString()
                 });
             } catch (pe) {
@@ -1468,6 +1406,7 @@
                 showAuthScreen(false);
             }
         } else {
+            const isPublicRoute = (curHash === '#/gates' || curHash === '#/intro' || curHash === '#/about' || !curHash || curHash === '#');
             if (isAuthRoute) {
                 showAuthScreen(true);
                 if (curHash === '#/signup') {
@@ -1476,10 +1415,13 @@
                     switchAuthTab('signin');
                     showPortalSelector();
                 }
-            } else {
-                // Seamlessly provide default student cadet session so platform sections are interactive
-                activeSession = ensureDefaultStudentSession();
+            } else if (isPublicRoute) {
                 showAuthScreen(false);
+            } else {
+                // Protected route with no session -> redirect to login
+                showAuthScreen(true);
+                switchAuthTab('signin');
+                showPortalSelector();
             }
         }
 

@@ -95,10 +95,12 @@ window.switchSection = function (sectionId, updateHash = true) {
     // Role-based navigation guard (Three-Role RBAC Enforcement)
     const effectiveRole = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || window.msotAuth?.session?.role || 'STUDENT')).toUpperCase();
     if (sectionId === 'adminSection' && effectiveRole !== 'ADMIN') {
-        alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators. Students and Faculty cannot access this control plane.');
+        console.warn('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
+        if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Admin section is restricted.');
         sectionId = (effectiveRole === 'FACULTY') ? 'facultySection' : 'dashboardSection';
     } else if (sectionId === 'facultySection' && effectiveRole !== 'FACULTY' && effectiveRole !== 'ADMIN') {
-        alert('⚠️ Access Denied: The Faculty Evaluation Section is reserved for Faculty and Administrators. Students cannot access this section.');
+        console.warn('⚠️ Access Denied: The Faculty Evaluation Section is reserved for Faculty and Administrators.');
+        if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Faculty section is restricted.');
         sectionId = 'dashboardSection';
     }
 
@@ -275,36 +277,47 @@ function handleRoute() {
         return;
     }
 
-    // Ensure cadet session is ready (seamless fallback for platform visitors)
-    let session = window.msotAuth?.session;
-    if (!session && window.msotAuth?.ensureDefaultStudentSession) {
-        session = window.msotAuth.ensureDefaultStudentSession();
-    }
+    // 1. Session authentication & route protection
+    const session = window.msotAuth?.session;
+    const isPublicRoute = (hash === '#/gates' || hash === '#/intro' || hash === '#/about' || !hash || hash === '#');
 
-    // APPROVAL STATUS CHECK
-    const approvalStatus = (session?.approval_status || 'APPROVED').toUpperCase();
-    if (session && session.email !== 'admin@msot.edu' && approvalStatus !== 'APPROVED') {
+    if (!session && !isPublicRoute) {
         window.location.hash = '#/login';
-        if (window.msotAuth?.showAccountStatusModal) {
-            window.msotAuth.showAccountStatusModal(approvalStatus, {
-                name: session.name,
-                email: session.email,
-                requestedRole: session.role,
-                status: approvalStatus
-            });
+        if (window.msotAuth && typeof window.msotAuth.showAuthScreen === 'function') {
+            window.msotAuth.showAuthScreen(true);
+            window.msotAuth.switchAuthTab?.('signin');
         }
         return;
     }
 
-    // ROLE ACCESS GUARD for protected URL paths
+    // 2. APPROVAL STATUS CHECK for authenticated users
+    if (session) {
+        const approvalStatus = (session.approval_status || 'APPROVED').toUpperCase();
+        if (session.email !== 'admin@msot.edu' && approvalStatus !== 'APPROVED') {
+            window.location.hash = '#/login';
+            if (window.msotAuth?.showAccountStatusModal) {
+                window.msotAuth.showAccountStatusModal(approvalStatus, {
+                    name: session.name,
+                    email: session.email,
+                    requestedRole: session.role,
+                    status: approvalStatus
+                });
+            }
+            return;
+        }
+    }
+
+    // 3. ROLE ACCESS GUARD for protected URL paths
     const userRole = (session?.role || (window.msotRBAC ? window.msotRBAC.getCurrentRole() : 'STUDENT')).toUpperCase();
     if ((hash === '#/admin' || hash === '#/xp-rules') && userRole !== 'ADMIN') {
-        alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
+        console.warn('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
+        if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Admin route is restricted.');
         window.location.hash = userRole === 'FACULTY' ? '#/faculty' : '#/dashboard';
         return;
     }
     if (hash === '#/faculty' && userRole !== 'FACULTY' && userRole !== 'ADMIN') {
-        alert('⚠️ Access Denied: The Faculty Dashboard is reserved for Faculty and Administrators.');
+        console.warn('⚠️ Access Denied: The Faculty Dashboard is reserved for Faculty and Administrators.');
+        if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Faculty route is restricted.');
         window.location.hash = '#/dashboard';
         return;
     }
