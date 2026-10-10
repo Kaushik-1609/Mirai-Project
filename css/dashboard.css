@@ -84,28 +84,53 @@
     color: #7c3aed !important;
 }
 
+[data-theme="lavender"] .main-nav,
+:root:not([data-theme="cyber"]):not([data-theme="midnight"]) .main-nav {
+    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+    gap: 7px !important;
+    padding: 7px 12px 6px !important;
+}
+
 [data-theme="lavender"] .nav-link,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .nav-link {
-    color: rgba(255, 255, 255, 0.92) !important;
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 13.5px !important;
     font-weight: 700 !important;
-    transition: all 0.2s ease !important;
+    letter-spacing: 0.6px !important;
+    padding: 8px 16px !important;
+    min-height: 38px !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-transform: uppercase !important;
 }
 
 [data-theme="lavender"] .nav-link:hover,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .nav-link:hover {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.22) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-1.5px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14) !important;
 }
 
-/* CHOSEN / SELECTED SECTION: CLEAN WHITE WITH VIVID LAVENDER TEXT */
+/* CHOSEN / SELECTED SECTION: CLEAN WHITE WITH VIVID ROYAL LAVENDER TEXT */
 [data-theme="lavender"] .nav-link.active,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .nav-link.active {
     background: #ffffff !important;
     border-color: #ffffff !important;
-    color: #7c3aed !important;
-    font-weight: 900 !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+    color: #6d28d9 !important;
+    font-weight: 850 !important;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(109, 40, 217, 0.28) !important;
+    transform: translateY(-1px) !important;
 }
 
 [data-theme="lavender"] .cadet-hud-pill,
@@ -206,14 +231,31 @@
 
 [data-theme="lavender"] .mobile-nav-link,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .mobile-nav-link {
-    color: rgba(255, 255, 255, 0.92) !important;
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    padding: 13px 18px !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-theme="lavender"] .mobile-nav-link:hover,
+:root:not([data-theme="cyber"]):not([data-theme="midnight"]) .mobile-nav-link:hover {
+    background: rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
 }
 
 [data-theme="lavender"] .mobile-nav-link.active,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .mobile-nav-link.active {
     background: #ffffff !important;
-    color: #7c3aed !important;
-    font-weight: 800 !important;
+    color: #6d28d9 !important;
+    font-weight: 850 !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18) !important;
 }
 
 /* THEME 2: CYBER DARK (NEO-TOKYO) */

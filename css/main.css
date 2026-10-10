@@ -203,10 +203,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding-top: 5px;
-    padding-bottom: 2px;
+    gap: 7px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 7px 10px 5px;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -220,30 +219,38 @@ body {
 .nav-link {
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 11px;
+    font-size: 13.5px;
     font-weight: 700;
-    font-family: var(--font-mono);
-    letter-spacing: 0.5px;
-    padding: 5px 12px;
-    border-radius: 7px;
-    transition: all 0.22s ease;
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: 0.6px;
+    padding: 8px 16px;
+    min-height: 38px;
+    border-radius: 10px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid transparent;
     position: relative;
     white-space: nowrap;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
 }
 
 .nav-link:hover {
     color: #ffffff;
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1.5px);
 }
 
 .nav-link.active {
     color: #ffffff;
-    background: rgba(244, 63, 94, 0.12);
-    border-color: rgba(244, 63, 94, 0.4);
-    box-shadow: 0 0 14px rgba(244, 63, 94, 0.2);
+    background: rgba(244, 63, 94, 0.16);
+    border-color: rgba(244, 63, 94, 0.5);
+    box-shadow: 0 4px 16px rgba(244, 63, 94, 0.25);
+    font-weight: 800;
+    transform: translateY(-1px);
 }
 
 .nav-link.active::after {
@@ -714,20 +721,20 @@ body {
 }
 
 .mobile-nav-link {
-    padding: 12px 14px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #d0d4dd;
+    padding: 13px 18px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    color: #e2e8f0;
     text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 12px;
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+    font-size: 14px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: all 0.2s ease;
+    gap: 12px;
+    transition: all 0.22s ease;
 }
 
 .mobile-nav-link:hover,
@@ -6340,13 +6347,13 @@ body {
         gap: 6px;
     }
     .nav-link {
-        font-size: 10.5px;
-        padding: 4px 8px;
+        font-size: 12.5px;
+        padding: 7px 14px;
         letter-spacing: 0.5px;
     }
     .main-nav {
-        gap: 3px;
-        padding: 4px 12px;
+        gap: 5px;
+        padding: 5px 10px;
     }
     .content-container {
         padding: 24px 20px 60px;
@@ -6371,12 +6378,12 @@ body {
         gap: 5px;
     }
     .nav-link {
-        font-size: 10px;
-        padding: 4px 7px;
+        font-size: 12px;
+        padding: 6px 12px;
     }
     .main-nav {
-        gap: 2px;
-        padding: 3px 8px;
+        gap: 4px;
+        padding: 4px 8px;
     }
     .how-xp-btn,
     .sound-toggle-btn,
