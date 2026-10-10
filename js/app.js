@@ -61,17 +61,21 @@ const SECTION_TO_HASH = {
 let _gateEngine = null;
 
 window.updateNavRoleVisibility = function () {
-    const role = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || 'STUDENT')).toUpperCase();
+    const role = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || window.msotAuth?.session?.role || 'STUDENT')).toUpperCase();
     const sessionRole = (window.msotAuth?.session?.role || 'STUDENT').toUpperCase();
-    const isTrueAdmin = (role === 'ADMIN' || sessionRole === 'ADMIN' || (window.msotAuth?.session?.name || '').toLowerCase().includes('utkarsh') || (window.msotAuth?.session?.email || '').toLowerCase().includes('admin'));
+    const isAdmin = (role === 'ADMIN' || (sessionRole === 'ADMIN' && role !== 'STUDENT'));
+
+    document.body.setAttribute('data-user-role', role);
 
     document.querySelectorAll('[data-nav-role]').forEach(el => {
-        const requiredRole = el.getAttribute('data-nav-role');
-        if (requiredRole === 'ADMIN') {
-            el.style.display = (role === 'ADMIN' || isTrueAdmin) ? '' : 'none';
-        } else if (requiredRole === 'FACULTY') {
-            // Faculty view is accessible to Admin, Faculty, and evaluators/students
+        const reqRoles = (el.getAttribute('data-nav-role') || '').split(',').map(r => r.trim().toUpperCase());
+        if (isAdmin) {
             el.style.display = '';
+        } else if (role === 'FACULTY' || (sessionRole === 'FACULTY' && role !== 'STUDENT')) {
+            el.style.display = reqRoles.includes('FACULTY') ? '' : 'none';
+        } else {
+            // STUDENT: Completely hide Admin and Faculty navigation
+            el.style.display = reqRoles.includes('STUDENT') ? '' : 'none';
         }
     });
 };
@@ -85,8 +89,10 @@ window.switchSection = function (sectionId, updateHash = true) {
     if (sectionId === 'adminSection' && effectiveRole !== 'ADMIN') {
         alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators. Students and Faculty cannot access this control plane.');
         sectionId = 'dashboardSection';
+    } else if (sectionId === 'facultySection' && effectiveRole === 'STUDENT') {
+        alert('⚠️ Access Denied: The Faculty Evaluation Section is reserved for Faculty and Administrators. Students cannot access this section.');
+        sectionId = 'dashboardSection';
     }
-    // Faculty Section is open to Faculty, Admins, and Student preview/inspection mode!
 
     if (typeof window.updateNavRoleVisibility === 'function') {
         window.updateNavRoleVisibility();
@@ -297,10 +303,14 @@ function handleRoute() {
     const userRole = (session.role || 'STUDENT').toUpperCase();
     if (hash === '#/admin' && userRole !== 'ADMIN') {
         alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
-        window.location.hash = '#/assignments';
+        window.location.hash = '#/dashboard';
         return;
     }
-    // Faculty Terminal is accessible to all for viewing cadet character flashcards and dossiers!
+    if (hash === '#/faculty' && userRole === 'STUDENT') {
+        alert('⚠️ Access Denied: The Faculty Dashboard is reserved for Faculty and Administrators.');
+        window.location.hash = '#/dashboard';
+        return;
+    }
 
     // Intro route -> direct to The Gates
     if (hash === '#/intro' || route?.isIntro) {

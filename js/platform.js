@@ -114,12 +114,10 @@ class MSOTPlatformController {
             this.renderFacultyDashboard();
             window.switchSection('facultySection', true);
         } else {
-            // Student preview mode
+            // Student mode: redirect away from restricted sections
             const activeSec = document.querySelector('.app-section.active')?.id;
-            if (activeSec === 'adminSection') {
-                window.switchSection('assignmentsSection', true);
-            } else if (activeSec === 'facultySection') {
-                this.renderFacultyDashboard();
+            if (activeSec === 'adminSection' || activeSec === 'facultySection') {
+                window.switchSection('dashboardSection', true);
             }
         }
         if (window.miraiAudio && window.miraiAudio.playClick) window.miraiAudio.playClick();
@@ -127,12 +125,12 @@ class MSOTPlatformController {
 
     applyRolePermissions(role) {
         const session = window.msotAuth?.session || {};
-        const isTrueAdmin = (session.role === 'ADMIN' || (session.name || '').toLowerCase().includes('utkarsh') || (session.email || '').toLowerCase().includes('utkarsh') || session.email === 'admin@msot.edu');
+        const isTrueAdmin = (session.role === 'ADMIN' || session.email === 'admin@msot.edu');
         
         if (!this.activeRole) {
-            this.activeRole = isTrueAdmin ? 'ADMIN' : (role || 'STUDENT').toUpperCase();
+            this.activeRole = isTrueAdmin ? 'ADMIN' : ((session.role || role || 'STUDENT').toUpperCase());
         }
-        const effectiveRole = (this.activeRole || role || 'STUDENT').toUpperCase();
+        const effectiveRole = (this.activeRole || session.role || role || 'STUDENT').toUpperCase();
         document.body.setAttribute('data-user-role', effectiveRole);
 
         // Update single role display in header
@@ -1775,7 +1773,24 @@ class MSOTPlatformController {
         if (!container) return;
 
         const rawRole = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (this.activeRole || window.msotState?.currentRole || 'STUDENT')).toUpperCase();
-        const isAdmin = (rawRole === 'ADMIN' || (window.msotAuth?.session?.role || '').toUpperCase() === 'ADMIN' || (window.msotAuth?.session?.name || '').toLowerCase().includes('utkarsh') || (window.msotAuth?.session?.email || '').toLowerCase().includes('admin'));
+        if (rawRole === 'STUDENT') {
+            container.innerHTML = `
+                <div class="dashboard-panel scroll-reveal" style="text-align: center; padding: 60px 24px;">
+                    <div style="font-size: 52px; margin-bottom: 14px;">🎓🔒</div>
+                    <h2 class="section-title" style="color: #f59e0b; font-family: var(--font-cyber);">RESTRICTED AREA // FACULTY ACCESS REQUIRED</h2>
+                    <p class="section-subtitle" style="max-width: 640px; margin: 12px auto; color: var(--text-dim);">
+                        The Faculty Dashboard is reserved for Academic Instructors and Administrators.
+                        <strong>Students cannot access this evaluation section.</strong>
+                    </p>
+                    <div style="margin-top: 24px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+                        <button class="primary-btn" onclick="window.switchSection('dashboardSection', true)">➔ GO TO STUDENT DASHBOARD</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const isAdmin = (rawRole === 'ADMIN' || (window.msotAuth?.session?.role || '').toUpperCase() === 'ADMIN' || window.msotAuth?.session?.email === 'admin@msot.edu');
         const isFaculty = rawRole === 'FACULTY' || (window.msotAuth?.session?.role || '').toUpperCase() === 'FACULTY';
         const currentRole = isAdmin ? 'ADMIN' : (isFaculty ? 'FACULTY' : 'FACULTY');
 

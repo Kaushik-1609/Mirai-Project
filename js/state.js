@@ -503,19 +503,13 @@ class MSOTPlatformState {
         this.currentUserEmail = email;
 
         const isDemoStudent = (email === 'student@msot.edu');
-        const isUtkarshAdmin = (
-            (userSession.name && userSession.name.trim().toLowerCase() === 'utkarsh raj') ||
-            (userSession.username && userSession.username.toLowerCase().includes('utkarsh')) ||
-            email.includes('utkarsh') ||
-            email === 'admin@msot.edu' ||
-            (userSession.role && userSession.role.toUpperCase() === 'ADMIN')
-        );
+        const isAdmin = ((userSession.role && userSession.role.toUpperCase() === 'ADMIN') || email === 'admin@msot.edu');
         const userStoreKey = `MSOT_STUDENT_PROFILE_${email.replace(/[^a-z0-9]/g, '_')}`;
 
-        if (isUtkarshAdmin) {
+        if (isAdmin) {
             const saved = localStorage.getItem(userStoreKey);
             this.student = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_STUDENT));
-            this.student.name = 'Utkarsh Raj';
+            this.student.name = userSession.name || 'Utkarsh Raj';
             this.student.role = 'ADMIN';
             this.student.avatar = this.student.avatar || '🛡️';
             this.currentRole = 'ADMIN';

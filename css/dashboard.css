@@ -2546,3 +2546,26 @@
     border-color: #7c3aed !important;
     color: #4c1d95 !important;
 }
+
+/* ==========================================================================
+   STRICT ROLE-BASED VISIBILITY GUARDS (CSS ENFORCEMENT)
+   Guarantees Student users NEVER see Admin or Faculty sections or controls
+   ========================================================================== */
+body[data-user-role="STUDENT"] [data-nav-role="ADMIN"],
+body[data-user-role="STUDENT"] [data-nav-role="FACULTY"],
+body[data-user-role="STUDENT"] .facility-toggle-group,
+body[data-user-role="STUDENT"] #adminSection,
+body[data-user-role="STUDENT"] #facultySection,
+body[data-user-role="STUDENT"] .admin-only,
+body[data-user-role="STUDENT"] .faculty-only,
+body:not([data-user-role="ADMIN"]):not([data-user-role="FACULTY"]) [data-nav-role="ADMIN"],
+body:not([data-user-role="ADMIN"]):not([data-user-role="FACULTY"]) [data-nav-role="FACULTY"] {
+    display: none !important;
+}
+
+body[data-user-role="FACULTY"] [data-nav-role="ADMIN"],
+body[data-user-role="FACULTY"] #adminSection,
+body[data-user-role="FACULTY"] .admin-only {
+    display: none !important;
+}
+

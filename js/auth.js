@@ -291,19 +291,12 @@
                 clearSession();
                 return null;
             }
-            // Auto-promote Utkarsh Raj / Admin accounts to ADMIN role
             if (sess) {
-                const nameCheck = (sess.name || '').trim().toLowerCase();
-                const userCheck = (sess.username || sess.alias || '').trim().toLowerCase();
-                const emailCheck = (sess.email || '').trim().toLowerCase();
-                if (nameCheck === 'utkarsh raj' || userCheck.includes('utkarsh') || emailCheck.includes('utkarsh') || emailCheck === 'admin@msot.edu') {
+                // Ensure role is consistent without overriding student/faculty roles
+                if (!sess.role) {
+                    sess.role = (sess.email === 'admin@msot.edu') ? 'ADMIN' : (sess.email === 'faculty@msot.edu' ? 'FACULTY' : 'STUDENT');
+                } else if (sess.email === 'admin@msot.edu') {
                     sess.role = 'ADMIN';
-                    sess.name = 'Utkarsh Raj';
-                    if (!sess.avatar || sess.avatar === '⚔️') sess.avatar = '🛡️';
-                    sess.studentId = sess.studentId || 'ADM-MSOT-001';
-                    try {
-                        localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
-                    } catch(e) {}
                 }
             }
             return sess;
@@ -524,8 +517,8 @@
         const hiddenRoleSelect = $('userRoleSelect');
         if (hiddenRoleSelect) hiddenRoleSelect.value = session.role || 'STUDENT';
 
-        // Filter navigation links: Students only see student tabs, Faculty sees Faculty and Shared tabs, Admin sees all
         const curRole = (session.role || 'STUDENT').toUpperCase();
+        document.body.setAttribute('data-user-role', curRole);
         document.querySelectorAll('[data-nav-role]').forEach(el => {
             const reqRoles = (el.getAttribute('data-nav-role') || '').split(',').map(r => r.trim().toUpperCase());
             if (curRole === 'ADMIN') {
@@ -682,22 +675,23 @@
             const meta = u.user_metadata || {};
             const cleanUser = (meta.username || (builtIn ? builtIn.username : u.email.split('@')[0])).replace(/^@/, '');
             const rawName = meta.name || (builtIn ? builtIn.name : cleanUser);
-            const isUtkarshAdmin = (rawName.trim().toLowerCase() === 'utkarsh raj' || cleanUser.toLowerCase().includes('utkarsh') || (u.email && u.email.toLowerCase().includes('utkarsh')) || u.email?.toLowerCase() === 'admin@msot.edu');
+            const isAdminAccount = (u.email?.toLowerCase() === 'admin@msot.edu' || meta.role === 'ADMIN' || (builtIn && builtIn.role === 'ADMIN'));
+            const userRole = isAdminAccount ? 'ADMIN' : (meta.role || (builtIn ? builtIn.role : (currentLoginRole || 'STUDENT')));
 
             const session = {
                 id: u.id,
                 email: u.email,
-                name: isUtkarshAdmin ? 'Utkarsh Raj' : rawName,
+                name: rawName,
                 username: cleanUser,
                 alias: `@${cleanUser}`,
-                studentId: isUtkarshAdmin ? (meta.studentId || 'ADM-MSOT-001') : (meta.studentId || (builtIn ? builtIn.studentId : `MSOT-${cleanUser.toUpperCase()}`)),
+                studentId: meta.studentId || (builtIn ? builtIn.studentId : `MSOT-${cleanUser.toUpperCase()}`),
                 year: meta.year || (builtIn ? builtIn.year : '2nd Year'),
                 semester: meta.semester || (builtIn ? builtIn.semester : 'Semester 4'),
                 section: normalizeSection(meta.section || (builtIn ? builtIn.section : 'Section Alpha')),
                 branch: meta.branch || (builtIn ? 'Computer Science & Engineering' : 'Computer Science & Engineering (CSE)'),
                 phone: meta.phone || '',
-                role: isUtkarshAdmin ? 'ADMIN' : (meta.role || (builtIn ? builtIn.role : 'STUDENT')),
-                avatar: isUtkarshAdmin ? (meta.avatar || '🛡️') : (meta.avatar || (builtIn ? builtIn.avatar : '⚔️')),
+                role: userRole,
+                avatar: meta.avatar || (builtIn ? builtIn.avatar : (userRole === 'ADMIN' ? '🛡️' : (userRole === 'FACULTY' ? '🎓' : '⚔️'))),
                 track: meta.track || (builtIn ? builtIn.track : 'C++ Algorithms & DSA'),
                 loginAt: new Date().toISOString(),
                 isSupabase: true
@@ -735,22 +729,23 @@
         if (localUser && localUser.password === password) {
             const cleanUser = (localUser.username || localUser.name || email.split('@')[0]).replace(/^@/, '');
             const rawName = localUser.name || cleanUser;
-            const isUtkarshAdmin = (rawName.trim().toLowerCase() === 'utkarsh raj' || cleanUser.toLowerCase().includes('utkarsh') || email.toLowerCase().includes('utkarsh') || email === 'admin@msot.edu');
+            const isAdminAccount = (email === 'admin@msot.edu' || localUser.role === 'ADMIN');
+            const userRole = isAdminAccount ? 'ADMIN' : (localUser.role || (currentLoginRole || 'STUDENT'));
 
             const session = {
                 id: localUser.id || `local_${email}`,
                 email: localUser.email,
-                name: isUtkarshAdmin ? 'Utkarsh Raj' : rawName,
+                name: rawName,
                 username: cleanUser,
                 alias: `@${cleanUser}`,
-                studentId: isUtkarshAdmin ? (localUser.studentId || 'ADM-MSOT-001') : (localUser.studentId || `MSOT-${cleanUser.toUpperCase()}`),
+                studentId: localUser.studentId || `MSOT-${cleanUser.toUpperCase()}`,
                 year: localUser.year || '2nd Year',
                 semester: localUser.semester || 'Semester 4',
                 section: normalizeSection(localUser.section || 'Section Alpha'),
                 branch: localUser.branch || 'Computer Science & Engineering (CSE)',
                 phone: localUser.phone || '',
-                role: isUtkarshAdmin ? 'ADMIN' : (localUser.role || 'STUDENT'),
-                avatar: isUtkarshAdmin ? (localUser.avatar || '🛡️') : (localUser.avatar || '⚔️'),
+                role: userRole,
+                avatar: localUser.avatar || (userRole === 'ADMIN' ? '🛡️' : (userRole === 'FACULTY' ? '🎓' : '⚔️')),
                 track: localUser.track || 'C++ Algorithms & DSA',
                 loginAt: new Date().toISOString()
             };
@@ -1066,22 +1061,23 @@
                     const meta = u.user_metadata || {};
                     const cleanUser = (meta.username || u.email.split('@')[0]).replace(/^@/, '');
                     const rawName = meta.name || cleanUser;
-                    const isUtkarshAdmin = (rawName.trim().toLowerCase() === 'utkarsh raj' || cleanUser.toLowerCase().includes('utkarsh') || (u.email && u.email.toLowerCase().includes('utkarsh')) || u.email?.toLowerCase() === 'admin@msot.edu');
+                    const isAdminAccount = (u.email?.toLowerCase() === 'admin@msot.edu' || meta.role === 'ADMIN');
+                    const userRole = isAdminAccount ? 'ADMIN' : (meta.role || 'STUDENT');
 
                     activeSession = {
                         id: u.id,
                         email: u.email,
-                        name: isUtkarshAdmin ? 'Utkarsh Raj' : rawName,
+                        name: rawName,
                         username: cleanUser,
                         alias: `@${cleanUser}`,
-                        studentId: isUtkarshAdmin ? (meta.studentId || 'ADM-MSOT-001') : (meta.studentId || `MSOT-${cleanUser.toUpperCase()}`),
+                        studentId: meta.studentId || `MSOT-${cleanUser.toUpperCase()}`,
                         year: meta.year || '2nd Year',
                         semester: meta.semester || 'Semester 4',
                         section: normalizeSection(meta.section || 'Section Alpha'),
                         branch: meta.branch || 'Computer Science & Engineering (CSE)',
                         phone: meta.phone || '',
-                        role: isUtkarshAdmin ? 'ADMIN' : (meta.role || 'STUDENT'),
-                        avatar: isUtkarshAdmin ? (meta.avatar || '🛡️') : (meta.avatar || '⚔️'),
+                        role: userRole,
+                        avatar: meta.avatar || (userRole === 'ADMIN' ? '🛡️' : (userRole === 'FACULTY' ? '🎓' : '⚔️')),
                         track: meta.track || 'C++ Algorithms & DSA',
                         loginAt: new Date().toISOString(),
                         isSupabase: true

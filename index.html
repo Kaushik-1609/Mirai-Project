@@ -46,7 +46,7 @@
         })();
     </script>
 </head>
-<body class="auth-locked">
+<body class="auth-locked" data-user-role="STUDENT">
 
     <!-- Pixel Grid Cursor Trail Canvas (Full-Screen Ambient Grid) -->
     <canvas id="pixel-trail" class="pixel-trail-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
@@ -425,8 +425,8 @@
                 <a href="#/assignments" class="nav-link"      data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); return false;">WEEKEND LAB</a>
                 <a href="#/leagues"   class="nav-link"        data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); return false;">LEAGUES</a>
                 <a href="#/battle"    class="nav-link"        data-section="battleSection"  onclick="window.switchSection('battleSection', true); return false;">BATTLE</a>
-                <a href="#/faculty"   class="nav-link"        data-section="facultySection" data-nav-role="FACULTY" onclick="window.switchSection('facultySection', true); return false;">FACULTY</a>
-                <a href="#/admin"     class="nav-link"        data-section="adminSection"   data-nav-role="ADMIN" onclick="window.switchSection('adminSection', true); return false;">ADMIN</a>
+                <a href="#/faculty"   class="nav-link"        data-section="facultySection" data-nav-role="FACULTY" style="display: none;" onclick="window.switchSection('facultySection', true); return false;">FACULTY</a>
+                <a href="#/admin"     class="nav-link"        data-section="adminSection"   data-nav-role="ADMIN"   style="display: none;" onclick="window.switchSection('adminSection', true); return false;">ADMIN</a>
                 <a href="#/about"     class="nav-link"        data-section="aboutSection"   onclick="window.switchSection('aboutSection', true); return false;">ABOUT</a>
                 <a href="#/profile"   class="nav-link"        data-section="profileSection" onclick="window.switchSection('profileSection', true); return false;">PROFILE</a>
             </nav>
@@ -439,20 +439,20 @@
                     <button type="button" class="theme-pill-btn" data-theme="midnight" onclick="window.msotSetTheme('midnight', event)" title="Midnight Slate Tablet">🌌 Slate</button>
                 </div>
 
-                <!-- Logged In As Indicator Pill with Facility Switcher for Admin -->
-                <div class="logged-in-role-pill role-admin has-facility-switcher" id="loggedInRolePill" title="Authenticated Session Role">
+                <!-- Logged In As Indicator Pill with Facility Switcher (shown only for verified Admins) -->
+                <div class="logged-in-role-pill role-student" id="loggedInRolePill" title="Authenticated Session Role">
                     <span class="role-status-dot">●</span>
-                    <span class="role-icon-indicator" id="roleIconIndicator">🛡️</span>
+                    <span class="role-icon-indicator" id="roleIconIndicator">⚔️</span>
                     <div class="role-text-box">
-                        <span class="role-tiny-label">UTKARSH RAJ // MASTER ADMIN</span>
-                        <span class="role-main-name" id="roleLabelIndicator">🛡️ ADMIN (CAN CHANGE ALL)</span>
+                        <span class="role-tiny-label">LOGGED IN AS</span>
+                        <span class="role-main-name" id="roleLabelIndicator">⚔️ STUDENT</span>
                     </div>
-                    <div class="facility-toggle-group">
-                        <button type="button" class="facility-btn active" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('ADMIN', event)" title="Admin Mode: Complete system governance & rules">🛡️ ADMIN</button>
+                    <div class="facility-toggle-group" style="display: none;">
+                        <button type="button" class="facility-btn" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('ADMIN', event)" title="Admin Mode: Complete system governance & rules">🛡️ ADMIN</button>
                         <button type="button" class="facility-btn" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('FACULTY', event)" title="Faculty Mode: View and change student assignments, grades, reasons, and character flashcards">🎓 FACULTY VIEW</button>
-                        <button type="button" class="facility-btn" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('STUDENT', event)" title="Student Mode: Preview student perspective">⚔️ STUDENT VIEW</button>
+                        <button type="button" class="facility-btn active" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('STUDENT', event)" title="Student Mode: Preview student perspective">⚔️ STUDENT VIEW</button>
                     </div>
-                    <input type="hidden" id="userRoleSelect" value="ADMIN">
+                    <input type="hidden" id="userRoleSelect" value="STUDENT">
                 </div>
 
                 <button class="sound-toggle-btn" id="soundToggleBtn" title="Toggle dark synth audio atmosphere">
@@ -496,8 +496,8 @@
                 <a href="#/assignments" class="mobile-nav-link" data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">💻 WEEKEND LAB & COMPILER</a>
                 <a href="#/leagues"   class="mobile-nav-link" data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🏆 LEAGUES</a>
                 <a href="#/battle"    class="mobile-nav-link" data-section="battleSection"  onclick="window.switchSection('battleSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⚔️ BATTLE</a>
-                <a href="#/faculty"   class="mobile-nav-link" data-section="facultySection" data-nav-role="FACULTY" onclick="window.switchSection('facultySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎓 FACULTY DASHBOARD</a>
-                <a href="#/admin"     class="mobile-nav-link" data-section="adminSection"   data-nav-role="ADMIN" onclick="window.switchSection('adminSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🛡️ ADMIN CONSOLE</a>
+                <a href="#/faculty"   class="mobile-nav-link" data-section="facultySection" data-nav-role="FACULTY" style="display: none;" onclick="window.switchSection('facultySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎓 FACULTY DASHBOARD</a>
+                <a href="#/admin"     class="mobile-nav-link" data-section="adminSection"   data-nav-role="ADMIN"   style="display: none;" onclick="window.switchSection('adminSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🛡️ ADMIN CONSOLE</a>
                 <a href="#/about"     class="mobile-nav-link" data-section="aboutSection"   onclick="window.switchSection('aboutSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📖 ABOUT ACADEMY</a>
                 <a href="#/profile"   class="mobile-nav-link" data-section="profileSection" onclick="window.switchSection('profileSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">👤 CADET PROFILE</a>
             </div>
@@ -922,13 +922,15 @@
             if (!sectionId) sectionId = 'heroSection';
 
             // Role guard
-            var curRole = (window.msotPlatform && window.msotPlatform.activeRole) || (window.msotState && window.msotState.currentRole) || 'STUDENT';
+            var curRole = (window.msotPlatform && window.msotPlatform.activeRole) || (window.msotState && window.msotState.currentRole) || (window.msotAuth && window.msotAuth.session && window.msotAuth.session.role) || 'STUDENT';
             curRole = String(curRole).toUpperCase();
             if (sectionId === 'adminSection' && curRole !== 'ADMIN') {
-                alert('⚠️ Access Denied: The XP Economy Rules Console is reserved for System Administrators. As a Student Cadet, your facilities are focused on solving coding problems in the Weekend Lab and Arcade!');
-                sectionId = 'assignmentsSection';
+                alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
+                sectionId = 'dashboardSection';
+            } else if (sectionId === 'facultySection' && curRole === 'STUDENT') {
+                alert('⚠️ Access Denied: The Faculty Dashboard is reserved for Faculty and Administrators.');
+                sectionId = 'dashboardSection';
             }
-            // Faculty Section is open to Faculty, Admins, and Student preview/inspection mode!
 
             document.querySelectorAll('.app-section').forEach(function(s){
                 s.classList.remove('active');
