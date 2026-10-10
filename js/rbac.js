@@ -221,6 +221,7 @@
             this.assignmentSubmissions = this.loadAssignmentSubmissions();
             this.inactivityReasons     = this.loadInactivityReasons();
             this.messages              = this.loadMessages();
+            this.adminNotifications    = this.loadAdminNotifications();
 
             this.activeAdminTab        = 'overview';
             this.activeFacultyTab      = 'overview';
@@ -941,6 +942,354 @@
             }
 
             this.logAudit('PASSWORD_RESET_DISPATCHED', 'user', cleanEmail);
+            return true;
+        }
+
+        // ─── Registration Approvals & Notifications Governance ────────────────
+        loadAdminNotifications() {
+            try {
+                const raw = localStorage.getItem('MSOT_ADMIN_NOTIFICATIONS_V1');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) return parsed;
+                }
+            } catch (e) {}
+            return [];
+        }
+
+        saveAdminNotifications(notifs) {
+            try {
+                localStorage.setItem('MSOT_ADMIN_NOTIFICATIONS_V1', JSON.stringify((notifs || []).slice(0, 200)));
+                this.adminNotifications = notifs;
+            } catch (e) {}
+        }
+
+        addAdminNotification(notif) {
+            const list = this.loadAdminNotifications();
+            const newNotif = {
+                id: notif.id || `notif_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                userId: notif.userId || notif.user_id || '',
+                userName: notif.userName || notif.user_name || 'New Candidate',
+                userEmail: (notif.userEmail || notif.user_email || '').toLowerCase(),
+                requestedRole: (notif.requestedRole || notif.requested_role || 'STUDENT').toUpperCase(),
+                type: notif.type || notif.notification_type || 'REGISTRATION_REQUEST',
+                message: notif.message || `New registration requires Admin approval`,
+                read: false,
+                createdAt: notif.createdAt || notif.created_at || new Date().toISOString()
+            };
+            list.unshift(newNotif);
+            this.saveAdminNotifications(list);
+
+            if (window.supabaseClient) {
+                try {
+                    window.supabaseClient.from('admin_notifications').insert([{
+                        user_id: newNotif.userId || null,
+                        user_name: newNotif.userName,
+                        user_email: newNotif.userEmail,
+                        requested_role: newNotif.requestedRole.toLowerCase(),
+                        notification_type: newNotif.type,
+                        message: newNotif.message,
+                        read: false,
+                        created_at: newNotif.createdAt
+                    }]).then(() => {}).catch(err => console.warn("Supabase notification insert note:", err.message));
+                } catch(e) {}
+            }
+
+            return newNotif;
+        }
+
+        getAdminNotifications() {
+            return this.loadAdminNotifications();
+        }
+
+        getUnreadNotificationsCount() {
+            return this.loadAdminNotifications().filter(n => !n.read).length;
+        }
+
+        markNotificationRead(id) {
+            const list = this.loadAdminNotifications();
+            const target = list.find(n => n.id === id);
+            if (target) {
+                target.read = true;
+                target.readAt = new Date().toISOString();
+                this.saveAdminNotifications(list);
+            }
+            if (window.supabaseClient) {
+                try {
+                    window.supabaseClient.from('admin_notifications')
+                        .update({ read: true, read_at: new Date().toISOString() })
+                        .eq('id', id)
+                        .then(() => {}).catch(() => {});
+                } catch(e) {}
+            }
+            if (window.msotPlatform?.renderAdminRules) {
+                window.msotPlatform.renderAdminRules();
+            }
+        }
+
+        markAllNotificationsRead() {
+            const list = this.loadAdminNotifications();
+            list.forEach(n => { n.read = true; n.readAt = new Date().toISOString(); });
+            this.saveAdminNotifications(list);
+            if (window.supabaseClient) {
+                try {
+                    window.supabaseClient.from('admin_notifications')
+                        .update({ read: true, read_at: new Date().toISOString() })
+                        .eq('read', false)
+                        .then(() => {}).catch(() => {});
+                } catch(e) {}
+            }
+            if (window.msotPlatform?.renderAdminRules) {
+                window.msotPlatform.renderAdminRules();
+            }
+        }
+
+        getAllRegistrations() {
+            const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+            const accounts = stored ? JSON.parse(stored) : {};
+            const list = Object.values(accounts);
+            return list.map(acc => {
+                const reqRole = (acc.requested_role || acc.role || 'STUDENT').toUpperCase();
+                const actualRole = (acc.role || reqRole || 'STUDENT').toUpperCase();
+                let appStatus = (acc.approval_status || '').toUpperCase();
+                if (!appStatus) {
+                    if (acc.status === 'PENDING') appStatus = 'PENDING';
+                    else if (acc.status === 'INACTIVE') appStatus = 'REJECTED';
+                    else if (acc.status === 'SUSPENDED') appStatus = 'SUSPENDED';
+                    else appStatus = 'APPROVED';
+                }
+                return {
+                    id: acc.id || `acc_${acc.email}`,
+                    email: acc.email,
+                    name: acc.name || acc.email.split('@')[0],
+                    username: acc.username || acc.alias || acc.email.split('@')[0],
+                    studentId: acc.studentId || '',
+                    year: acc.year || '1st Year',
+                    semester: acc.semester || 'Semester 1',
+                    section: acc.section || 'Section Alpha',
+                    branch: acc.branch || 'CSE',
+                    track: acc.track || 'C++ Algorithms & DSA',
+                    phone: acc.phone || '',
+                    avatar: acc.avatar || (actualRole === 'FACULTY' ? '🎓' : '⚔️'),
+                    requestedRole: reqRole,
+                    role: actualRole,
+                    approvalStatus: appStatus,
+                    status: (acc.status || 'ACTIVE').toUpperCase(),
+                    rejectionReason: acc.rejection_reason || null,
+                    registeredAt: acc.registeredAt || new Date().toISOString(),
+                    approvedAt: acc.approved_at || null,
+                    approvedBy: acc.approved_by || null
+                };
+            });
+        }
+
+        getPendingApprovals() {
+            return this.getAllRegistrations().filter(r => r.approvalStatus === 'PENDING' || r.status === 'PENDING');
+        }
+
+        async approveRegistration(emailOrId) {
+            if (!this.isAdmin()) {
+                alert('⚠️ Access Denied: Only Administrators can approve registrations.');
+                return false;
+            }
+            const cleanTarget = (emailOrId || '').toLowerCase().trim();
+            const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+            const accounts = stored ? JSON.parse(stored) : {};
+
+            let targetKey = null;
+            for (const [k, v] of Object.entries(accounts)) {
+                if (k.toLowerCase() === cleanTarget || (v.id && String(v.id).toLowerCase() === cleanTarget)) {
+                    targetKey = k;
+                    break;
+                }
+            }
+
+            if (!targetKey) {
+                alert(`Registration record not found for [${emailOrId}].`);
+                return false;
+            }
+
+            const acc = accounts[targetKey];
+            const assignedRole = (acc.requested_role || acc.role || 'STUDENT').toUpperCase();
+
+            // Permanent approval decision
+            acc.approval_status = 'APPROVED';
+            acc.status = 'ACTIVE';
+            acc.role = assignedRole;
+            acc.approved_at = new Date().toISOString();
+            acc.approved_by = this.getCurrentUser()?.email || 'admin@msot.edu';
+            acc.rejection_reason = null;
+
+            localStorage.setItem('MSOT_LEARN_ACCOUNTS_V2', JSON.stringify(accounts));
+
+            // Sync with Supabase profiles table
+            if (window.supabaseClient) {
+                try {
+                    await window.supabaseClient.from('profiles').update({
+                        role: assignedRole.toLowerCase(),
+                        status: 'active',
+                        approval_status: 'approved',
+                        rejection_reason: null,
+                        approved_at: acc.approved_at,
+                        updated_at: new Date().toISOString()
+                    }).eq('email', acc.email);
+                } catch(e) {
+                    console.warn("Supabase approval sync note:", e.message);
+                }
+            }
+
+            // Mark notifications for this candidate as read
+            const notifs = this.loadAdminNotifications();
+            notifs.forEach(n => {
+                if (n.userEmail === acc.email.toLowerCase()) {
+                    n.read = true;
+                    n.readAt = new Date().toISOString();
+                }
+            });
+            this.saveAdminNotifications(notifs);
+
+            this.logAudit('ADMIN_APPROVE_REGISTRATION', 'user', acc.email, {
+                approved_role: assignedRole,
+                candidate_name: acc.name
+            });
+
+            if (window.miraiAudio) window.miraiAudio.playSuccess?.();
+
+            if (window.msotPlatform?.renderAdminRules) {
+                window.msotPlatform.renderAdminRules();
+            }
+
+            return true;
+        }
+
+        async rejectRegistration(emailOrId, reason) {
+            if (!this.isAdmin()) {
+                alert('⚠️ Access Denied: Only Administrators can reject registrations.');
+                return false;
+            }
+            const cleanTarget = (emailOrId || '').toLowerCase().trim();
+            const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+            const accounts = stored ? JSON.parse(stored) : {};
+
+            let targetKey = null;
+            for (const [k, v] of Object.entries(accounts)) {
+                if (k.toLowerCase() === cleanTarget || (v.id && String(v.id).toLowerCase() === cleanTarget)) {
+                    targetKey = k;
+                    break;
+                }
+            }
+
+            if (!targetKey) {
+                alert(`Registration record not found for [${emailOrId}].`);
+                return false;
+            }
+
+            const acc = accounts[targetKey];
+            const rejectReason = reason || 'Registration details or academic credentials could not be verified by Administrator';
+
+            acc.approval_status = 'REJECTED';
+            acc.status = 'INACTIVE';
+            acc.rejection_reason = rejectReason;
+            acc.rejected_at = new Date().toISOString();
+
+            localStorage.setItem('MSOT_LEARN_ACCOUNTS_V2', JSON.stringify(accounts));
+
+            // Sync with Supabase profiles table
+            if (window.supabaseClient) {
+                try {
+                    await window.supabaseClient.from('profiles').update({
+                        status: 'inactive',
+                        approval_status: 'rejected',
+                        rejection_reason: rejectReason,
+                        updated_at: new Date().toISOString()
+                    }).eq('email', acc.email);
+                } catch(e) {
+                    console.warn("Supabase rejection sync note:", e.message);
+                }
+            }
+
+            // Mark notification as read
+            const notifs = this.loadAdminNotifications();
+            notifs.forEach(n => {
+                if (n.userEmail === acc.email.toLowerCase()) {
+                    n.read = true;
+                    n.readAt = new Date().toISOString();
+                }
+            });
+            this.saveAdminNotifications(notifs);
+
+            this.logAudit('ADMIN_REJECT_REGISTRATION', 'user', acc.email, {
+                reason: rejectReason,
+                candidate_name: acc.name
+            });
+
+            if (window.msotPlatform?.renderAdminRules) {
+                window.msotPlatform.renderAdminRules();
+            }
+
+            return true;
+        }
+
+        suspendAccount(emailOrId) {
+            if (!this.isAdmin()) return false;
+            const cleanTarget = (emailOrId || '').toLowerCase().trim();
+            const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+            const accounts = stored ? JSON.parse(stored) : {};
+
+            let targetKey = null;
+            for (const [k, v] of Object.entries(accounts)) {
+                if (k.toLowerCase() === cleanTarget || (v.id && String(v.id).toLowerCase() === cleanTarget)) {
+                    targetKey = k;
+                    break;
+                }
+            }
+            if (!targetKey) return false;
+
+            const acc = accounts[targetKey];
+            acc.status = 'SUSPENDED';
+            acc.approval_status = 'SUSPENDED';
+            localStorage.setItem('MSOT_LEARN_ACCOUNTS_V2', JSON.stringify(accounts));
+
+            if (window.supabaseClient) {
+                try {
+                    window.supabaseClient.from('profiles').update({ status: 'suspended', approval_status: 'suspended' }).eq('email', acc.email);
+                } catch(e) {}
+            }
+
+            this.logAudit('ADMIN_SUSPEND_ACCOUNT', 'user', acc.email);
+            if (window.msotPlatform?.renderAdminRules) window.msotPlatform.renderAdminRules();
+            return true;
+        }
+
+        restoreAccount(emailOrId) {
+            if (!this.isAdmin()) return false;
+            const cleanTarget = (emailOrId || '').toLowerCase().trim();
+            const stored = localStorage.getItem('MSOT_LEARN_ACCOUNTS_V2');
+            const accounts = stored ? JSON.parse(stored) : {};
+
+            let targetKey = null;
+            for (const [k, v] of Object.entries(accounts)) {
+                if (k.toLowerCase() === cleanTarget || (v.id && String(v.id).toLowerCase() === cleanTarget)) {
+                    targetKey = k;
+                    break;
+                }
+            }
+            if (!targetKey) return false;
+
+            const acc = accounts[targetKey];
+            acc.status = 'ACTIVE';
+            acc.approval_status = 'APPROVED';
+            acc.rejection_reason = null;
+            localStorage.setItem('MSOT_LEARN_ACCOUNTS_V2', JSON.stringify(accounts));
+
+            if (window.supabaseClient) {
+                try {
+                    window.supabaseClient.from('profiles').update({ status: 'active', approval_status: 'approved', rejection_reason: null }).eq('email', acc.email);
+                } catch(e) {}
+            }
+
+            this.logAudit('ADMIN_RESTORE_ACCOUNT', 'user', acc.email);
+            if (window.msotPlatform?.renderAdminRules) window.msotPlatform.renderAdminRules();
             return true;
         }
 

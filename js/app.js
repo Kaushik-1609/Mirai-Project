@@ -96,8 +96,8 @@ window.switchSection = function (sectionId, updateHash = true) {
     const effectiveRole = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || window.msotAuth?.session?.role || 'STUDENT')).toUpperCase();
     if (sectionId === 'adminSection' && effectiveRole !== 'ADMIN') {
         alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators. Students and Faculty cannot access this control plane.');
-        sectionId = 'dashboardSection';
-    } else if (sectionId === 'facultySection' && effectiveRole === 'STUDENT') {
+        sectionId = (effectiveRole === 'FACULTY') ? 'facultySection' : 'dashboardSection';
+    } else if (sectionId === 'facultySection' && effectiveRole !== 'FACULTY' && effectiveRole !== 'ADMIN') {
         alert('⚠️ Access Denied: The Faculty Evaluation Section is reserved for Faculty and Administrators. Students cannot access this section.');
         sectionId = 'dashboardSection';
     }
@@ -281,14 +281,29 @@ function handleRoute() {
         session = window.msotAuth.ensureDefaultStudentSession();
     }
 
-    // ROLE ACCESS GUARD for protected URL paths
-    const userRole = (session?.role || (window.msotRBAC ? window.msotRBAC.getCurrentRole() : 'STUDENT')).toUpperCase();
-    if (hash === '#/admin' && userRole !== 'ADMIN') {
-        alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
-        window.location.hash = '#/dashboard';
+    // APPROVAL STATUS CHECK
+    const approvalStatus = (session?.approval_status || 'APPROVED').toUpperCase();
+    if (session && session.email !== 'admin@msot.edu' && approvalStatus !== 'APPROVED') {
+        window.location.hash = '#/login';
+        if (window.msotAuth?.showAccountStatusModal) {
+            window.msotAuth.showAccountStatusModal(approvalStatus, {
+                name: session.name,
+                email: session.email,
+                requestedRole: session.role,
+                status: approvalStatus
+            });
+        }
         return;
     }
-    if (hash === '#/faculty' && userRole === 'STUDENT') {
+
+    // ROLE ACCESS GUARD for protected URL paths
+    const userRole = (session?.role || (window.msotRBAC ? window.msotRBAC.getCurrentRole() : 'STUDENT')).toUpperCase();
+    if ((hash === '#/admin' || hash === '#/xp-rules') && userRole !== 'ADMIN') {
+        alert('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
+        window.location.hash = userRole === 'FACULTY' ? '#/faculty' : '#/dashboard';
+        return;
+    }
+    if (hash === '#/faculty' && userRole !== 'FACULTY' && userRole !== 'ADMIN') {
         alert('⚠️ Access Denied: The Faculty Dashboard is reserved for Faculty and Administrators.');
         window.location.hash = '#/dashboard';
         return;

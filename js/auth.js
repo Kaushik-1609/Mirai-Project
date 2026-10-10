@@ -107,6 +107,8 @@
             semester: 'Master Control & Governance',
             section: 'All Sectors',
             role: 'ADMIN',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '🛡️',
             track: 'System Governance & Academic Control',
             password: DEFAULT_PASS
@@ -121,6 +123,8 @@
             semester: 'Master Control',
             section: 'All Sectors',
             role: 'ADMIN',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '🛡️',
             track: 'C++ Algorithms & DSA',
             password: DEFAULT_PASS
@@ -135,6 +139,8 @@
             semester: 'Semester 1',
             section: 'Section Alpha',
             role: 'STUDENT',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '⚔️',
             track: 'C++ Algorithms & DSA',
             password: DEFAULT_PASS
@@ -149,6 +155,8 @@
             semester: 'Academic Instruction',
             section: 'Section Alpha & Beta',
             role: 'FACULTY',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '🎓',
             track: 'Academic Instruction & Review',
             password: DEFAULT_PASS
@@ -163,6 +171,8 @@
             semester: 'Semester 1',
             section: 'Section Beta',
             role: 'STUDENT',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '⚔️',
             track: 'C++ Algorithms & DSA',
             password: DEFAULT_PASS
@@ -177,6 +187,8 @@
             semester: 'Semester 1',
             section: 'Section Beta',
             role: 'STUDENT',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '⚔️',
             track: 'C++ Algorithms & DSA',
             password: DEFAULT_PASS
@@ -191,6 +203,8 @@
             semester: 'Semester 1',
             section: 'Section Alpha',
             role: 'STUDENT',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '⚔️',
             track: 'C++ Algorithms & DSA',
             password: DEFAULT_PASS
@@ -205,6 +219,8 @@
             semester: 'Semester 1',
             section: 'Section Alpha',
             role: 'STUDENT',
+            approval_status: 'APPROVED',
+            status: 'ACTIVE',
             avatar: '🛡️',
             track: 'C++ Algorithms (7 Trials)',
             password: DEFAULT_PASS
@@ -399,6 +415,81 @@
         }
     }
 
+    function showAccountStatusModal(status, details = {}) {
+        const modal = $('accountStatusModal');
+        if (!modal) return;
+        const icon = $('accountStatusIcon');
+        const tag = $('accountStatusTag');
+        const title = $('accountStatusTitle');
+        const text = $('accountStatusText');
+        const nameEl = $('asmApplicantName');
+        const emailEl = $('asmApplicantEmail');
+        const roleEl = $('asmApplicantRole');
+        const badgeEl = $('asmStatusBadge');
+
+        const cleanStatus = (status || 'PENDING').toUpperCase();
+
+        if (nameEl) nameEl.textContent = details.name || details.fullName || 'Registered Applicant';
+        if (emailEl) emailEl.textContent = details.email || '—';
+        if (roleEl) roleEl.textContent = (details.requestedRole || details.role || 'STUDENT').toUpperCase();
+
+        if (cleanStatus === 'PENDING') {
+            if (icon) icon.textContent = '⏳';
+            if (tag) {
+                tag.textContent = 'REGISTRATION PENDING ADMIN APPROVAL';
+                tag.style.color = '#f59e0b';
+            }
+            if (title) title.textContent = 'ACCOUNT PENDING APPROVAL';
+            if (text) {
+                text.textContent = 'Your registration has been submitted successfully and is waiting for Admin approval. You will receive access after your account has been verified.';
+            }
+            if (badgeEl) {
+                badgeEl.textContent = 'PENDING';
+                badgeEl.style.cssText = 'background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); padding: 2px 8px; border-radius: 6px; font-weight: 700;';
+            }
+        } else if (cleanStatus === 'REJECTED') {
+            if (icon) icon.textContent = '❌';
+            if (tag) {
+                tag.textContent = 'APPLICATION STATUS // REJECTED';
+                tag.style.color = '#ff2a4b';
+            }
+            if (title) title.textContent = 'REGISTRATION NOT APPROVED';
+            const reason = details.reason ? ` Reason provided by Administrator: "${details.reason}".` : '';
+            if (text) {
+                text.textContent = `Your registration request was not approved by the Administrator.${reason} If you believe this is in error, please contact the MSOT Academy Admissions Department.`;
+            }
+            if (badgeEl) {
+                badgeEl.textContent = 'REJECTED';
+                badgeEl.style.cssText = 'background: rgba(255, 42, 75, 0.2); color: #ff2a4b; border: 1px solid rgba(255, 42, 75, 0.4); padding: 2px 8px; border-radius: 6px; font-weight: 700;';
+            }
+        } else if (cleanStatus === 'SUSPENDED') {
+            if (icon) icon.textContent = '🚫';
+            if (tag) {
+                tag.textContent = 'SECURITY LOCKOUT // SUSPENDED';
+                tag.style.color = '#ff2a4b';
+            }
+            if (title) title.textContent = 'ACCOUNT ACCESS SUSPENDED';
+            if (text) {
+                text.textContent = 'This account has been suspended by the System Administrator. Protected platform functionality is temporarily disabled until an authorized Admin restores access.';
+            }
+            if (badgeEl) {
+                badgeEl.textContent = 'SUSPENDED';
+                badgeEl.style.cssText = 'background: rgba(255, 42, 75, 0.2); color: #ff2a4b; border: 1px solid rgba(255, 42, 75, 0.4); padding: 2px 8px; border-radius: 6px; font-weight: 700;';
+            }
+        }
+
+        modal.style.display = 'flex';
+        if (window.miraiAudio) window.miraiAudio.playError?.();
+    }
+
+    function closeAccountStatusModal() {
+        const modal = $('accountStatusModal');
+        if (modal) modal.style.display = 'none';
+        showAuthScreen(true);
+        showPortalSelector();
+        switchAuthTab('signin');
+    }
+
     let currentLoginRole = 'STUDENT';
 
     function selectLoginRole(role) {
@@ -552,6 +643,22 @@
                 }
             }
         });
+
+        // Admin Notification Bell HUD
+        const adminBell = $('adminNotifBellBtn');
+        const adminBadge = $('adminNotifBadge');
+        if (adminBell) {
+            if (curRole === 'ADMIN') {
+                adminBell.style.display = 'inline-flex';
+                const unreadCount = window.msotRBAC ? window.msotRBAC.getUnreadNotificationsCount() : 0;
+                if (adminBadge) {
+                    adminBadge.textContent = unreadCount;
+                    adminBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+                }
+            } else {
+                adminBell.style.display = 'none';
+            }
+        }
 
         const avatar = $('headerAvatar');
         if (avatar) avatar.textContent = session.avatar || '⚔️';
@@ -719,6 +826,86 @@
                 isSupabase: true
             };
 
+            // Check Approval Status (Supabase Profiles + Local RBAC store)
+            let approvalStatus = (builtIn && builtIn.approval_status) || (isAdminAccount ? 'APPROVED' : (meta.approval_status || 'PENDING'));
+            let profileRole = userRole;
+            let rejectionReason = meta.rejection_reason || '';
+
+            if (supabaseClient && u.id) {
+                try {
+                    const { data: prof, error: profErr } = await supabaseClient
+                        .from('profiles')
+                        .select('role, requested_role, approval_status, rejection_reason')
+                        .eq('id', u.id)
+                        .maybeSingle();
+                    if (prof && !profErr) {
+                        if (prof.approval_status) approvalStatus = prof.approval_status;
+                        if (prof.role) profileRole = prof.role;
+                        if (prof.rejection_reason) rejectionReason = prof.rejection_reason;
+                    }
+                } catch (pe) {
+                    console.warn("Supabase profile check:", pe);
+                }
+            }
+
+            if (window.msotRBAC) {
+                const rbacUser = window.msotRBAC.getUser(email);
+                if (rbacUser) {
+                    if (rbacUser.approval_status) approvalStatus = rbacUser.approval_status;
+                    if (rbacUser.role) profileRole = rbacUser.role;
+                    if (rbacUser.rejection_reason) rejectionReason = rbacUser.rejection_reason;
+                }
+            }
+
+            approvalStatus = String(approvalStatus).toUpperCase();
+            if (isAdminAccount) approvalStatus = 'APPROVED';
+
+            // 1. Pending Approval Check
+            if (approvalStatus === 'PENDING') {
+                showAccountStatusModal('PENDING', {
+                    name: rawName,
+                    email: u.email,
+                    requestedRole: meta.requested_role || profileRole,
+                    status: 'PENDING'
+                });
+                clearSession();
+                if (supabaseClient) {
+                    try { await supabaseClient.auth.signOut(); } catch(e){}
+                }
+                return false;
+            }
+
+            // 2. Rejected Registration Check
+            if (approvalStatus === 'REJECTED') {
+                showAccountStatusModal('REJECTED', {
+                    name: rawName,
+                    email: u.email,
+                    requestedRole: meta.requested_role || profileRole,
+                    reason: rejectionReason,
+                    status: 'REJECTED'
+                });
+                clearSession();
+                if (supabaseClient) {
+                    try { await supabaseClient.auth.signOut(); } catch(e){}
+                }
+                return false;
+            }
+
+            // 3. Suspended Account Check
+            if (approvalStatus === 'SUSPENDED') {
+                showAccountStatusModal('SUSPENDED', {
+                    name: rawName,
+                    email: u.email,
+                    requestedRole: profileRole,
+                    status: 'SUSPENDED'
+                });
+                clearSession();
+                if (supabaseClient) {
+                    try { await supabaseClient.auth.signOut(); } catch(e){}
+                }
+                return false;
+            }
+
             // Inactive Account Check
             const localAccs = getStoredAccounts();
             if (localAccs[email.toLowerCase()] && localAccs[email.toLowerCase()].status === 'INACTIVE') {
@@ -727,6 +914,9 @@
                 clearSession();
                 return false;
             }
+
+            session.approval_status = 'APPROVED';
+            session.role = profileRole;
 
             // Strict Role-Based Portal Validation (Prevents cross-role privilege escalation)
             const actualRole = (session.role || 'STUDENT').toUpperCase();
@@ -754,6 +944,47 @@
             const isAdminAccount = (email === 'admin@msot.edu' || localUser.role === 'ADMIN');
             const userRole = isAdminAccount ? 'ADMIN' : (localUser.role || (currentLoginRole || 'STUDENT'));
 
+            // Approval check for local fallback
+            let localApproval = localUser.approval_status || (isAdminAccount ? 'APPROVED' : 'PENDING');
+            if (window.msotRBAC) {
+                const rbacUser = window.msotRBAC.getUser(email);
+                if (rbacUser && rbacUser.approval_status) localApproval = rbacUser.approval_status;
+            }
+            localApproval = String(localApproval).toUpperCase();
+            if (isAdminAccount) localApproval = 'APPROVED';
+
+            if (localApproval === 'PENDING') {
+                showAccountStatusModal('PENDING', {
+                    name: rawName,
+                    email: localUser.email,
+                    requestedRole: localUser.requested_role || userRole,
+                    status: 'PENDING'
+                });
+                clearSession();
+                return false;
+            }
+            if (localApproval === 'REJECTED') {
+                showAccountStatusModal('REJECTED', {
+                    name: rawName,
+                    email: localUser.email,
+                    requestedRole: localUser.requested_role || userRole,
+                    reason: localUser.rejection_reason || '',
+                    status: 'REJECTED'
+                });
+                clearSession();
+                return false;
+            }
+            if (localApproval === 'SUSPENDED') {
+                showAccountStatusModal('SUSPENDED', {
+                    name: rawName,
+                    email: localUser.email,
+                    requestedRole: userRole,
+                    status: 'SUSPENDED'
+                });
+                clearSession();
+                return false;
+            }
+
             const session = {
                 id: localUser.id || `local_${email}`,
                 email: localUser.email,
@@ -767,6 +998,7 @@
                 branch: localUser.branch || 'Computer Science & Engineering (CSE)',
                 phone: localUser.phone || '',
                 role: userRole,
+                approval_status: 'APPROVED',
                 avatar: localUser.avatar || (userRole === 'ADMIN' ? '🛡️' : (userRole === 'FACULTY' ? '🎓' : '⚔️')),
                 track: localUser.track || 'C++ Algorithms & DSA',
                 loginAt: new Date().toISOString()
@@ -825,7 +1057,14 @@
         const section = normalizeSection(data.section || 'Section Alpha');
         const password = data.password || '';
         const confirmPassword = data.confirmPassword || '';
-        const role = data.role || 'STUDENT';
+        if ((data.role || '').toUpperCase() === 'ADMIN') {
+            showRegisterError('Security Alert: Administrative accounts cannot be registered publicly. System security violation.');
+            if (window.miraiAudio) window.miraiAudio.playError?.();
+            return false;
+        }
+
+        const requestedRole = (data.role || '').toUpperCase() === 'FACULTY' ? 'FACULTY' : 'STUDENT';
+        const role = requestedRole;
         const track = data.track || 'C++ Algorithms & DSA';
         const avatar = data.avatar || '⚔️';
 
@@ -878,14 +1117,14 @@
         const origBtnText = submitBtn ? submitBtn.innerHTML : '';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>⚡ CREATING IN SUPABASE...</span>';
+            submitBtn.innerHTML = '<span>⚡ SUBMITTING FOR APPROVAL...</span>';
         }
 
         let supaUser = null;
         let supaSession = null;
         let supaError = null;
 
-        // Step 1: Use Supabase Admin API to create & auto-confirm user with metadata
+        // Step 1: Use Supabase Admin API to create user with requested_role and pending status
         const userMetadata = {
             name,
             username,
@@ -896,7 +1135,9 @@
             section,
             branch,
             phone,
-            role,
+            role: requestedRole,
+            requested_role: requestedRole,
+            approval_status: 'PENDING',
             track,
             avatar
         };
@@ -905,39 +1146,12 @@
 
         if (adminResult.data?.user) {
             supaUser = adminResult.data.user;
-            if (supabaseClient) {
-                try {
-                    const loginRes = await supabaseClient.auth.signInWithPassword({ email, password });
-                    if (loginRes.data?.session) {
-                        supaSession = loginRes.data.session;
-                    }
-                } catch (e) {
-                    console.warn("Post-admin-signup sign-in note:", e);
-                }
-            }
         } else if (
             adminResult.error?.error_code === 'email_exists' ||
             adminResult.error?.code === 422 ||
             adminResult.error?.msg?.includes('already been registered')
         ) {
-            if (supabaseClient) {
-                try {
-                    let loginRes = await supabaseClient.auth.signInWithPassword({ email, password });
-                    if (loginRes.error?.message?.includes('Email not confirmed')) {
-                        await autoConfirmSupabaseUser(email);
-                        loginRes = await supabaseClient.auth.signInWithPassword({ email, password });
-                    }
-
-                    if (loginRes.data?.session) {
-                        supaSession = loginRes.data.session;
-                        supaUser = loginRes.data.session.user;
-                    } else {
-                        supaError = new Error("This email is already registered in Supabase. Please sign in with your password, or use a different email.");
-                    }
-                } catch (e) {
-                    supaError = new Error("This email is already registered in Supabase. Please sign in with your password, or use a different email.");
-                }
-            }
+            supaError = new Error("This email is already registered in the system. Please sign in with your password, or use a different email.");
         } else {
             if (supabaseClient) {
                 try {
@@ -949,7 +1163,7 @@
 
                     if (error) {
                         if (error.message?.includes('rate limit')) {
-                            console.warn("Supabase rate limited, saving locally");
+                            console.warn("Supabase rate limited, saving registration locally");
                             supaError = null;
                         } else {
                             supaError = error;
@@ -971,12 +1185,72 @@
         }
 
         if (supaError) {
-            showRegisterError(`Supabase: ${supaError.message || supaError}`);
+            showRegisterError(`Registration: ${supaError.message || supaError}`);
             if (window.miraiAudio) window.miraiAudio.playError?.();
             return false;
         }
 
-        // Save account locally for instant login
+        // Step 2: Sync to Supabase profiles table with approval_status = 'PENDING'
+        if (supabaseClient && supaUser?.id) {
+            try {
+                await supabaseClient.from('profiles').upsert({
+                    id: supaUser.id,
+                    email: email,
+                    full_name: name,
+                    username: username,
+                    student_id: studentId,
+                    role: requestedRole,
+                    requested_role: requestedRole,
+                    approval_status: 'PENDING',
+                    year: year,
+                    semester: semester,
+                    section: section,
+                    branch: branch,
+                    phone: phone,
+                    avatar: avatar,
+                    updated_at: new Date().toISOString()
+                });
+            } catch (pe) {
+                console.warn("Supabase profile sync note:", pe);
+            }
+        }
+
+        // Step 3: Create Persistent Admin Notification
+        const notifData = {
+            id: 'notif_' + Date.now(),
+            type: 'REGISTRATION_REQUEST',
+            user_id: supaUser?.id || `cadet_${Date.now()}`,
+            user_name: name,
+            user_email: email,
+            requested_role: requestedRole,
+            title: `New ${requestedRole === 'FACULTY' ? 'Faculty' : 'Student'} registration requires approval.`,
+            message: `${name} (${email}) submitted registration for ${requestedRole} role and is awaiting administrative verification.`,
+            read: false,
+            created_at: new Date().toISOString()
+        };
+
+        if (window.msotRBAC && window.msotRBAC.addAdminNotification) {
+            window.msotRBAC.addAdminNotification(notifData);
+        }
+
+        if (supabaseClient) {
+            try {
+                await supabaseClient.from('admin_notifications').insert({
+                    type: 'REGISTRATION_REQUEST',
+                    user_id: supaUser?.id || null,
+                    user_name: name,
+                    user_email: email,
+                    requested_role: requestedRole,
+                    title: `New ${requestedRole === 'FACULTY' ? 'Faculty' : 'Student'} registration requires approval.`,
+                    message: `${name} (${email}) submitted registration for ${requestedRole} role and is awaiting administrative verification.`,
+                    read: false
+                });
+            } catch (ne) {
+                console.warn("Supabase notification insert note:", ne);
+            }
+        }
+
+        // Step 4: Save account persistently in local store with status PENDING
         const newAccount = {
             id: supaUser?.id || `cadet_${Date.now()}`,
             email,
@@ -990,7 +1264,10 @@
             branch,
             phone,
             password,
-            role,
+            role: requestedRole,
+            requested_role: requestedRole,
+            approval_status: 'PENDING',
+            status: 'PENDING',
             track,
             avatar,
             registeredAt: new Date().toISOString(),
@@ -998,34 +1275,22 @@
         };
         saveAccount(newAccount);
 
-        const session = {
-            id: newAccount.id,
-            email: newAccount.email,
-            name: newAccount.name,
-            username: newAccount.username,
-            alias: newAccount.alias,
-            studentId: newAccount.studentId,
-            year: newAccount.year,
-            semester: newAccount.semester,
-            section: newAccount.section,
-            branch: newAccount.branch,
-            phone: newAccount.phone,
-            role: newAccount.role,
-            avatar: newAccount.avatar,
-            track: newAccount.track,
-            loginAt: new Date().toISOString(),
-            isSupabase: !!supaUser
-        };
+        // Step 5: Enforce that user CANNOT access protected dashboard before approval
+        clearSession();
+        if (supabaseClient) {
+            try { await supabaseClient.auth.signOut(); } catch(e){}
+        }
 
-        setSession(session, true);
-        applySessionToUI(session);
+        // Step 6: Render clear pending approval modal with exact required message
+        showAccountStatusModal('PENDING', {
+            name,
+            email,
+            requestedRole,
+            status: 'PENDING'
+        });
 
-        showRegisterSuccess('✅ Cadet successfully registered in Supabase! Academy dossier created.');
+        showRegisterSuccess('✅ Registration submitted successfully! Waiting for Admin approval.');
         if (window.miraiAudio) window.miraiAudio.playSuccess?.();
-
-        setTimeout(() => {
-            window.location.hash = '#/gates';
-        }, 800);
 
         return true;
     }
@@ -1064,6 +1329,8 @@
         showAuthScreen,
         selectLoginRole,
         showPortalSelector,
+        showAccountStatusModal,
+        closeAccountStatusModal,
         ensureDefaultStudentSession,
         get currentLoginRole() { return currentLoginRole; },
         set currentLoginRole(r) { currentLoginRole = (r || 'STUDENT').toUpperCase(); },
@@ -1088,6 +1355,45 @@
                     const isAdminAccount = (u.email?.toLowerCase() === 'admin@msot.edu' || meta.role === 'ADMIN');
                     const userRole = isAdminAccount ? 'ADMIN' : (meta.role || 'STUDENT');
 
+                    let approvalStatus = isAdminAccount ? 'APPROVED' : (meta.approval_status || 'PENDING');
+                    let rejectionReason = meta.rejection_reason || '';
+
+                    try {
+                        const { data: prof } = await supabaseClient
+                            .from('profiles')
+                            .select('role, requested_role, approval_status, rejection_reason')
+                            .eq('id', u.id)
+                            .maybeSingle();
+                        if (prof) {
+                            if (prof.approval_status) approvalStatus = prof.approval_status;
+                            if (prof.rejection_reason) rejectionReason = prof.rejection_reason;
+                        }
+                    } catch (pe) {}
+
+                    if (window.msotRBAC) {
+                        const rbacUser = window.msotRBAC.getUser(u.email);
+                        if (rbacUser && rbacUser.approval_status) approvalStatus = rbacUser.approval_status;
+                    }
+
+                    approvalStatus = String(approvalStatus).toUpperCase();
+                    if (isAdminAccount) approvalStatus = 'APPROVED';
+
+                    if (approvalStatus !== 'APPROVED') {
+                        clearSession();
+                        activeSession = null;
+                        if (supabaseClient) {
+                            try { await supabaseClient.auth.signOut(); } catch (e) {}
+                        }
+                        showAccountStatusModal(approvalStatus, {
+                            name: rawName,
+                            email: u.email,
+                            requestedRole: meta.requested_role || userRole,
+                            reason: rejectionReason,
+                            status: approvalStatus
+                        });
+                        return;
+                    }
+
                     activeSession = {
                         id: u.id,
                         email: u.email,
@@ -1101,6 +1407,7 @@
                         branch: meta.branch || 'Computer Science & Engineering (CSE)',
                         phone: meta.phone || '',
                         role: userRole,
+                        approval_status: 'APPROVED',
                         avatar: meta.avatar || (userRole === 'ADMIN' ? '🛡️' : (userRole === 'FACULTY' ? '🎓' : '⚔️')),
                         track: meta.track || 'C++ Algorithms & DSA',
                         loginAt: new Date().toISOString(),
@@ -1116,6 +1423,24 @@
         // 2. Fallback to local session
         if (!activeSession) {
             activeSession = getSession();
+        }
+
+        if (activeSession && activeSession.email !== 'admin@msot.edu') {
+            const rbacUser = window.msotRBAC ? window.msotRBAC.getUser(activeSession.email) : null;
+            const curStatus = (rbacUser?.approval_status || activeSession.approval_status || 'APPROVED').toUpperCase();
+            if (curStatus !== 'APPROVED') {
+                clearSession();
+                const invalidSess = activeSession;
+                activeSession = null;
+                showAccountStatusModal(curStatus, {
+                    name: invalidSess.name,
+                    email: invalidSess.email,
+                    requestedRole: invalidSess.role,
+                    reason: rbacUser?.rejection_reason || '',
+                    status: curStatus
+                });
+                return;
+            }
         }
 
         const curHash = (window.location.hash || '').toLowerCase();

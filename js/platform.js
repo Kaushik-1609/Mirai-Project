@@ -2759,6 +2759,29 @@ class MSOTPlatformController {
         const questions = rbac ? rbac.getQuestions('ALL', 'ALL') : [];
         const rules = window.msotState?.rules || DEFAULT_XP_RULES;
         const auditLogs = rbac ? rbac.auditLogs : [];
+        const pendingApprovals = rbac ? rbac.getPendingApprovals() : [];
+        const allRegistrations = rbac ? rbac.getAllRegistrations() : [];
+        const adminNotifs = rbac ? rbac.getAdminNotifications() : [];
+        const unreadNotifsCount = rbac ? rbac.getUnreadNotificationsCount() : 0;
+
+        // Filters for registrations
+        const appQ = (this.adminApprovalSearchQuery || '').toLowerCase();
+        const appRoleFilt = (this.adminApprovalRoleFilter || 'ALL').toUpperCase();
+        const appStatusFilt = (this.adminApprovalStatusFilter || 'ALL').toUpperCase();
+
+        const filteredRegistrations = allRegistrations.filter(r => {
+            const matchesQuery = !appQ || (
+                (r.name && r.name.toLowerCase().includes(appQ)) ||
+                (r.email && r.email.toLowerCase().includes(appQ)) ||
+                (r.studentId && r.studentId.toLowerCase().includes(appQ)) ||
+                (r.branch && r.branch.toLowerCase().includes(appQ))
+            );
+            const rRole = (r.requested_role || r.role || 'STUDENT').toUpperCase();
+            const matchesRole = (appRoleFilt === 'ALL') || (rRole === appRoleFilt);
+            const rStatus = (r.approval_status || r.status || 'PENDING').toUpperCase();
+            const matchesStatus = (appStatusFilt === 'ALL') || (rStatus === appStatusFilt);
+            return matchesQuery && matchesRole && matchesStatus;
+        });
 
         // Filters for students
         const qFilter = (this.adminSearchQuery || '').toLowerCase();
@@ -2793,6 +2816,12 @@ class MSOTPlatformController {
                 <div class="admin-subnav-bar">
                     <button type="button" class="admin-subnav-btn ${activeTab === 'overview' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('overview')">
                         🛡️ OVERVIEW & CONTROL
+                    </button>
+                    <button type="button" class="admin-subnav-btn ${activeTab === 'approvals' ? 'active' : ''}" style="${pendingApprovals.length > 0 ? 'border-color: #f59e0b; color: #f59e0b; font-weight: 800;' : ''}" onclick="window.msotPlatform.switchAdminSubTab('approvals')">
+                        ⏳ APPROVALS (${pendingApprovals.length})
+                    </button>
+                    <button type="button" class="admin-subnav-btn ${activeTab === 'notifications' ? 'active' : ''}" style="${unreadNotifsCount > 0 ? 'border-color: #ff2a4b; color: #ff2a4b; font-weight: 800;' : ''}" onclick="window.msotPlatform.switchAdminSubTab('notifications')">
+                        🔔 NOTIFICATIONS (${unreadNotifsCount})
                     </button>
                     <button type="button" class="admin-subnav-btn ${activeTab === 'faculty' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('faculty')">
                         🎓 FACULTY (${faculty.length})
@@ -2897,6 +2926,20 @@ class MSOTPlatformController {
                                     <div class="rk-lbl">Inactivity Requests</div>
                                 </div>
                             </div>
+                            <div class="rbac-kpi-card" style="border-color: rgba(245, 158, 11, 0.4); cursor: pointer;" onclick="window.msotPlatform.switchAdminSubTab('approvals')">
+                                <span class="rk-icon">⏳</span>
+                                <div>
+                                    <div class="rk-num" style="color: #f59e0b;">${pendingApprovals.length}</div>
+                                    <div class="rk-lbl">Pending Approvals</div>
+                                </div>
+                            </div>
+                            <div class="rbac-kpi-card" style="border-color: rgba(255, 42, 75, 0.4); cursor: pointer;" onclick="window.msotPlatform.switchAdminSubTab('notifications')">
+                                <span class="rk-icon">🔔</span>
+                                <div>
+                                    <div class="rk-num text-red">${unreadNotifsCount}</div>
+                                    <div class="rk-lbl">Unread Notifications</div>
+                                </div>
+                            </div>
                             <div class="rbac-kpi-card">
                                 <span class="rk-icon">📜</span>
                                 <div>
@@ -2908,6 +2951,10 @@ class MSOTPlatformController {
 
                         <!-- Central Fast-Jump Deck -->
                         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-top:24px;">
+                            <div class="dashboard-panel" style="cursor:pointer; border-color: rgba(245, 158, 11, 0.5); background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(16, 14, 24, 0.6));" onclick="window.msotPlatform.switchAdminSubTab('approvals')">
+                                <h4 style="color:#fbbf24;margin-bottom:8px;">⏳ Pending Approvals (${pendingApprovals.length})</h4>
+                                <p style="font-size:13px;color:var(--text-dim);margin:0;">Review and approve/reject first-time student & faculty registration requests.</p>
+                            </div>
                             <div class="dashboard-panel" style="cursor:pointer;" onclick="window.msotPlatform.switchAdminSubTab('faculty')">
                                 <h4 style="color:#c084fc;margin-bottom:8px;">🎓 Faculty Management</h4>
                                 <p style="font-size:13px;color:var(--text-dim);margin:0;">Manage professors, monitor authored assignments, and review instructor-student interactions.</p>
@@ -3436,8 +3483,358 @@ class MSOTPlatformController {
                         </div>
                     </div>
                 ` : ''}
+
+                <!-- 11. PENDING APPROVALS & REGISTRATION REQUESTS -->
+                ${activeTab === 'approvals' ? `
+                    <div>
+                        <div class="admin-header">
+                            <div>
+                                <span class="admin-tag" style="color: #f59e0b;">ADMISSIONS VERIFICATION // ZERO-TRUST GATE</span>
+                                <h2 class="section-title">REGISTRATION REQUESTS & APPROVALS</h2>
+                                <p class="section-subtitle">Review new Student Cadets and Faculty registrations. Only Admin approval grants dashboard and platform access.</p>
+                            </div>
+                        </div>
+
+                        <!-- KPI summary for approvals -->
+                        <div class="rbac-kpi-grid">
+                            <div class="rbac-kpi-card" style="border-color: rgba(245, 158, 11, 0.4);">
+                                <span class="rk-icon">⏳</span>
+                                <div>
+                                    <div class="rk-num text-orange">${pendingApprovals.length}</div>
+                                    <div class="rk-lbl">Pending Review</div>
+                                </div>
+                            </div>
+                            <div class="rbac-kpi-card">
+                                <span class="rk-icon">👥</span>
+                                <div>
+                                    <div class="rk-num text-cyan">${allRegistrations.length}</div>
+                                    <div class="rk-lbl">Total Registrations</div>
+                                </div>
+                            </div>
+                            <div class="rbac-kpi-card">
+                                <span class="rk-icon">✅</span>
+                                <div>
+                                    <div class="rk-num text-green">${allRegistrations.filter(r => (r.approval_status || r.status) === 'APPROVED').length}</div>
+                                    <div class="rk-lbl">Approved Accounts</div>
+                                </div>
+                            </div>
+                            <div class="rbac-kpi-card">
+                                <span class="rk-icon">❌</span>
+                                <div>
+                                    <div class="rk-num text-red">${allRegistrations.filter(r => ['REJECTED', 'SUSPENDED'].includes((r.approval_status || r.status || '').toUpperCase())).length}</div>
+                                    <div class="rk-lbl">Rejected / Suspended</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Controls -->
+                        <div class="rbac-controls-strip">
+                            <div class="rbac-search-box">
+                                <span class="rs-icon">🔍</span>
+                                <input type="text" placeholder="Search applicant by name, email, roll no, department..." value="${this.adminApprovalSearchQuery || ''}" oninput="window.msotPlatform.adminApprovalSearchQuery = this.value; window.msotPlatform.renderAdminRules();">
+                            </div>
+                            <div class="rbac-filters-group">
+                                <select class="rbac-filter-select" onchange="window.msotPlatform.adminApprovalRoleFilter = this.value; window.msotPlatform.renderAdminRules();">
+                                    <option value="ALL" ${appRoleFilt === 'ALL' ? 'selected' : ''}>All Requested Roles</option>
+                                    <option value="STUDENT" ${appRoleFilt === 'STUDENT' ? 'selected' : ''}>Student Cadets Only</option>
+                                    <option value="FACULTY" ${appRoleFilt === 'FACULTY' ? 'selected' : ''}>Faculty Leads Only</option>
+                                </select>
+                                <select class="rbac-filter-select" onchange="window.msotPlatform.adminApprovalStatusFilter = this.value; window.msotPlatform.renderAdminRules();">
+                                    <option value="ALL" ${appStatusFilt === 'ALL' ? 'selected' : ''}>All Approval States</option>
+                                    <option value="PENDING" ${appStatusFilt === 'PENDING' ? 'selected' : ''}>Pending Review Only</option>
+                                    <option value="APPROVED" ${appStatusFilt === 'APPROVED' ? 'selected' : ''}>Approved Only</option>
+                                    <option value="REJECTED" ${appStatusFilt === 'REJECTED' ? 'selected' : ''}>Rejected Only</option>
+                                    <option value="SUSPENDED" ${appStatusFilt === 'SUSPENDED' ? 'selected' : ''}>Suspended Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <div class="rbac-table-wrap">
+                            <table class="rbac-data-table">
+                                <thead>
+                                    <tr>
+                                        <th>CANDIDATE</th>
+                                        <th>REQUESTED ROLE</th>
+                                        <th>REGISTRATION TIME</th>
+                                        <th>SUBMITTED PROFILE INFO</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filteredRegistrations.length === 0 ? `
+                                        <tr><td colspan="6" style="text-align:center;padding:40px;color:#8c96a8;">No registration requests matching the current filters.</td></tr>
+                                    ` : filteredRegistrations.map(r => {
+                                        const rStatus = (r.approval_status || r.status || 'PENDING').toUpperCase();
+                                        const rRole = (r.requested_role || r.role || 'STUDENT').toUpperCase();
+                                        return `
+                                            <tr>
+                                                <td>
+                                                    <div class="user-row-cell">
+                                                        <span class="user-avatar-tiny">${r.avatar || (rRole === 'FACULTY' ? '🎓' : '⚔️')}</span>
+                                                        <div>
+                                                            <div class="user-name">${r.name || 'Candidate'}</div>
+                                                            <div class="user-email">${r.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge-role ${rRole.toLowerCase()}">${rRole === 'FACULTY' ? '🎓 FACULTY' : '⚔️ STUDENT'}</span>
+                                                </td>
+                                                <td>
+                                                    <small>${r.registeredAt ? new Date(r.registeredAt).toLocaleString() : 'Recent'}</small>
+                                                </td>
+                                                <td>
+                                                    <div style="font-size: 12px; line-height: 1.4;">
+                                                        <div><strong>ID:</strong> ${r.studentId || '—'}</div>
+                                                        <div><strong>Dept:</strong> ${r.branch || 'CSE'} (${r.section || 'Sec A'})</div>
+                                                        ${r.phone ? `<div><strong>Phone:</strong> ${r.phone}</div>` : ''}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge-role" style="${rStatus === 'APPROVED' ? 'background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);' : (rStatus === 'PENDING' ? 'background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);' : 'background: rgba(255, 42, 75, 0.2); color: #ff2a4b; border: 1px solid rgba(255, 42, 75, 0.4);')} font-weight: 700;">
+                                                        ${rStatus}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="table-actions-cell" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                                        <button class="btn-action-sm" onclick="window.msotPlatform.openRegistrationDossier('${r.email}')" title="Inspect Full Dossier">👁️ DETAILS</button>
+                                                        ${rStatus === 'PENDING' ? `
+                                                            <button class="btn-action-sm" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981;" onclick="window.msotPlatform.approveRegistration('${r.email}')" title="Approve Registration">✅ APPROVE</button>
+                                                            <button class="btn-action-sm danger" onclick="window.msotPlatform.openRejectModal('${r.email}')" title="Reject Registration">❌ REJECT</button>
+                                                        ` : ''}
+                                                        ${rStatus === 'APPROVED' && r.email !== 'admin@msot.edu' ? `
+                                                            <button class="btn-action-sm danger" onclick="window.msotPlatform.suspendAccount('${r.email}')" title="Suspend Account Access">⏸️ SUSPEND</button>
+                                                        ` : ''}
+                                                        ${rStatus === 'SUSPENDED' ? `
+                                                            <button class="btn-action-sm" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981;" onclick="window.msotPlatform.restoreAccount('${r.email}')" title="Restore Account Access">🔄 RESTORE</button>
+                                                        ` : ''}
+                                                        ${rStatus === 'REJECTED' ? `
+                                                            <button class="btn-action-sm" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981;" onclick="window.msotPlatform.approveRegistration('${r.email}')" title="Re-approve Registration">✅ RE-APPROVE</button>
+                                                        ` : ''}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- 12. NOTIFICATIONS TAB -->
+                ${activeTab === 'notifications' ? `
+                    <div>
+                        <div class="admin-header">
+                            <div>
+                                <span class="admin-tag" style="color: #ff2a4b;">DISPATCH FEED // REAL-TIME ALERTS</span>
+                                <h2 class="section-title">ADMINISTRATIVE NOTIFICATIONS</h2>
+                                <p class="section-subtitle">Real-time alerts for new Student and Faculty registrations awaiting authorization.</p>
+                            </div>
+                            <div>
+                                <button type="button" class="btn-action-sm" onclick="window.msotRBAC && window.msotRBAC.markAllNotificationsRead(); window.msotPlatform.renderAdminRules();">
+                                    ✓ MARK ALL AS READ
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                            ${adminNotifs.length === 0 ? `
+                                <div class="dashboard-panel" style="text-align: center; padding: 40px; color: #8c96a8;">
+                                    🔔 No notifications recorded yet. New registration requests will appear here automatically.
+                                </div>
+                            ` : adminNotifs.map(n => `
+                                <div class="dashboard-panel" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-left: 4px solid ${n.read ? 'rgba(255,255,255,0.2)' : '#ff2a4b'}; background: ${n.read ? 'rgba(255,255,255,0.02)' : 'rgba(255,42,75,0.05)'};">
+                                    <div style="display: flex; align-items: center; gap: 14px;">
+                                        <div style="font-size: 28px;">
+                                            ${(n.requested_role || '').toUpperCase() === 'FACULTY' ? '🎓' : '⚔️'}
+                                        </div>
+                                        <div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <strong style="color: #fff; font-size: 15px;">${n.title || 'New registration requires approval.'}</strong>
+                                                ${!n.read ? `<span class="badge-role admin" style="background:#ff2a4b;color:#fff;font-size:9px;padding:1px 5px;">NEW</span>` : ''}
+                                            </div>
+                                            <p style="margin: 4px 0 2px; font-size: 13px; color: #cbd5e1;">${n.message || ''}</p>
+                                            <small style="color: #8c96a8;">${n.created_at ? new Date(n.created_at).toLocaleString() : 'Recent'} • Candidate: <code>${n.user_email || '—'}</code></small>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <button type="button" class="primary-btn" style="padding: 6px 14px; font-size: 12px;" onclick="window.msotPlatform.reviewNotificationRegistration('${n.user_email}')">
+                                            👁️ REVIEW REGISTRATION
+                                        </button>
+                                        ${!n.read ? `
+                                            <button type="button" class="secondary-btn" style="padding: 6px 12px; font-size: 12px;" onclick="window.msotRBAC.markNotificationRead('${n.id}'); window.msotPlatform.renderAdminRules();">
+                                                ✓ MARK READ
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
             </div>
         `;
+    }
+
+    async approveRegistration(email) {
+        if (!window.msotRBAC) return;
+        const success = await window.msotRBAC.approveRegistration(email);
+        if (success) {
+            alert(`✅ Account [${email}] has been APPROVED. The candidate can now log in permanently to their dashboard.`);
+            this.renderAdminRules();
+            if (window.msotAuth && window.msotAuth.session?.role === 'ADMIN') {
+                const adminBadge = document.getElementById('adminNotifBadge');
+                if (adminBadge) {
+                    const cnt = window.msotRBAC.getUnreadNotificationsCount();
+                    adminBadge.textContent = cnt;
+                    adminBadge.style.display = cnt > 0 ? 'inline-block' : 'none';
+                }
+            }
+        }
+    }
+
+    openRejectModal(email) {
+        this.targetRejectEmail = email;
+        const targetEl = document.getElementById('rejectTargetEmail');
+        const reasonInput = document.getElementById('adminRejectReasonInput');
+        const modal = document.getElementById('adminRejectModal');
+        if (targetEl) targetEl.textContent = email;
+        if (reasonInput) reasonInput.value = '';
+        if (modal) modal.style.display = 'flex';
+    }
+
+    closeRejectModal() {
+        const modal = document.getElementById('adminRejectModal');
+        if (modal) modal.style.display = 'none';
+        this.targetRejectEmail = null;
+    }
+
+    async submitRejectRegistration() {
+        if (!this.targetRejectEmail || !window.msotRBAC) return;
+        const reasonInput = document.getElementById('adminRejectReasonInput');
+        const reason = reasonInput ? reasonInput.value.trim() : '';
+        const success = await window.msotRBAC.rejectRegistration(this.targetRejectEmail, reason);
+        if (success) {
+            alert(`❌ Account [${this.targetRejectEmail}] has been rejected.`);
+            this.closeRejectModal();
+            this.renderAdminRules();
+        }
+    }
+
+    async suspendAccount(email) {
+        if (!confirm(`Are you sure you want to SUSPEND account [${email}]? They will be locked out of protected dashboards.`)) return;
+        if (!window.msotRBAC) return;
+        const success = await window.msotRBAC.suspendAccount(email, 'Suspended by Administrator via Master Console');
+        if (success) {
+            alert(`⏸️ Account [${email}] has been SUSPENDED.`);
+            this.renderAdminRules();
+        }
+    }
+
+    async restoreAccount(email) {
+        if (!window.msotRBAC) return;
+        const success = await window.msotRBAC.restoreAccount(email);
+        if (success) {
+            alert(`🔄 Account [${email}] access has been RESTORED.`);
+            this.renderAdminRules();
+        }
+    }
+
+    openRegistrationDossier(email) {
+        if (!window.msotRBAC) return;
+        const r = window.msotRBAC.getUser(email);
+        if (!r) return;
+        const modal = document.getElementById('adminDossierModal');
+        const titleEl = document.getElementById('dossierCandidateName');
+        const bodyEl = document.getElementById('dossierBody');
+        const footerEl = document.getElementById('dossierFooterActions');
+        if (!modal || !bodyEl) return;
+
+        if (titleEl) titleEl.textContent = `${r.name || 'Candidate'} (${r.email})`;
+
+        const rStatus = (r.approval_status || r.status || 'PENDING').toUpperCase();
+        const rRole = (r.requested_role || r.role || 'STUDENT').toUpperCase();
+
+        bodyEl.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px;">
+                <div style="font-size: 42px;">${r.avatar || (rRole === 'FACULTY' ? '🎓' : '⚔️')}</div>
+                <div>
+                    <h4 style="margin: 0; color: #fff; font-size: 18px;">${r.name || '—'}</h4>
+                    <div style="color: #00f0ff; font-family: var(--font-mono); font-size: 13px;">${r.email}</div>
+                    <div style="margin-top: 4px;">
+                        <span class="badge-role ${rRole.toLowerCase()}">${rRole}</span>
+                        <span class="badge-role" style="margin-left: 6px; ${rStatus === 'APPROVED' ? 'background: rgba(16, 185, 129, 0.2); color: #10b981;' : (rStatus === 'PENDING' ? 'background: rgba(245, 158, 11, 0.2); color: #f59e0b;' : 'background: rgba(255, 42, 75, 0.2); color: #ff2a4b;')}">${rStatus}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+                    <span style="color: #8c96a8; display: block; font-size: 11px;">STUDENT / FACULTY ID</span>
+                    <strong style="color: #fff;">${r.studentId || '—'}</strong>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+                    <span style="color: #8c96a8; display: block; font-size: 11px;">DEPARTMENT / BRANCH</span>
+                    <strong style="color: #fff;">${r.branch || 'CSE'}</strong>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+                    <span style="color: #8c96a8; display: block; font-size: 11px;">ACADEMIC LEVEL</span>
+                    <strong style="color: #fff;">${r.year || '—'} // ${r.semester || '—'}</strong>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+                    <span style="color: #8c96a8; display: block; font-size: 11px;">SECTION ALLOCATION</span>
+                    <strong style="color: #fff;">${r.section || '—'}</strong>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+                    <span style="color: #8c96a8; display: block; font-size: 11px;">CONTACT PHONE</span>
+                    <strong style="color: #fff;">${r.phone || '—'}</strong>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+                    <span style="color: #8c96a8; display: block; font-size: 11px;">REGISTRATION DATE</span>
+                    <strong style="color: #fff;">${r.registeredAt ? new Date(r.registeredAt).toLocaleString() : '—'}</strong>
+                </div>
+            </div>
+
+            ${r.rejection_reason ? `
+                <div style="background: rgba(255, 42, 75, 0.08); border: 1px solid rgba(255, 42, 75, 0.3); border-radius: 8px; padding: 12px 16px; font-size: 13px;">
+                    <strong style="color: #ff2a4b; display: block; margin-bottom: 4px;">REJECTION REASON NOTED:</strong>
+                    <span style="color: #cbd5e1;">"${r.rejection_reason}"</span>
+                </div>
+            ` : ''}
+        `;
+
+        if (footerEl) {
+            footerEl.innerHTML = `
+                <button type="button" class="secondary-btn" onclick="window.msotPlatform.closeRegistrationDossier()">CLOSE</button>
+                ${rStatus !== 'APPROVED' ? `
+                    <button type="button" class="primary-btn" style="background: #10b981; border-color: #10b981;" onclick="window.msotPlatform.closeRegistrationDossier(); window.msotPlatform.approveRegistration('${r.email}')">✅ APPROVE CANDIDATE</button>
+                ` : `
+                    <button type="button" class="primary-btn" style="background: #ff2a4b; border-color: #ff2a4b;" onclick="window.msotPlatform.closeRegistrationDossier(); window.msotPlatform.suspendAccount('${r.email}')">⏸️ SUSPEND ACCESS</button>
+                `}
+                ${rStatus !== 'REJECTED' ? `
+                    <button type="button" class="secondary-btn" style="color: #ff2a4b; border-color: rgba(255,42,75,0.4);" onclick="window.msotPlatform.closeRegistrationDossier(); window.msotPlatform.openRejectModal('${r.email}')">❌ REJECT</button>
+                ` : ''}
+            `;
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    closeRegistrationDossier() {
+        const modal = document.getElementById('adminDossierModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    reviewNotificationRegistration(email) {
+        this.switchAdminSubTab('approvals');
+        if (email) {
+            setTimeout(() => {
+                this.openRegistrationDossier(email);
+            }, 100);
+        }
     }
 
     saveAdminRule(key) {

@@ -533,6 +533,42 @@ body {
     box-shadow: 0 0 16px rgba(255, 42, 75, 0.8);
 }
 
+.admin-notif-bell-btn {
+    position: relative;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #f59e0b;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.admin-notif-bell-btn:hover {
+    background: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.5);
+    transform: translateY(-1px);
+}
+
+.admin-notif-bell-btn .notif-badge {
+    background: #ff2a4b;
+    color: #fff;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+    box-shadow: 0 0 8px rgba(255, 42, 75, 0.6);
+}
+
 .cadet-hud-pill {
     display: flex;
     align-items: center;
