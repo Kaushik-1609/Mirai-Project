@@ -106,15 +106,25 @@
                 modal = document.createElement('div');
                 modal.id = 'syllabusTopicsModal';
                 modal.className = 'syllabus-modal-backdrop';
+                modal.style.setProperty('display', 'none', 'important');
+                modal.style.setProperty('pointer-events', 'none', 'important');
                 document.body.appendChild(modal);
             }
-            modal.style.display = 'flex';
+            modal.classList.add('active');
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.style.setProperty('pointer-events', 'auto', 'important');
+            modal.style.setProperty('visibility', 'visible', 'important');
             this.renderSyllabusModalContent();
         },
 
         closeSyllabusModal() {
             const modal = document.getElementById('syllabusTopicsModal');
-            if (modal) modal.style.display = 'none';
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.setProperty('display', 'none', 'important');
+                modal.style.setProperty('pointer-events', 'none', 'important');
+                modal.style.setProperty('visibility', 'hidden', 'important');
+            }
         },
 
         renderSyllabusModalContent() {

@@ -583,9 +583,27 @@ html.has-session body {
     overflow: auto;
 }
 
-html.has-session body > :not(#authScreen) {
+html.has-session .site-header,
+html.has-session .app-main,
+html.has-session .app-section {
     filter: none;
     pointer-events: auto;
+}
+
+/* Absolute guarantee: Overlays and ambient canvases can never block pointer events */
+.pixel-trail-canvas,
+.anime-speedlines-overlay,
+.xp-toast-container {
+    pointer-events: none !important;
+}
+
+/* Modals must remain hidden and non-blocking when inactive */
+.rbac-modal-overlay:not(.active),
+.forgot-modal-overlay:not(.active),
+.game-modal-overlay:not(.active) {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
 }
 
 /* Forgot Password Modal */

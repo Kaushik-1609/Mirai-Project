@@ -24,6 +24,16 @@ class MiraiGameEngine {
 
         this.modal = document.getElementById('gameModal');
         this.container = document.getElementById('gameArenaContainer');
+
+        // Global Escape key shortcut to close game
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const gm = document.getElementById('gameModal');
+                if (gm && (gm.classList.contains('active') || gm.style.display === 'flex')) {
+                    this.closeGame();
+                }
+            }
+        });
     }
 
     openGame(gameId) {
@@ -49,7 +59,9 @@ class MiraiGameEngine {
         this.hintUsed = false;
 
         this.modal.classList.add('active');
-        this.modal.style.display = 'flex';
+        this.modal.style.setProperty('display', 'flex', 'important');
+        this.modal.style.setProperty('pointer-events', 'auto', 'important');
+        this.modal.style.setProperty('visibility', 'visible', 'important');
         document.body.style.overflow = 'hidden';
 
         if (window.miraiAudio) {
@@ -63,7 +75,9 @@ class MiraiGameEngine {
         if (!this.modal) this.modal = document.getElementById('gameModal');
         if (this.modal) {
             this.modal.classList.remove('active');
-            this.modal.style.display = 'none';
+            this.modal.style.setProperty('display', 'none', 'important');
+            this.modal.style.setProperty('pointer-events', 'none', 'important');
+            this.modal.style.setProperty('visibility', 'hidden', 'important');
             document.body.style.overflow = 'auto';
         }
         clearInterval(this.timerInterval);
@@ -76,25 +90,40 @@ class MiraiGameEngine {
     renderStage() {
         if (!this.currentGame) return;
 
-        const q = this.currentGame.questions[this.currentQIndex];
-        const progress = Math.round((this.currentQIndex / 10) * 100);
+        const totalQCount = (this.currentGame.questions && this.currentGame.questions.length) || 10;
+        const q = (this.currentGame.questions && this.currentGame.questions[this.currentQIndex]) || {};
+        const progress = Math.round((this.currentQIndex / totalQCount) * 100);
         this.hintUsed = false;
         this.questionStartTime = Date.now();
+
+        const promptText = q.prompt || q.q || q.question || 'Evaluate the logic below and select the correct answer:';
+        const qNumber = q.num || (this.currentQIndex + 1);
+        const qType = q.type || 'Academic Problem';
+        const qHint = q.hint || q.explain || 'Carefully trace each token and branch.';
+        const qOptions = Array.isArray(q.options) ? q.options : ['Option A', 'Option B', 'Option C', 'Option D'];
 
         let mechanicHtml = this.getMechanicVisuals();
 
         this.container.innerHTML = `
+            <!-- Sticky Top Bar with High-Visibility Exit Button -->
+            <div class="game-top-sticky-bar">
+                <div class="gt-left-badge">⛩️ ${this.escapeHtml(this.currentGame.title)}</div>
+                <button type="button" class="floating-game-close-btn" onclick="window.miraiGame.closeGame()" title="Exit Game & Return (Esc)">
+                    <span>✕ EXIT GAME</span>
+                </button>
+            </div>
+
             <div class="game-hud">
                 <div class="hud-left">
-                    <span class="hud-tag">${this.currentGame.trackName}</span>
-                    <h3 class="hud-title">${this.currentGame.title}</h3>
-                    <div class="hud-topic">Topic ${this.currentGame.topicNum}: ${this.currentGame.topic}</div>
+                    <span class="hud-tag">${this.escapeHtml(this.currentGame.trackName || 'CURRICULUM TRIAL')}</span>
+                    <h3 class="hud-title">${this.escapeHtml(this.currentGame.title)}</h3>
+                    <div class="hud-topic">Topic ${this.currentGame.topicNum || 1}: ${this.escapeHtml(this.currentGame.topic || 'Core Module')}</div>
                 </div>
                 <div class="hud-right">
-                    <div class="hud-stat"><span class="stat-label">LIVES</span> <span class="stat-val heart-val">${'❤️'.repeat(this.lives)}</span></div>
+                    <div class="hud-stat"><span class="stat-label">LIVES</span> <span class="stat-val heart-val">${'❤️'.repeat(Math.max(0, this.lives))}</span></div>
                     <div class="hud-stat"><span class="stat-label">SCORE</span> <span class="stat-val score-val">${this.score} XP</span></div>
                     <div class="hud-stat"><span class="stat-label">COMBO</span> <span class="stat-val combo-val">${this.combo}x 🔥</span></div>
-                    <button class="game-close-btn" onclick="window.miraiGame.closeGame()">✕</button>
+                    <button type="button" class="game-close-btn" onclick="window.miraiGame.closeGame()" title="Close Game">✕</button>
                 </div>
             </div>
 
@@ -112,40 +141,40 @@ class MiraiGameEngine {
             <div class="game-story-card">
                 <div class="story-icon">📜</div>
                 <div class="story-text">
-                    <strong>Case File:</strong> ${this.currentGame.story}
+                    <strong>Case File:</strong> ${this.escapeHtml(this.currentGame.story || 'Complete the curriculum simulation.')}
                 </div>
             </div>
 
             <!-- Question Card -->
             <div class="question-card" id="currentQuestionCard">
                 <div class="question-header">
-                    <span class="q-badge">Question ${q.num} of 10</span>
-                    <span class="q-type-badge">${q.type}</span>
-                    <button class="hint-trigger-btn" id="hintBtn" onclick="window.miraiGame.revealHint()">
+                    <span class="q-badge">Question ${qNumber} of ${totalQCount}</span>
+                    <span class="q-type-badge">${this.escapeHtml(qType)}</span>
+                    <button type="button" class="hint-trigger-btn" id="hintBtn" onclick="window.miraiGame.revealHint()">
                         💡 Need Clue? (-5 XP)
                     </button>
                 </div>
 
-                <div class="q-prompt">${q.prompt}</div>
+                <div class="q-prompt">${this.escapeHtml(promptText)}</div>
 
                 ${q.code ? `
                     <div class="code-terminal">
                         <div class="code-terminal-header">
                             <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                            <span class="terminal-title">mirai-compiler://${this.currentGame.track}.cpp</span>
+                            <span class="terminal-title">mirai-compiler://${this.currentGame.track || 'terminal'}.cpp</span>
                         </div>
                         <pre><code>${this.escapeHtml(q.code)}</code></pre>
                     </div>
                 ` : ''}
 
                 <div class="hint-box" id="hintBox" style="display: none;">
-                    <strong>Investigation Clue:</strong> ${q.hint}
+                    <strong>Investigation Clue:</strong> ${this.escapeHtml(qHint)}
                 </div>
 
                 <!-- Answer Options -->
                 <div class="options-grid">
-                    ${q.options.map((opt, idx) => `
-                        <button class="option-btn" onclick="window.miraiGame.submitAnswer(${idx})">
+                    ${qOptions.map((opt, idx) => `
+                        <button type="button" class="option-btn" onclick="window.miraiGame.submitAnswer(${idx})">
                             <span class="opt-key">${String.fromCharCode(65 + idx)}</span>
                             <span class="opt-label">${this.escapeHtml(opt)}</span>
                         </button>
@@ -287,8 +316,9 @@ class MiraiGameEngine {
     }
 
     submitAnswer(chosenIdx) {
-        const q = this.currentGame.questions[this.currentQIndex];
-        const isCorrect = chosenIdx === q.correctIndex;
+        const q = (this.currentGame.questions && this.currentGame.questions[this.currentQIndex]) || {};
+        const targetCorrect = (typeof q.correctIndex === 'number') ? q.correctIndex : (typeof q.correct === 'number' ? q.correct : 0);
+        const isCorrect = chosenIdx === targetCorrect;
         const fbPanel = document.getElementById('feedbackPanel');
         const optionBtns = document.querySelectorAll('.option-btn');
         const timeTaken = (Date.now() - this.questionStartTime) / 1000;
@@ -297,7 +327,7 @@ class MiraiGameEngine {
         // Disable all option buttons
         optionBtns.forEach((btn, idx) => {
             btn.disabled = true;
-            if (idx === q.correctIndex) {
+            if (idx === targetCorrect) {
                 btn.classList.add('correct');
             } else if (idx === chosenIdx) {
                 btn.classList.add('wrong');

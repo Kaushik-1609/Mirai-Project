@@ -846,6 +846,10 @@
             return this.getAllUsers().filter(u => u.role === 'FACULTY');
         }
 
+        getUser(email) {
+            return this.getUserByEmail(email);
+        }
+
         getUserByEmail(email) {
             if (!email) return null;
             const clean = email.toLowerCase().trim();

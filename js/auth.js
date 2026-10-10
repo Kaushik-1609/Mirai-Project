@@ -478,13 +478,21 @@
             }
         }
 
-        modal.style.display = 'flex';
+        modal.classList.add('active');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
         if (window.miraiAudio) window.miraiAudio.playError?.();
     }
 
     function closeAccountStatusModal() {
         const modal = $('accountStatusModal');
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.setProperty('display', 'none', 'important');
+            modal.style.setProperty('pointer-events', 'none', 'important');
+            modal.style.setProperty('visibility', 'hidden', 'important');
+        }
         showAuthScreen(true);
         showPortalSelector();
         switchAuthTab('signin');
@@ -849,7 +857,7 @@
             }
 
             if (window.msotRBAC) {
-                const rbacUser = window.msotRBAC.getUser(email);
+                const rbacUser = typeof window.msotRBAC.getUser === 'function' ? window.msotRBAC.getUser(email) : (typeof window.msotRBAC.getUserByEmail === 'function' ? window.msotRBAC.getUserByEmail(email) : null);
                 if (rbacUser) {
                     if (rbacUser.approval_status) approvalStatus = rbacUser.approval_status;
                     if (rbacUser.role) profileRole = rbacUser.role;
@@ -947,7 +955,7 @@
             // Approval check for local fallback
             let localApproval = localUser.approval_status || (isAdminAccount ? 'APPROVED' : 'PENDING');
             if (window.msotRBAC) {
-                const rbacUser = window.msotRBAC.getUser(email);
+                const rbacUser = typeof window.msotRBAC.getUser === 'function' ? window.msotRBAC.getUser(email) : (typeof window.msotRBAC.getUserByEmail === 'function' ? window.msotRBAC.getUserByEmail(email) : null);
                 if (rbacUser && rbacUser.approval_status) localApproval = rbacUser.approval_status;
             }
             localApproval = String(localApproval).toUpperCase();
@@ -1371,7 +1379,7 @@
                     } catch (pe) {}
 
                     if (window.msotRBAC) {
-                        const rbacUser = window.msotRBAC.getUser(u.email);
+                        const rbacUser = typeof window.msotRBAC.getUser === 'function' ? window.msotRBAC.getUser(u.email) : (typeof window.msotRBAC.getUserByEmail === 'function' ? window.msotRBAC.getUserByEmail(u.email) : null);
                         if (rbacUser && rbacUser.approval_status) approvalStatus = rbacUser.approval_status;
                     }
 
@@ -1426,7 +1434,7 @@
         }
 
         if (activeSession && activeSession.email !== 'admin@msot.edu') {
-            const rbacUser = window.msotRBAC ? window.msotRBAC.getUser(activeSession.email) : null;
+            const rbacUser = window.msotRBAC ? (typeof window.msotRBAC.getUser === 'function' ? window.msotRBAC.getUser(activeSession.email) : (typeof window.msotRBAC.getUserByEmail === 'function' ? window.msotRBAC.getUserByEmail(activeSession.email) : null)) : null;
             const curStatus = (rbacUser?.approval_status || activeSession.approval_status || 'APPROVED').toUpperCase();
             if (curStatus !== 'APPROVED') {
                 clearSession();
@@ -1551,10 +1559,20 @@
         // Forgot password modal
         const forgotModal = $('forgotPasswordModal');
         $('forgotPasswordBtn')?.addEventListener('click', () => {
-            if (forgotModal) forgotModal.classList.add('active');
+            if (forgotModal) {
+                forgotModal.classList.add('active');
+                forgotModal.style.setProperty('display', 'flex', 'important');
+                forgotModal.style.setProperty('pointer-events', 'auto', 'important');
+                forgotModal.style.setProperty('visibility', 'visible', 'important');
+            }
         });
         $('closeForgotModalBtn')?.addEventListener('click', () => {
-            if (forgotModal) forgotModal.classList.remove('active');
+            if (forgotModal) {
+                forgotModal.classList.remove('active');
+                forgotModal.style.setProperty('display', 'none', 'important');
+                forgotModal.style.setProperty('pointer-events', 'none', 'important');
+                forgotModal.style.setProperty('visibility', 'hidden', 'important');
+            }
         });
         $('forgotPasswordForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();

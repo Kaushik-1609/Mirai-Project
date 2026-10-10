@@ -10,14 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Noto+Serif+JP:wght@600;700;900&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Stylesheets & Favicon -->
+    <!-- Stylesheets & Favicon (v=45 forces clean load across GitHub and Live Server) -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="css/main.css?v=43">
-    <link rel="stylesheet" href="css/hero-gate.css?v=43">
-    <link rel="stylesheet" href="css/games.css?v=43">
-    <link rel="stylesheet" href="css/auth.css?v=43">
-    <link rel="stylesheet" href="css/dashboard.css?v=43">
-    <link rel="stylesheet" href="css/faculty-flashcard.css?v=43">
+    <link rel="stylesheet" href="css/main.css?v=45">
+    <link rel="stylesheet" href="css/hero-gate.css?v=45">
+    <link rel="stylesheet" href="css/games.css?v=45">
+    <link rel="stylesheet" href="css/auth.css?v=45">
+    <link rel="stylesheet" href="css/dashboard.css?v=45">
+    <link rel="stylesheet" href="css/faculty-flashcard.css?v=45">
 
     <!-- Tailwind CSS (core preflight disabled to guarantee zero conflict with custom styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -382,7 +382,7 @@
     </section>
 
     <!-- Forgot Password Modal Dialog -->
-    <div class="forgot-modal-overlay" id="forgotPasswordModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="forgot-modal-overlay" id="forgotPasswordModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle" style="display:none !important; pointer-events:none !important;">
         <div class="forgot-modal-card">
             <button type="button" class="forgot-close-btn" id="closeForgotModalBtn" aria-label="Close">✕</button>
             <div class="auth-tag">CREDENTIAL RECOVERY</div>
@@ -401,8 +401,8 @@
         </div>
     </div>
 
-    <!-- Anime Speedlines Flash Overlay -->
-    <div class="anime-speedlines-overlay" id="animeSpeedlines"></div>
+    <!-- Anime Speedlines Flash Overlay (Non-blocking ambient flash) -->
+    <div class="anime-speedlines-overlay" id="animeSpeedlines" style="display:none !important; pointer-events:none !important;"></div>
 
     <!-- TOP HEADER & HUD -->
     <header class="site-header">
@@ -912,7 +912,7 @@
     <!-- ===================================================================
          INTERACTIVE GAME RUNTIME MODAL
          =================================================================== -->
-    <div class="game-modal-overlay" id="gameModal">
+    <div class="game-modal-overlay" id="gameModal" style="display:none !important; pointer-events:none !important;">
         <div class="game-arena-card" id="gameArenaContainer">
             <!-- Dynamically populated by window.miraiGame -->
         </div>
@@ -921,7 +921,7 @@
     <!-- ===================================================================
          ACCOUNT APPROVAL / REGISTRATION STATUS MODAL
          =================================================================== -->
-    <div class="rbac-modal-overlay" id="accountStatusModal">
+    <div class="rbac-modal-overlay" id="accountStatusModal" style="display:none !important; pointer-events:none !important;">
         <div class="rbac-modal-card" style="max-width: 540px; text-align: center;">
             <div class="account-status-icon-badge" id="accountStatusIcon" style="font-size: 54px; margin-bottom: 12px;">⏳</div>
             <span class="rm-tag" id="accountStatusTag" style="letter-spacing: 2px;">REGISTRATION STATUS</span>
@@ -964,7 +964,7 @@
     <!-- ===================================================================
          ADMIN REJECTION REASON PROMPT MODAL
          =================================================================== -->
-    <div class="rbac-modal-overlay" id="adminRejectModal">
+    <div class="rbac-modal-overlay" id="adminRejectModal" style="display:none !important; pointer-events:none !important;">
         <div class="rbac-modal-card" style="max-width: 500px;">
             <div class="rbac-modal-header">
                 <div class="rm-title-box">
@@ -990,7 +990,7 @@
     <!-- ===================================================================
          ADMIN REGISTRATION DOSSIER VIEWER MODAL
          =================================================================== -->
-    <div class="rbac-modal-overlay" id="adminDossierModal">
+    <div class="rbac-modal-overlay" id="adminDossierModal" style="display:none !important; pointer-events:none !important;">
         <div class="rbac-modal-card" style="max-width: 620px;">
             <div class="rbac-modal-header">
                 <div class="rm-title-box">
@@ -1196,22 +1196,22 @@
     <!-- Framer Motion (v10 UMD) -->
     <script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
 
-    <!-- Application Scripts (v=44 busts any browser/Live Server cache) -->
-    <script src="js/auth.js?v=44"></script>
-    <script src="js/audio.js?v=44"></script>
-    <script src="js/state.js?v=44"></script>
-    <script src="js/games-data.js?v=44"></script>
-    <script src="js/three-viewport.js?v=44"></script>
-    <script src="js/gate-canvas.js?v=44"></script>
-    <script src="js/game-engine.js?v=44"></script>
-    <script src="js/scroll-animations.js?v=44"></script>
-    <script src="js/pixel-grid-trail.js?v=44"></script>
-    <script src="js/guild.js?v=44"></script>
-    <script src="js/rbac.js?v=44"></script>
-    <script src="js/battle.js?v=44"></script>
-    <script src="js/react-league-module.js?v=44"></script>
-    <script src="js/dashboard-service.js?v=44"></script>
-    <script src="js/platform.js?v=44"></script>
-    <script src="js/app.js?v=44"></script>
+    <!-- Application Scripts (v=45 busts any browser/Live Server cache) -->
+    <script src="js/auth.js?v=45"></script>
+    <script src="js/audio.js?v=45"></script>
+    <script src="js/state.js?v=45"></script>
+    <script src="js/games-data.js?v=45"></script>
+    <script src="js/three-viewport.js?v=45"></script>
+    <script src="js/gate-canvas.js?v=45"></script>
+    <script src="js/game-engine.js?v=45"></script>
+    <script src="js/scroll-animations.js?v=45"></script>
+    <script src="js/pixel-grid-trail.js?v=45"></script>
+    <script src="js/guild.js?v=45"></script>
+    <script src="js/rbac.js?v=45"></script>
+    <script src="js/battle.js?v=45"></script>
+    <script src="js/react-league-module.js?v=45"></script>
+    <script src="js/dashboard-service.js?v=45"></script>
+    <script src="js/platform.js?v=45"></script>
+    <script src="js/app.js?v=45"></script>
 </body>
 </html>

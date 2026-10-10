@@ -3703,12 +3703,22 @@ class MSOTPlatformController {
         const modal = document.getElementById('adminRejectModal');
         if (targetEl) targetEl.textContent = email;
         if (reasonInput) reasonInput.value = '';
-        if (modal) modal.style.display = 'flex';
+        if (modal) {
+            modal.classList.add('active');
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.style.setProperty('pointer-events', 'auto', 'important');
+            modal.style.setProperty('visibility', 'visible', 'important');
+        }
     }
 
     closeRejectModal() {
         const modal = document.getElementById('adminRejectModal');
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.setProperty('display', 'none', 'important');
+            modal.style.setProperty('pointer-events', 'none', 'important');
+            modal.style.setProperty('visibility', 'hidden', 'important');
+        }
         this.targetRejectEmail = null;
     }
 
@@ -3820,12 +3830,20 @@ class MSOTPlatformController {
             `;
         }
 
-        modal.style.display = 'flex';
+        modal.classList.add('active');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
     }
 
     closeRegistrationDossier() {
         const modal = document.getElementById('adminDossierModal');
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.setProperty('display', 'none', 'important');
+            modal.style.setProperty('pointer-events', 'none', 'important');
+            modal.style.setProperty('visibility', 'hidden', 'important');
+        }
     }
 
     reviewNotificationRegistration(email) {

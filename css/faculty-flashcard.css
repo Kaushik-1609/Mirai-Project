@@ -565,12 +565,24 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     z-index: 10000;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     padding: 24px;
     overflow-y: auto;
     animation: fadeInModal 0.25s ease-out;
+}
+
+.cadet-flash-modal-overlay.active {
+    display: flex !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+}
+
+.cadet-flash-modal-overlay:not(.active) {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
 }
 
 @keyframes fadeInModal {
