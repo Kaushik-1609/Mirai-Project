@@ -61,17 +61,19 @@ const SECTION_TO_HASH = {
 let _gateEngine = null;
 
 window.updateNavRoleVisibility = function () {
-    const role = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || window.msotAuth?.session?.role || 'STUDENT')).toUpperCase();
-    const sessionRole = (window.msotAuth?.session?.role || 'STUDENT').toUpperCase();
-    const isAdmin = (role === 'ADMIN' || (sessionRole === 'ADMIN' && role !== 'STUDENT'));
+    const session = window.msotAuth?.session;
+    const isTrueAdmin = (window.msotPlatform && typeof window.msotPlatform.isVerifiedAdmin === 'function')
+        ? window.msotPlatform.isVerifiedAdmin(session)
+        : (session?.baseRole === 'ADMIN' || session?.role === 'ADMIN' || session?.email === 'admin@msot.edu' || session?.email === 'utkarshraj142006@gmail.com');
+    const role = (window.msotPlatform?.activeRole || (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotState?.currentRole || session?.role || 'STUDENT'))).toUpperCase();
 
     document.body.setAttribute('data-user-role', role);
 
     document.querySelectorAll('[data-nav-role]').forEach(el => {
         const reqRoles = (el.getAttribute('data-nav-role') || '').split(',').map(r => r.trim().toUpperCase());
-        if (isAdmin) {
+        if (role === 'ADMIN') {
             el.style.removeProperty('display');
-        } else if (role === 'FACULTY' || (sessionRole === 'FACULTY' && role !== 'STUDENT')) {
+        } else if (role === 'FACULTY') {
             if (reqRoles.includes('FACULTY')) {
                 el.style.removeProperty('display');
             } else {
@@ -308,18 +310,33 @@ function handleRoute() {
     }
 
     // 3. ROLE ACCESS GUARD for protected URL paths
+    const isTrueAdmin = (window.msotPlatform && typeof window.msotPlatform.isVerifiedAdmin === 'function')
+        ? window.msotPlatform.isVerifiedAdmin(session)
+        : (session?.baseRole === 'ADMIN' || session?.role === 'ADMIN' || session?.email === 'admin@msot.edu' || session?.email === 'utkarshraj142006@gmail.com');
     const userRole = (session?.role || (window.msotRBAC ? window.msotRBAC.getCurrentRole() : 'STUDENT')).toUpperCase();
-    if ((hash === '#/admin' || hash === '#/xp-rules') && userRole !== 'ADMIN') {
-        console.warn('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
-        if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Admin route is restricted.');
-        window.location.hash = userRole === 'FACULTY' ? '#/faculty' : '#/dashboard';
-        return;
+
+    if (hash === '#/admin' || hash === '#/xp-rules') {
+        if (isTrueAdmin) {
+            // If admin was previewing student/faculty and returns to #/admin, automatically restore Admin mode!
+            if (window.msotPlatform && window.msotPlatform.activeRole !== 'ADMIN') {
+                window.msotPlatform.setEffectiveRole('ADMIN');
+            }
+        } else {
+            console.warn('⚠️ Access Denied: The Admin Command Center is reserved for System Administrators.');
+            if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Admin route is restricted.');
+            window.location.hash = userRole === 'FACULTY' ? '#/faculty' : '#/dashboard';
+            return;
+        }
     }
-    if (hash === '#/faculty' && userRole !== 'FACULTY' && userRole !== 'ADMIN') {
-        console.warn('⚠️ Access Denied: The Faculty Dashboard is reserved for Faculty and Administrators.');
-        if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Faculty route is restricted.');
-        window.location.hash = '#/dashboard';
-        return;
+    if (hash === '#/faculty') {
+        if (isTrueAdmin) {
+            // Verified Admin can view faculty
+        } else if (userRole !== 'FACULTY') {
+            console.warn('⚠️ Access Denied: The Faculty Dashboard is reserved for Faculty and Administrators.');
+            if (typeof window.showToast === 'function') window.showToast('⚠️ Access Denied: Faculty route is restricted.');
+            window.location.hash = '#/dashboard';
+            return;
+        }
     }
 
     // Standard application routes: close auth modal
@@ -491,35 +508,25 @@ function initApp() {
         });
     }
 
-    // 12. Role dropdown switcher
+    // 12. Role dropdown switcher (strictly for verified Admin mode changes)
     const roleSelect = document.getElementById('userRoleSelect');
     const roleIcon = document.getElementById('roleIconIndicator');
-    if (roleSelect) {
+    if (roleSelect && roleSelect.tagName === 'SELECT') {
         roleSelect.addEventListener('change', (e) => {
+            const session = window.msotAuth?.session;
+            const isTrueAdmin = (window.msotPlatform && typeof window.msotPlatform.isVerifiedAdmin === 'function')
+                ? window.msotPlatform.isVerifiedAdmin(session)
+                : (session?.baseRole === 'ADMIN' || session?.role === 'ADMIN' || session?.email === 'admin@msot.edu');
+            if (!isTrueAdmin) {
+                console.warn('⚠️ Unauthorized role change attempt ignored.');
+                return;
+            }
             const role = e.target.value;
-            if (roleIcon) {
-                roleIcon.textContent = role === 'STUDENT' ? '⚔️' : (role === 'FACULTY' ? '🎓' : '🛡️');
-            }
-            if (window.msotRBAC?.setCurrentRole) {
-                window.msotRBAC.setCurrentRole(role);
-            }
-            if (window.msotState?.setRole) {
-                window.msotState.setRole(role);
-            }
-            if (typeof window.updateNavRoleVisibility === 'function') {
-                window.updateNavRoleVisibility();
-            }
-            if (role === 'FACULTY') {
-                window.switchSection('facultySection', true);
-            } else if (role === 'ADMIN') {
-                window.switchSection('adminSection', true);
-            } else {
-                window.switchSection('heroSection', true);
-            }
+            window.msotPlatform && window.msotPlatform.setEffectiveRole(role);
         });
-        if (typeof window.updateNavRoleVisibility === 'function') {
-            window.updateNavRoleVisibility();
-        }
+    }
+    if (typeof window.updateNavRoleVisibility === 'function') {
+        window.updateNavRoleVisibility();
     }
 }
 

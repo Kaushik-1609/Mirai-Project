@@ -83,57 +83,114 @@ class MSOTPlatformController {
     // =========================================================================
     // 0. ROLE-BASED ACCESS CONTROL & HEADER HUD
     // =========================================================================
+    isVerifiedAdmin(session) {
+        if (!session) session = window.msotAuth?.session;
+        if (!session) return false;
+        const baseRole = (session.baseRole || session.actualRole || '').toUpperCase();
+        const role = (session.role || '').toUpperCase();
+        const email = (session.email || '').toLowerCase();
+        return baseRole === 'ADMIN' || role === 'ADMIN' || email === 'admin@msot.edu' || email === 'utkarshraj142006@gmail.com';
+    }
+
     bindRoleSwitcher() {
-        // Apply permissions for current authenticated role
-        const sessionRole = (window.msotAuth?.session?.role || window.msotState?.currentRole || 'STUDENT').toUpperCase();
-        this.applyRolePermissions(sessionRole);
+        const session = window.msotAuth?.session;
+        const isTrueAdmin = this.isVerifiedAdmin(session);
+        const sessionRole = (session?.role || window.msotState?.currentRole || 'STUDENT').toUpperCase();
+        if (isTrueAdmin && !session.baseRole) {
+            session.baseRole = 'ADMIN';
+        }
+        this.applyRolePermissions(this.activeRole || sessionRole);
     }
 
     setEffectiveRole(targetRole, e) {
         if (e && e.stopPropagation) e.stopPropagation();
-        this.activeRole = targetRole.toUpperCase();
+        const session = window.msotAuth?.session;
+        if (!this.isVerifiedAdmin(session)) {
+            console.warn("⚠️ Unauthorized: Only verified Administrators can switch interface modes.");
+            return;
+        }
+
+        const cleanRole = (targetRole || 'ADMIN').toUpperCase();
+        this.activeRole = cleanRole;
+
+        if (session) {
+            if (!session.baseRole) {
+                session.baseRole = 'ADMIN';
+            }
+            session.effectiveRole = cleanRole;
+            // Always keep base identity as ADMIN so refresh never permanently demotes
+            if (window.msotAuth?.setSession) {
+                window.msotAuth.setSession(session, true);
+            }
+        }
+
         if (window.msotState) {
-            window.msotState.currentRole = this.activeRole;
+            window.msotState.currentRole = cleanRole;
         }
         if (window.msotRBAC?.setCurrentRole) {
-            window.msotRBAC.setCurrentRole(this.activeRole);
+            window.msotRBAC.setCurrentRole(cleanRole);
         }
-        if (window.msotAuth && window.msotAuth.session) {
-            window.msotAuth.session.role = this.activeRole;
-        }
-        this.applyRolePermissions(this.activeRole);
-        this.renderAssignments();
+
+        this.applyRolePermissions(cleanRole);
+        this.renderAssignments?.();
         if (typeof window.updateNavRoleVisibility === 'function') {
             window.updateNavRoleVisibility();
         }
 
-        if (this.activeRole === 'ADMIN') {
-            this.renderAdminRules();
+        if (cleanRole === 'ADMIN') {
+            this.renderAdminRules?.();
             window.switchSection('adminSection', true);
-        } else if (this.activeRole === 'FACULTY') {
-            this.renderFacultyDashboard();
+            window.location.hash = '#/admin';
+        } else if (cleanRole === 'FACULTY') {
+            this.renderFacultyDashboard?.();
             window.switchSection('facultySection', true);
+            window.location.hash = '#/faculty';
         } else {
-            // Student mode: redirect away from restricted sections
+            // Student preview mode: redirect away from admin/faculty sections
             const activeSec = document.querySelector('.app-section.active')?.id;
             if (activeSec === 'adminSection' || activeSec === 'facultySection') {
                 window.switchSection('dashboardSection', true);
+                window.location.hash = '#/dashboard';
             }
         }
         if (window.miraiAudio && window.miraiAudio.playClick) window.miraiAudio.playClick();
     }
 
+    restoreAdminRole(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        if (e && e.stopPropagation) e.stopPropagation();
+        this.setEffectiveRole('ADMIN', e);
+        if (typeof window.showToast === 'function') {
+            window.showToast('🛡️ Restored Master Admin Mode');
+        }
+    }
+
     applyRolePermissions(role) {
         const session = window.msotAuth?.session || {};
-        const isTrueAdmin = (session.role === 'ADMIN' || session.email === 'admin@msot.edu');
+        const isTrueAdmin = this.isVerifiedAdmin(session);
         
+        if (isTrueAdmin) {
+            if (!session.baseRole) session.baseRole = 'ADMIN';
+            document.body.classList.add('has-admin-session');
+        } else {
+            document.body.classList.remove('has-admin-session');
+            document.body.classList.remove('is-admin-preview');
+            this.activeRole = (session.role || role || 'STUDENT').toUpperCase();
+        }
+
         if (!this.activeRole) {
             this.activeRole = isTrueAdmin ? 'ADMIN' : ((session.role || role || 'STUDENT').toUpperCase());
         }
         const effectiveRole = (this.activeRole || session.role || role || 'STUDENT').toUpperCase();
         document.body.setAttribute('data-user-role', effectiveRole);
 
-        // Update single role display in header
+        if (isTrueAdmin && effectiveRole !== 'ADMIN') {
+            document.body.classList.add('is-admin-preview');
+        } else {
+            document.body.classList.remove('is-admin-preview');
+        }
+
+        // Update role display in header
         const roleLabel = document.getElementById('roleLabelIndicator');
         if (roleLabel) {
             roleLabel.textContent = isTrueAdmin 
@@ -181,6 +238,7 @@ class MSOTPlatformController {
                             ⚔️ STUDENT VIEW
                         </button>
                     </div>
+                    <input type="hidden" id="userRoleSelect" value="${effectiveRole}">
                 `;
             } else {
                 rolePill.innerHTML = `
@@ -190,6 +248,7 @@ class MSOTPlatformController {
                         <span class="role-tiny-label">LOGGED IN AS</span>
                         <span class="role-main-name" id="roleLabelIndicator">${effectiveRole}</span>
                     </div>
+                    <input type="hidden" id="userRoleSelect" value="${effectiveRole}">
                 `;
             }
         }
@@ -223,18 +282,18 @@ class MSOTPlatformController {
         if (roleBanner) {
             roleBanner.className = `role-indicator-banner ${effectiveRole.toLowerCase()}`;
             roleBanner.innerHTML = `
-                <span>ACTIVE SESSION: <strong>${effectiveRole} ROLE</strong> ${isTrueAdmin && effectiveRole === 'STUDENT' ? '(STUDENT PREVIEW ACTIVE — CHANGES LOCKED)' : ''}</span>
+                <span>ACTIVE SESSION: <strong>${effectiveRole} ROLE</strong> ${isTrueAdmin && effectiveRole !== 'ADMIN' ? `(${effectiveRole} PREVIEW ACTIVE)` : ''}</span>
                 <span class="role-desc">
-                    ${effectiveRole === 'STUDENT' ? (isTrueAdmin ? 'Previewing site as student: only problem solving & compiler lab accessible. Changes locked. <a href="javascript:void(0)" onclick="window.msotPlatform.setEffectiveRole(\'ADMIN\')" style="color:#00f0ff;text-decoration:underline;margin-left:8px;font-weight:700;">Restore Admin 🛡️</a>' : 'Student Cadet View: Access personal learning dashboard, quests, leagues, and solve problems in the compiler lab.') : ''}
-                    ${effectiveRole === 'FACULTY' ? 'Full access to student engagement KPIs, syllabus topic radar, and AI Question Review.' : ''}
+                    ${effectiveRole === 'STUDENT' ? (isTrueAdmin ? 'Previewing site as student: only problem solving & compiler lab accessible. <a href="javascript:void(0)" onclick="window.msotPlatform.restoreAdminRole(event)" style="color:#00f0ff;text-decoration:underline;margin-left:8px;font-weight:700;">Restore Admin 🛡️</a>' : 'Student Cadet View: Access personal learning dashboard, quests, leagues, and solve problems in the compiler lab.') : ''}
+                    ${effectiveRole === 'FACULTY' ? (isTrueAdmin ? 'Faculty Operations View active. <a href="javascript:void(0)" onclick="window.msotPlatform.restoreAdminRole(event)" style="color:#c084fc;text-decoration:underline;margin-left:8px;font-weight:700;">Restore Admin 🛡️</a>' : 'Full access to student engagement KPIs, syllabus topic radar, and AI Question Review.') : ''}
                     ${effectiveRole === 'ADMIN' ? 'System governance active. Full privileges: push weekend assignments, configure XP rules, audit ledger.' : ''}
                 </span>
             `;
         }
 
-        // Render preview floating bar if admin is previewing student view
+        // Render preview floating bar if admin is previewing student or faculty view
         let previewBar = document.getElementById('adminPreviewBar');
-        if (isTrueAdmin && effectiveRole === 'STUDENT') {
+        if (isTrueAdmin && effectiveRole !== 'ADMIN') {
             if (!previewBar) {
                 previewBar = document.createElement('div');
                 previewBar.id = 'adminPreviewBar';
@@ -244,9 +303,9 @@ class MSOTPlatformController {
             previewBar.style.display = 'flex';
             previewBar.innerHTML = `
                 <div class="apb-content">
-                    <span class="apb-badge">👁️ STUDENT PREVIEW MODE</span>
-                    <span class="apb-text">You are testing the site with student facilities. Pushing assignments & rule editing are locked.</span>
-                    <button type="button" class="apb-switch-btn" onclick="window.msotPlatform.setEffectiveRole('ADMIN', event)">
+                    <span class="apb-badge">👁️ ${effectiveRole} PREVIEW MODE</span>
+                    <span class="apb-text">You are testing the site in <strong>${effectiveRole}</strong> mode. Push assignments & rule modifications locked.</span>
+                    <button type="button" class="apb-switch-btn" onclick="window.msotPlatform.restoreAdminRole(event)">
                         RESTORE ADMIN MASTER ACCESS 🛡️
                     </button>
                 </div>
@@ -1798,7 +1857,7 @@ class MSOTPlatformController {
             return;
         }
 
-        const isAdmin = (rawRole === 'ADMIN' || (window.msotAuth?.session?.role || '').toUpperCase() === 'ADMIN' || window.msotAuth?.session?.email === 'admin@msot.edu');
+        const isAdmin = this.isVerifiedAdmin(window.msotAuth?.session);
         const isFaculty = rawRole === 'FACULTY' || (window.msotAuth?.session?.role || '').toUpperCase() === 'FACULTY';
         const currentRole = isAdmin ? 'ADMIN' : (isFaculty ? 'FACULTY' : 'FACULTY');
 
@@ -1856,30 +1915,12 @@ class MSOTPlatformController {
                             </div>
                         </div>
                         <div style="display:flex;gap:10px;align-items:center;">
-                            <button type="button" class="btn-action-sm highlight" onclick="window.switchSection('adminSection', true)" style="white-space: nowrap;">
-                                🛡️ SWITCH TO ADMIN CONSOLE ➔
+                            <button type="button" class="btn-action-sm highlight" onclick="window.msotPlatform && window.msotPlatform.restoreAdminRole(event)" style="white-space: nowrap;">
+                                🛡️ RESTORE ADMIN CONSOLE ➔
                             </button>
                         </div>
                     </div>
-                ` : (!isFaculty ? `
-                    <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.16), rgba(59, 130, 246, 0.16)); border: 1.5px solid rgba(168, 85, 247, 0.45); border-radius: 14px; padding: 12px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 22px;">🎓</span>
-                            <div>
-                                <strong style="color: #c084fc; font-size: 13px; font-family: var(--font-mono);">FACULTY INSTRUCTION DESK // CADET DOSSIER & FLASHCARD INSPECTOR</strong>
-                                <div style="font-size: 11.5px; color: #e2e8f0;">Viewing full cadet character flashcards and academic progression. Click any cadet portrait to pop up the flashcard!</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn-action-sm highlight" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('FACULTY', event)" style="white-space: nowrap;">
-                                🎓 FACULTY EDIT MODE
-                            </button>
-                            <button type="button" class="btn-action-sm" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('ADMIN', event)" style="white-space: nowrap;">
-                                🛡️ ADMIN MODE
-                            </button>
-                        </div>
-                    </div>
-                ` : '')}
+                ` : ''}
 
                 <!-- Faculty Sub-Navigation Strip (CHARACTERS as primary #1 tab) -->
                 <div class="faculty-subnav-bar">

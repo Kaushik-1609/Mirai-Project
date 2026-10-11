@@ -48,13 +48,270 @@
         radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0%, transparent 70%) !important;
 }
 
+/* ==========================================================================
+   UNIFIED NAVBAR SIZING & GEOMETRY (IDENTICAL ACROSS ALL 3 THEMES)
+   Lavender, Cyber, and Midnight (Slate) share the exact same dimensions.
+   ========================================================================== */
+.site-header,
+[data-theme="lavender"] .site-header,
+[data-theme="cyber"] .site-header,
+[data-theme="midnight"] .site-header {
+    border-bottom-width: 2px !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.site-header.scrolled,
+[data-theme="lavender"] .site-header.scrolled,
+[data-theme="cyber"] .site-header.scrolled,
+[data-theme="midnight"] .site-header.scrolled {
+    padding: 0 !important;
+    border-bottom-width: 2px !important;
+}
+
+.header-inner,
+[data-theme="lavender"] .header-inner,
+[data-theme="cyber"] .header-inner,
+[data-theme="midnight"] .header-inner {
+    max-width: 1720px !important;
+    margin: 0 auto !important;
+    padding: 7px 16px 5px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px 14px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+.brand-crest,
+[data-theme="lavender"] .brand-crest,
+[data-theme="cyber"] .brand-crest,
+[data-theme="midnight"] .brand-crest {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 9px !important;
+    font-size: 18px !important;
+    flex-shrink: 0 !important;
+}
+
+.brand-name,
+[data-theme="lavender"] .brand-name,
+[data-theme="cyber"] .brand-name,
+[data-theme="midnight"] .brand-name {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.2px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+}
+
+.brand-kanji,
+[data-theme="lavender"] .brand-kanji,
+[data-theme="cyber"] .brand-kanji,
+[data-theme="midnight"] .brand-kanji {
+    font-size: 9.5px !important;
+    letter-spacing: 2px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+}
+
+.header-hud,
+[data-theme="lavender"] .header-hud,
+[data-theme="cyber"] .header-hud,
+[data-theme="midnight"] .header-hud {
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    flex-shrink: 0 !important;
+}
+
+.main-nav,
+[data-theme="lavender"] .main-nav,
+[data-theme="cyber"] .main-nav,
+[data-theme="midnight"] .main-nav {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 7px 12px 6px !important;
+    box-sizing: border-box !important;
+}
+
+.nav-link,
+[data-theme="lavender"] .nav-link,
+[data-theme="cyber"] .nav-link,
+[data-theme="midnight"] .nav-link {
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.6px !important;
+    padding: 8px 16px !important;
+    min-height: 38px !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    line-height: 1.2 !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cadet-hud-pill,
+[data-theme="lavender"] .cadet-hud-pill,
+[data-theme="cyber"] .cadet-hud-pill,
+[data-theme="midnight"] .cadet-hud-pill {
+    padding: 3px 8px 3px 5px !important;
+    border-radius: 16px !important;
+    border-width: 1.5px !important;
+    min-height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.hud-avatar,
+[data-theme="lavender"] .hud-avatar,
+[data-theme="cyber"] .hud-avatar,
+[data-theme="midnight"] .hud-avatar {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 12px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+}
+
+.logged-in-role-pill,
+[data-theme="lavender"] .logged-in-role-pill,
+[data-theme="cyber"] .logged-in-role-pill,
+[data-theme="midnight"] .logged-in-role-pill {
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    border-width: 1.5px !important;
+    min-height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    box-sizing: border-box !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.theme-switch-control,
+[data-theme="lavender"] .theme-switch-control,
+[data-theme="cyber"] .theme-switch-control,
+[data-theme="midnight"] .theme-switch-control {
+    padding: 2px 4px !important;
+    border-radius: 20px !important;
+    min-height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    box-sizing: border-box !important;
+}
+
+.theme-pill-btn,
+[data-theme="lavender"] .theme-pill-btn,
+[data-theme="cyber"] .theme-pill-btn,
+[data-theme="midnight"] .theme-pill-btn {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    font-family: var(--font-mono) !important;
+    padding: 4px 9px !important;
+    border-radius: 14px !important;
+    min-height: 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+}
+
+.sound-toggle-btn,
+[data-theme="lavender"] .sound-toggle-btn,
+[data-theme="cyber"] .sound-toggle-btn,
+[data-theme="midnight"] .sound-toggle-btn {
+    font-size: 10.5px !important;
+    padding: 5px 9px !important;
+    border-radius: 16px !important;
+    min-height: 32px !important;
+    border-width: 1.5px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    box-sizing: border-box !important;
+}
+
+.how-xp-btn,
+[data-theme="lavender"] .how-xp-btn,
+[data-theme="cyber"] .how-xp-btn,
+[data-theme="midnight"] .how-xp-btn {
+    font-size: 10.5px !important;
+    padding: 5px 9px !important;
+    border-radius: 16px !important;
+    min-height: 32px !important;
+    border-width: 1.5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    box-sizing: border-box !important;
+}
+
+.logout-btn,
+[data-theme="lavender"] .logout-btn,
+[data-theme="cyber"] .logout-btn,
+[data-theme="midnight"] .logout-btn {
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+    border-radius: 6px !important;
+    min-height: 32px !important;
+    border-width: 1.5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+}
+
+.mobile-nav-link,
+[data-theme="lavender"] .mobile-nav-link,
+[data-theme="cyber"] .mobile-nav-link,
+[data-theme="midnight"] .mobile-nav-link {
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    padding: 13px 18px !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+}
+
+/* Strict role-based visibility guarantee: Students never see Faculty or Admin tabs */
+[data-nav-role="FACULTY"][style*="display: none"],
+[data-nav-role="ADMIN"][style*="display: none"],
+body[data-user-role="STUDENT"] [data-nav-role="FACULTY"],
+body[data-user-role="STUDENT"] [data-nav-role="ADMIN"],
+body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-role="FACULTY"],
+body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-role="ADMIN"] {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   THEME 1: LAVENDER PASTEL LIGHT NAVBAR COLOR PALETTE
+   -------------------------------------------------------------------------- */
 [data-theme="lavender"] .site-header,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .site-header {
     background: linear-gradient(135deg, #9468f7 0%, #8b5cf6 45%, #7c3aed 100%) !important;
     border-bottom: 2px solid #6d28d9 !important;
     box-shadow: 0 6px 26px rgba(109, 40, 217, 0.35) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
 }
 
 [data-theme="lavender"] .site-header.scrolled,
@@ -87,40 +344,14 @@
 [data-theme="lavender"] .main-nav,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .main-nav {
     border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-    gap: 7px !important;
-    padding: 7px 12px 6px !important;
 }
 
 [data-theme="lavender"] .nav-link,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .nav-link {
-    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    font-size: 13.5px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.6px !important;
-    padding: 8px 16px !important;
-    min-height: 38px !important;
-    border-radius: 10px !important;
     color: rgba(255, 255, 255, 0.95) !important;
     background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    display: inline-flex;
-    align-items: center !important;
-    justify-content: center !important;
-    text-transform: uppercase !important;
-}
-
-/* Strict role-based visibility guarantee: Students never see Faculty or Admin tabs */
-[data-nav-role="FACULTY"][style*="display: none"],
-[data-nav-role="ADMIN"][style*="display: none"],
-body[data-user-role="STUDENT"] [data-nav-role="FACULTY"],
-body[data-user-role="STUDENT"] [data-nav-role="ADMIN"],
-body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-role="FACULTY"],
-body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-role="ADMIN"] {
-    display: none !important;
 }
 
 [data-theme="lavender"] .nav-link:hover,
@@ -132,7 +363,6 @@ body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-rol
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14) !important;
 }
 
-/* CHOSEN / SELECTED SECTION: CLEAN WHITE WITH VIVID ROYAL LAVENDER TEXT */
 [data-theme="lavender"] .nav-link.active,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .nav-link.active {
     background: #ffffff !important;
@@ -146,9 +376,8 @@ body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-rol
 [data-theme="lavender"] .cadet-hud-pill,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .cadet-hud-pill {
     background: rgba(255, 255, 255, 0.18) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
-    backdrop-filter: blur(8px) !important;
 }
 
 [data-theme="lavender"] .cadet-hud-pill .hud-values,
@@ -166,10 +395,9 @@ body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-rol
 [data-theme="lavender"] .logged-in-role-pill,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .logged-in-role-pill {
     background: rgba(255, 255, 255, 0.18) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
     color: #ffffff !important;
-    backdrop-filter: blur(8px) !important;
 }
 
 [data-theme="lavender"] .logged-in-role-pill .role-tiny-label,
@@ -201,7 +429,7 @@ body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-rol
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .theme-pill-btn {
     background: rgba(255, 255, 255, 0.18) !important;
     color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
 }
 
 [data-theme="lavender"] .theme-pill-btn.active,
@@ -241,12 +469,6 @@ body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-rol
 
 [data-theme="lavender"] .mobile-nav-link,
 :root:not([data-theme="cyber"]):not([data-theme="midnight"]) .mobile-nav-link {
-    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.5px !important;
-    padding: 13px 18px !important;
-    border-radius: 10px !important;
     color: rgba(255, 255, 255, 0.95) !important;
     background: rgba(255, 255, 255, 0.15) !important;
     border: 1px solid rgba(255, 255, 255, 0.28) !important;
@@ -266,6 +488,340 @@ body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-rol
     font-weight: 850 !important;
     border-color: #ffffff !important;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* --------------------------------------------------------------------------
+   THEME 2: CYBER DARK NAVBAR COLOR PALETTE (EXACT SAME SIZING AS LAVENDER)
+   -------------------------------------------------------------------------- */
+[data-theme="cyber"] .site-header {
+    background: rgba(7, 8, 14, 0.92) !important;
+    border-bottom: 2px solid rgba(244, 63, 94, 0.45) !important;
+    box-shadow: 0 6px 26px rgba(0, 0, 0, 0.65) !important;
+}
+
+[data-theme="cyber"] .site-header.scrolled {
+    background: rgba(6, 7, 12, 0.96) !important;
+    border-bottom: 2px solid rgba(244, 63, 94, 0.6) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="cyber"] .brand-name {
+    color: #ffffff !important;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="cyber"] .brand-kanji {
+    color: rgba(244, 63, 94, 0.9) !important;
+    text-shadow: 0 0 8px rgba(244, 63, 94, 0.5) !important;
+}
+
+[data-theme="cyber"] .brand-crest {
+    background: linear-gradient(145deg, rgba(244, 63, 94, 0.25), rgba(15, 17, 26, 0.9)) !important;
+    border: 1.5px solid rgba(244, 63, 94, 0.5) !important;
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.3) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="cyber"] .main-nav {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="cyber"] .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+[data-theme="cyber"] .nav-link:hover {
+    color: #ffffff !important;
+    background: rgba(244, 63, 94, 0.16) !important;
+    border-color: rgba(244, 63, 94, 0.45) !important;
+    transform: translateY(-1.5px) !important;
+    box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25) !important;
+}
+
+[data-theme="cyber"] .nav-link.active {
+    background: rgba(244, 63, 94, 0.22) !important;
+    border-color: #f43f5e !important;
+    color: #ffffff !important;
+    font-weight: 850 !important;
+    box-shadow: 0 6px 20px rgba(244, 63, 94, 0.35), 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(-1px) !important;
+}
+
+[data-theme="cyber"] .cadet-hud-pill {
+    background: rgba(18, 16, 26, 0.92) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="cyber"] .cadet-hud-pill .hud-values {
+    color: #ffffff !important;
+}
+
+[data-theme="cyber"] .hud-avatar {
+    background: #1e1b2e !important;
+    border-color: rgba(244, 63, 94, 0.5) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="cyber"] .logged-in-role-pill {
+    background: rgba(14, 12, 22, 0.95) !important;
+    border-color: rgba(0, 240, 255, 0.4) !important;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="cyber"] .logged-in-role-pill .role-tiny-label {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme="cyber"] .logged-in-role-pill .role-main-name {
+    color: #00f0ff !important;
+}
+
+[data-theme="cyber"] .facility-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="cyber"] .facility-btn.active {
+    background: #ff2a4b !important;
+    color: #ffffff !important;
+    border-color: #ff2a4b !important;
+    font-weight: 800 !important;
+}
+
+[data-theme="cyber"] .theme-pill-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+[data-theme="cyber"] .theme-pill-btn.active {
+    background: #f43f5e !important;
+    color: #ffffff !important;
+    border-color: #f43f5e !important;
+    font-weight: 800 !important;
+    box-shadow: 0 2px 10px rgba(244, 63, 94, 0.35) !important;
+}
+
+[data-theme="cyber"] .sound-toggle-btn {
+    background: rgba(244, 63, 94, 0.12) !important;
+    border-color: rgba(244, 63, 94, 0.35) !important;
+    color: #f43f5e !important;
+}
+
+[data-theme="cyber"] .sound-toggle-btn:hover {
+    background: rgba(244, 63, 94, 0.25) !important;
+    box-shadow: 0 0 12px rgba(244, 63, 94, 0.4) !important;
+}
+
+[data-theme="cyber"] .how-xp-btn {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    color: #fbbf24 !important;
+}
+
+[data-theme="cyber"] .logout-btn {
+    background: rgba(244, 63, 94, 0.14) !important;
+    border-color: rgba(244, 63, 94, 0.4) !important;
+    color: #ff526d !important;
+}
+
+[data-theme="cyber"] .mobile-nav-drawer {
+    background: linear-gradient(180deg, #0e101a 0%, #07080e 100%) !important;
+}
+
+[data-theme="cyber"] .mobile-nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-theme="cyber"] .mobile-nav-link:hover {
+    background: rgba(244, 63, 94, 0.18) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="cyber"] .mobile-nav-link.active {
+    background: #f43f5e !important;
+    color: #ffffff !important;
+    font-weight: 850 !important;
+    border-color: #f43f5e !important;
+    box-shadow: 0 4px 18px rgba(244, 63, 94, 0.4) !important;
+}
+
+/* --------------------------------------------------------------------------
+   THEME 3: MIDNIGHT SLATE NAVBAR COLOR PALETTE (EXACT SAME SIZING AS LAVENDER)
+   -------------------------------------------------------------------------- */
+[data-theme="midnight"] .site-header {
+    background: rgba(11, 17, 32, 0.9) !important;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.4) !important;
+    box-shadow: 0 6px 26px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="midnight"] .site-header.scrolled {
+    background: rgba(8, 13, 24, 0.96) !important;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.55) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65) !important;
+}
+
+[data-theme="midnight"] .brand-name {
+    color: #ffffff !important;
+    text-shadow: 0 0 12px rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme="midnight"] .brand-kanji {
+    color: rgba(56, 189, 248, 0.9) !important;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.5) !important;
+}
+
+[data-theme="midnight"] .brand-crest {
+    background: linear-gradient(145deg, rgba(56, 189, 248, 0.25), rgba(15, 23, 42, 0.9)) !important;
+    border: 1.5px solid rgba(56, 189, 248, 0.5) !important;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3) !important;
+    color: #38bdf8 !important;
+}
+
+[data-theme="midnight"] .main-nav {
+    border-top: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+[data-theme="midnight"] .nav-link {
+    color: rgba(255, 255, 255, 0.82) !important;
+    background: rgba(56, 189, 248, 0.06) !important;
+    border-color: rgba(56, 189, 248, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+[data-theme="midnight"] .nav-link:hover {
+    color: #ffffff !important;
+    background: rgba(56, 189, 248, 0.16) !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+    transform: translateY(-1.5px) !important;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.22) !important;
+}
+
+[data-theme="midnight"] .nav-link.active {
+    background: rgba(56, 189, 248, 0.22) !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+    font-weight: 850 !important;
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35), 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(-1px) !important;
+}
+
+[data-theme="midnight"] .cadet-hud-pill {
+    background: rgba(22, 33, 54, 0.92) !important;
+    border-color: rgba(56, 189, 248, 0.25) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="midnight"] .cadet-hud-pill .hud-values {
+    color: #ffffff !important;
+}
+
+[data-theme="midnight"] .hud-avatar {
+    background: #0f172a !important;
+    border-color: rgba(56, 189, 248, 0.5) !important;
+    color: #38bdf8 !important;
+}
+
+[data-theme="midnight"] .logged-in-role-pill {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="midnight"] .logged-in-role-pill .role-tiny-label {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme="midnight"] .logged-in-role-pill .role-main-name {
+    color: #38bdf8 !important;
+}
+
+[data-theme="midnight"] .facility-btn {
+    background: rgba(56, 189, 248, 0.08) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+[data-theme="midnight"] .facility-btn.active {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+    font-weight: 800 !important;
+}
+
+[data-theme="midnight"] .theme-pill-btn {
+    background: rgba(56, 189, 248, 0.08) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+[data-theme="midnight"] .theme-pill-btn.active {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35) !important;
+}
+
+[data-theme="midnight"] .sound-toggle-btn {
+    background: rgba(56, 189, 248, 0.12) !important;
+    border-color: rgba(56, 189, 248, 0.35) !important;
+    color: #38bdf8 !important;
+}
+
+[data-theme="midnight"] .sound-toggle-btn:hover {
+    background: rgba(56, 189, 248, 0.22) !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.35) !important;
+}
+
+[data-theme="midnight"] .how-xp-btn {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    color: #fbbf24 !important;
+}
+
+[data-theme="midnight"] .logout-btn {
+    background: rgba(244, 63, 94, 0.14) !important;
+    border-color: rgba(244, 63, 94, 0.4) !important;
+    color: #ff526d !important;
+}
+
+[data-theme="midnight"] .mobile-nav-drawer {
+    background: linear-gradient(180deg, #1e293b 0%, #0b1120 100%) !important;
+}
+
+[data-theme="midnight"] .mobile-nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+    border: 1px solid rgba(56, 189, 248, 0.18) !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-theme="midnight"] .mobile-nav-link:hover {
+    background: rgba(56, 189, 248, 0.2) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="midnight"] .mobile-nav-link.active {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    font-weight: 850 !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 4px 18px rgba(56, 189, 248, 0.4) !important;
 }
 
 /* THEME 2: CYBER DARK (NEO-TOKYO) */
@@ -2605,7 +3161,7 @@ body:not([data-user-role="FACULTY"]):not([data-user-role="ADMIN"]) [data-nav-rol
    ========================================================================== */
 body[data-user-role="STUDENT"] [data-nav-role="ADMIN"],
 body[data-user-role="STUDENT"] [data-nav-role="FACULTY"],
-body[data-user-role="STUDENT"] .facility-toggle-group,
+body[data-user-role="STUDENT"]:not(.is-admin-preview):not(.has-admin-session) .facility-toggle-group,
 body[data-user-role="STUDENT"] #adminSection,
 body[data-user-role="STUDENT"] #facultySection,
 body[data-user-role="STUDENT"] .admin-only,
@@ -2616,8 +3172,21 @@ body:not([data-user-role="ADMIN"]):not([data-user-role="FACULTY"]) [data-nav-rol
 }
 
 body[data-user-role="FACULTY"] [data-nav-role="ADMIN"],
+body[data-user-role="FACULTY"]:not(.is-admin-preview):not(.has-admin-session) .facility-toggle-group,
 body[data-user-role="FACULTY"] #adminSection,
 body[data-user-role="FACULTY"] .admin-only {
     display: none !important;
 }
+
+/* Facility toggle and preview bar for verified admins */
+body.is-admin-preview .facility-toggle-group,
+body.has-admin-session .logged-in-role-pill.has-facility-switcher .facility-toggle-group {
+    display: inline-flex !important;
+}
+
+body.is-admin-preview .admin-preview-floating-bar {
+    display: flex !important;
+    z-index: 999999 !important;
+}
+
 

@@ -12,12 +12,12 @@
     
     <!-- Stylesheets & Favicon (v=46 forces clean load across GitHub and Live Server) -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="css/main.css?v=46">
-    <link rel="stylesheet" href="css/hero-gate.css?v=46">
-    <link rel="stylesheet" href="css/games.css?v=46">
-    <link rel="stylesheet" href="css/auth.css?v=46">
-    <link rel="stylesheet" href="css/dashboard.css?v=46">
-    <link rel="stylesheet" href="css/faculty-flashcard.css?v=46">
+    <link rel="stylesheet" href="css/main.css?v=47">
+    <link rel="stylesheet" href="css/hero-gate.css?v=47">
+    <link rel="stylesheet" href="css/games.css?v=47">
+    <link rel="stylesheet" href="css/auth.css?v=47">
+    <link rel="stylesheet" href="css/dashboard.css?v=47">
+    <link rel="stylesheet" href="css/faculty-flashcard.css?v=47">
 
     <!-- Tailwind CSS (core preflight disabled to guarantee zero conflict with custom styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -449,18 +449,13 @@
                     <span class="notif-badge" id="adminNotifBadge">0</span>
                 </button>
 
-                <!-- Logged In As Indicator Pill with Facility Switcher (shown only for verified Admins) -->
+                <!-- Logged In As Indicator Pill (Facility Switcher dynamically rendered only for verified Admins) -->
                 <div class="logged-in-role-pill role-student" id="loggedInRolePill" title="Authenticated Session Role">
                     <span class="role-status-dot">●</span>
                     <span class="role-icon-indicator" id="roleIconIndicator">⚔️</span>
                     <div class="role-text-box">
                         <span class="role-tiny-label">LOGGED IN AS</span>
                         <span class="role-main-name" id="roleLabelIndicator">⚔️ STUDENT</span>
-                    </div>
-                    <div class="facility-toggle-group" style="display: none;">
-                        <button type="button" class="facility-btn" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('ADMIN', event)" title="Admin Mode: Complete system governance & rules">🛡️ ADMIN</button>
-                        <button type="button" class="facility-btn" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('FACULTY', event)" title="Faculty Mode: View and change student assignments, grades, reasons, and character flashcards">🎓 FACULTY VIEW</button>
-                        <button type="button" class="facility-btn active" onclick="window.msotPlatform && window.msotPlatform.setEffectiveRole('STUDENT', event)" title="Student Mode: Preview student perspective">⚔️ STUDENT VIEW</button>
                     </div>
                     <input type="hidden" id="userRoleSelect" value="STUDENT">
                 </div>
@@ -1201,22 +1196,22 @@
     <!-- Framer Motion (v10 UMD) -->
     <script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
 
-    <!-- Application Scripts (v=46 busts any browser/Live Server cache) -->
-    <script src="js/auth.js?v=46"></script>
-    <script src="js/audio.js?v=46"></script>
-    <script src="js/state.js?v=46"></script>
-    <script src="js/games-data.js?v=46"></script>
-    <script src="js/three-viewport.js?v=46"></script>
-    <script src="js/gate-canvas.js?v=46"></script>
-    <script src="js/game-engine.js?v=46"></script>
-    <script src="js/scroll-animations.js?v=46"></script>
-    <script src="js/pixel-grid-trail.js?v=46"></script>
-    <script src="js/guild.js?v=46"></script>
-    <script src="js/rbac.js?v=46"></script>
-    <script src="js/battle.js?v=46"></script>
-    <script src="js/react-league-module.js?v=46"></script>
-    <script src="js/dashboard-service.js?v=46"></script>
-    <script src="js/platform.js?v=46"></script>
-    <script src="js/app.js?v=46"></script>
+    <!-- Application Scripts (v=47 busts any browser/Live Server cache) -->
+    <script src="js/auth.js?v=47"></script>
+    <script src="js/audio.js?v=47"></script>
+    <script src="js/state.js?v=47"></script>
+    <script src="js/games-data.js?v=47"></script>
+    <script src="js/three-viewport.js?v=47"></script>
+    <script src="js/gate-canvas.js?v=47"></script>
+    <script src="js/game-engine.js?v=47"></script>
+    <script src="js/scroll-animations.js?v=47"></script>
+    <script src="js/pixel-grid-trail.js?v=47"></script>
+    <script src="js/guild.js?v=47"></script>
+    <script src="js/rbac.js?v=47"></script>
+    <script src="js/battle.js?v=47"></script>
+    <script src="js/react-league-module.js?v=47"></script>
+    <script src="js/dashboard-service.js?v=47"></script>
+    <script src="js/platform.js?v=47"></script>
+    <script src="js/app.js?v=47"></script>
 </body>
 </html>

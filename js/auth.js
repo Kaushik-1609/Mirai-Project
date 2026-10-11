@@ -250,11 +250,12 @@
             if (!raw) return null;
             const sess = JSON.parse(raw);
             if (sess) {
-                // Ensure role is consistent without overriding student/faculty roles
-                if (!sess.role) {
-                    sess.role = (sess.email === 'admin@msot.edu') ? 'ADMIN' : (sess.email === 'faculty@msot.edu' ? 'FACULTY' : 'STUDENT');
-                } else if (sess.email === 'admin@msot.edu') {
-                    sess.role = 'ADMIN';
+                const isAdmin = (sess.email === 'admin@msot.edu' || sess.email === 'utkarshraj142006@gmail.com' || sess.role === 'ADMIN' || sess.baseRole === 'ADMIN');
+                if (isAdmin) {
+                    sess.baseRole = 'ADMIN';
+                    if (!sess.role) sess.role = 'ADMIN';
+                } else if (!sess.role) {
+                    sess.role = (sess.email === 'faculty@msot.edu') ? 'FACULTY' : 'STUDENT';
                 }
             }
             return sess;
@@ -544,6 +545,15 @@
         if (!session) return;
         closeAccountStatusModal();
         if (session.section) session.section = normalizeSection(session.section);
+        
+        const isAdminAccount = (window.msotPlatform && typeof window.msotPlatform.isVerifiedAdmin === 'function')
+            ? window.msotPlatform.isVerifiedAdmin(session)
+            : (session.email?.toLowerCase() === 'admin@msot.edu' || session.email?.toLowerCase() === 'utkarshraj142006@gmail.com' || session.role === 'ADMIN' || session.baseRole === 'ADMIN');
+        
+        if (isAdminAccount && !session.baseRole) {
+            session.baseRole = 'ADMIN';
+        }
+
         window.msotAuth.session = session;
 
         // Sync with Platform State (isolates user data per account)
@@ -571,7 +581,7 @@
 
         const rolePill = $('loggedInRolePill');
         if (rolePill) {
-            rolePill.className = `logged-in-role-pill role-${(session.role || 'STUDENT').toLowerCase()}`;
+            rolePill.className = `logged-in-role-pill role-${(session.role || 'STUDENT').toLowerCase()} ${isAdminAccount ? 'has-facility-switcher' : ''}`;
         }
 
         const hiddenRoleSelect = $('userRoleSelect');
@@ -753,7 +763,7 @@
             const meta = u.user_metadata || {};
             const cleanUser = (meta.username || (builtIn ? builtIn.username : u.email.split('@')[0])).replace(/^@/, '');
             const rawName = meta.name || (builtIn ? builtIn.name : cleanUser);
-            const isAdminAccount = (u.email?.toLowerCase() === 'admin@msot.edu' || meta.role === 'ADMIN' || (builtIn && builtIn.role === 'ADMIN'));
+            const isAdminAccount = (u.email?.toLowerCase() === 'admin@msot.edu' || u.email?.toLowerCase() === 'utkarshraj142006@gmail.com' || meta.role === 'ADMIN' || (builtIn && builtIn.role === 'ADMIN'));
             const userRole = isAdminAccount ? 'ADMIN' : (meta.role || (builtIn ? builtIn.role : (currentLoginRole || 'STUDENT')));
 
             const session = {
@@ -769,6 +779,7 @@
                 branch: meta.branch || (builtIn ? 'Computer Science & Engineering' : 'Computer Science & Engineering (CSE)'),
                 phone: meta.phone || '',
                 role: userRole,
+                baseRole: isAdminAccount ? 'ADMIN' : userRole,
                 avatar: meta.avatar || (builtIn ? builtIn.avatar : (userRole === 'ADMIN' ? '🛡️' : (userRole === 'FACULTY' ? '🎓' : '⚔️'))),
                 track: meta.track || (builtIn ? builtIn.track : 'C++ Algorithms & DSA'),
                 loginAt: new Date().toISOString(),
@@ -947,6 +958,7 @@
                 branch: localUser.branch || 'Computer Science & Engineering (CSE)',
                 phone: localUser.phone || '',
                 role: userRole,
+                baseRole: isAdminAccount ? 'ADMIN' : userRole,
                 approval_status: 'APPROVED',
                 avatar: localUser.avatar || (userRole === 'ADMIN' ? '🛡️' : (userRole === 'FACULTY' ? '🎓' : '⚔️')),
                 track: localUser.track || 'C++ Algorithms & DSA',
