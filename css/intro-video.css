@@ -1,0 +1,760 @@
+/* ==========================================================================
+   MIRAI SCHOOL OF TECHNOLOGY — ASUR GUARDIAN PROTOCOL CINEMATIC INTRO
+   High-FPS Smooth Video Playback & 3D Voxel Cube Disintegration:
+   1. Ultra-Smooth 60FPS Video Playback with GPU hardware acceleration
+   2. Synchronized ambient real-time video backlighting
+   3. Volumetric god rays, anamorphic lens flare, incandescent demonic eye flares
+   4. NO BLAST: Mask smoothly fragments into hundreds of small 3D glowing cubes
+      that spread everywhere in 3D perspective
+   5. Dynamic burning text POP-UP emergence from the dispersing cubes
+   ========================================================================== */
+
+.msot-intro-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #020204;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;
+    visibility: hidden;
+    overflow: hidden;
+    user-select: none;
+    contain: strict;
+}
+
+.msot-intro-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+}
+
+/* ==========================================================================
+   1. REAL-TIME AMBIENT SYNCHRONIZED VIDEO BACKLIGHTING & DEPTH
+   ========================================================================== */
+.msot-intro-ambient-bg {
+    position: absolute;
+    inset: -15%;
+    width: 130%;
+    height: 130%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    background: radial-gradient(circle at center, rgba(30, 8, 4, 0.85) 0%, rgba(2, 2, 4, 0.98) 75%, #020204 100%);
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+}
+
+.msot-ambient-video-layer {
+    position: absolute;
+    inset: -20%;
+    width: 140%;
+    height: 140%;
+    object-fit: cover;
+    filter: blur(65px) brightness(0.4) saturate(2.4);
+    transform: scale(1.15) translate3d(0, 0, 0);
+    opacity: 0.85;
+    pointer-events: none;
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.msot-intro-cinematic-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background: radial-gradient(ellipse 65% 55% at 50% 50%, rgba(255, 85, 0, 0.16) 0%, rgba(180, 25, 0, 0.08) 45%, transparent 80%);
+}
+
+/* ==========================================================================
+   2. VOLUMETRIC GOD RAYS & REALISTIC 3D PERSPECTIVE CINEMA STAGE
+   ========================================================================== */
+.msot-intro-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    overflow: hidden;
+    perspective: 1400px;
+    transform-style: preserve-3d;
+    transition: transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1);
+    will-change: transform;
+}
+
+/* Rotating Volumetric God Rays */
+.msot-volumetric-rays {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1200px;
+    height: 1200px;
+    margin-top: -600px;
+    margin-left: -600px;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        rgba(255, 107, 0, 0) 0deg,
+        rgba(255, 140, 0, 0.12) 20deg,
+        rgba(255, 107, 0, 0) 40deg,
+        rgba(255, 69, 0, 0.1) 80deg,
+        rgba(255, 107, 0, 0) 110deg,
+        rgba(255, 180, 0, 0.14) 150deg,
+        rgba(255, 107, 0, 0) 180deg,
+        rgba(255, 90, 0, 0.11) 220deg,
+        rgba(255, 107, 0, 0) 250deg,
+        rgba(255, 150, 0, 0.15) 290deg,
+        rgba(255, 107, 0, 0) 330deg,
+        rgba(255, 107, 0, 0) 360deg
+    );
+    filter: blur(28px);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.7;
+    animation: volumetricRaysRotate 35s linear infinite;
+    will-change: transform;
+}
+
+@keyframes volumetricRaysRotate {
+    0% { transform: rotate(0deg) scale(0.95); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(0.95); }
+}
+
+/* ==========================================================================
+   3. THE ASUR MASK VIDEO STAGE — CENTERED & CINEMATIC SLOW-MOTION
+   ========================================================================== */
+.msot-intro-mask-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 25; /* LAYER: GATE IS ON TOP OF TEXT */
+}
+
+/* Video Wrap playing slow-motion approach */
+.msot-mask-video-wrap {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: opacity 0.25s ease-out;
+}
+
+.msot-mask-video-wrap.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    display: none;
+}
+
+/* Mask Hero Video Element */
+.msot-hero-mask-video {
+    width: min(84vw, 840px);
+    aspect-ratio: 2828 / 1440;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+    filter: drop-shadow(0 0 35px rgba(255, 80, 0, 0.7)) drop-shadow(0 0 75px rgba(245, 158, 11, 0.45));
+    will-change: transform, opacity;
+    animation: maskCenterApproach 3.2s cubic-bezier(0.16, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes maskCenterApproach {
+    0% {
+        transform: scale(0.86);
+        opacity: 0.75;
+    }
+    50% {
+        transform: scale(0.98);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.03);
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   4. SLIDER GATE DOORS — SPLITS IN MIDDLE & SLIDES LEFT & RIGHT
+   ========================================================================== */
+.msot-mask-slider-gate {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease-out;
+}
+
+.msot-mask-slider-gate.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Center Energy Laser Crevice */
+.msot-slider-center-seam {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, transparent 0%, #ffedd5 15%, #ffffff 50%, #f59e0b 85%, transparent 100%);
+    box-shadow: 0 0 20px #ffffff, 0 0 45px #ff8c00, 0 0 90px #ea580c;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 30;
+}
+
+.msot-mask-slider-gate.opening .msot-slider-center-seam {
+    animation: sliderSeamFlare 1.8s ease-out forwards;
+}
+
+@keyframes sliderSeamFlare {
+    0% { opacity: 0; width: 2px; }
+    15% { opacity: 1; width: 14px; filter: blur(1px); }
+    50% { opacity: 0.9; width: 42px; filter: blur(3px); }
+    100% { opacity: 0; width: 90px; filter: blur(6px); }
+}
+
+/* Slider Door Halves */
+.msot-slider-door {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    background: #08070b; /* Seamless dark backdrop covers text completely */
+    will-change: transform;
+}
+
+.msot-slider-door.left {
+    left: 0;
+    transform: translateX(0);
+}
+
+.msot-slider-door.right {
+    right: 0;
+    transform: translateX(0);
+}
+
+/* Inner full-screen canvas so the mask is centered at 50vw */
+.msot-slider-door-inner {
+    position: absolute;
+    top: 0;
+    width: 200%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.msot-slider-door.left .msot-slider-door-inner {
+    left: 0;
+}
+
+.msot-slider-door.right .msot-slider-door-inner {
+    right: 0;
+}
+
+.msot-slider-mask-img {
+    width: min(84vw, 840px);
+    aspect-ratio: 2828 / 1440;
+    object-fit: contain;
+    display: block;
+    filter: contrast(1.15) saturate(1.2) brightness(1.05) drop-shadow(0 0 35px rgba(255, 80, 0, 0.7)) drop-shadow(0 0 75px rgba(245, 158, 11, 0.45));
+}
+
+/* Glowing energy edge on parting seam */
+.msot-slider-door-edge {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    z-index: 5;
+}
+
+.msot-slider-door-edge.edge-right {
+    right: 0;
+    background: linear-gradient(180deg, transparent 0%, #ffedd5 20%, #ffffff 50%, #f59e0b 80%, transparent 100%);
+    box-shadow: 0 0 15px #ffedd5, 0 0 35px #f59e0b, 15px 0 40px rgba(0, 0, 0, 0.95);
+}
+
+.msot-slider-door-edge.edge-left {
+    left: 0;
+    background: linear-gradient(180deg, transparent 0%, #ffedd5 20%, #ffffff 50%, #f59e0b 80%, transparent 100%);
+    box-shadow: 0 0 15px #ffedd5, 0 0 35px #f59e0b, -15px 0 40px rgba(0, 0, 0, 0.95);
+}
+
+/* LEFT SLIDER DOOR SLIDES SMOOTHLY TO THE LEFT */
+.msot-mask-slider-gate.opening .msot-slider-door.left {
+    animation: sliderDoorSlideLeft 2.4s cubic-bezier(0.22, 0.85, 0.32, 1) forwards;
+}
+
+@keyframes sliderDoorSlideLeft {
+    0% {
+        transform: translateX(0);
+    }
+    12% {
+        transform: translateX(-4%);
+    }
+    45% {
+        transform: translateX(-38%);
+    }
+    78% {
+        transform: translateX(-80%);
+    }
+    100% {
+        transform: translateX(-102%);
+    }
+}
+
+/* RIGHT SLIDER DOOR SLIDES SMOOTHLY TO THE RIGHT */
+.msot-mask-slider-gate.opening .msot-slider-door.right {
+    animation: sliderDoorSlideRight 2.4s cubic-bezier(0.22, 0.85, 0.32, 1) forwards;
+}
+
+@keyframes sliderDoorSlideRight {
+    0% {
+        transform: translateX(0);
+    }
+    12% {
+        transform: translateX(4%);
+    }
+    45% {
+        transform: translateX(38%);
+    }
+    78% {
+        transform: translateX(80%);
+    }
+    100% {
+        transform: translateX(102%);
+    }
+}
+
+/* ==========================================================================
+   5. FIERY TEXT & DASHBOARD BUTTON IN CENTER (UNDERNEATH SLIDING GATE)
+   ========================================================================== */
+.msot-fire-text-reveal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    z-index: 10; /* LAYER: UNDERNEATH THE GATE (GATE IS LAYER 25) */
+    text-align: center;
+    width: 95%;
+    max-width: 960px;
+    pointer-events: none;
+    opacity: 0;
+    filter: blur(10px);
+    will-change: transform, opacity, filter;
+}
+
+.msot-fire-text-reveal.gate-emerge {
+    pointer-events: auto;
+    opacity: 1;
+    animation: textRevealUnderSlider 2.4s cubic-bezier(0.22, 0.85, 0.32, 1) forwards;
+}
+
+@keyframes textRevealUnderSlider {
+    0% {
+        opacity: 0.2;
+        transform: translate(-50%, -50%) scale(0.88);
+        filter: blur(12px) brightness(1.8);
+    }
+    35% {
+        opacity: 0.85;
+        transform: translate(-50%, -50%) scale(0.96);
+        filter: blur(4px) brightness(1.3);
+    }
+    75% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.01);
+        filter: blur(0px) brightness(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        filter: blur(0px) brightness(1);
+    }
+}
+
+/* Roaring Fire Aura Behind the Text */
+.msot-fire-text-aura {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140%;
+    height: 340px;
+    background: radial-gradient(ellipse at center, rgba(255, 107, 0, 0.55) 0%, rgba(220, 38, 38, 0.32) 42%, transparent 75%);
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(40px);
+    animation: fireAuraFlicker 2.6s infinite alternate ease-in-out;
+}
+
+@keyframes fireAuraFlicker {
+    0% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.92); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); filter: blur(50px); }
+}
+
+/* The Glowing Radiant Website Title — Ultra-Visible, High-Contrast & Majestic */
+.msot-fire-website-title {
+    font-family: 'Cinzel', 'Outfit', sans-serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    margin: 0;
+    line-height: 1.15;
+    text-transform: uppercase;
+    text-align: center;
+    /* High-contrast pure white-to-bright-gold gradient */
+    background: linear-gradient(180deg, #ffffff 0%, #fffbeb 28%, #fef08a 55%, #f59e0b 82%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Crisp dark stroke + intense golden fiery bloom for 100% legibility against dark or light bg */
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.95))
+            drop-shadow(0 0 25px rgba(245, 158, 11, 0.9))
+            drop-shadow(0 0 60px rgba(234, 88, 12, 0.65));
+    animation: titleFireGlowPulse 2.8s infinite alternate ease-in-out;
+}
+
+@keyframes titleFireGlowPulse {
+    0% {
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.95))
+                drop-shadow(0 0 22px rgba(245, 158, 11, 0.85))
+                drop-shadow(0 0 50px rgba(234, 88, 12, 0.55));
+    }
+    100% {
+        filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 1))
+                drop-shadow(0 0 35px rgba(251, 191, 36, 1))
+                drop-shadow(0 0 80px rgba(245, 158, 11, 0.85));
+    }
+}
+
+/* The Enter Button Emerges Out of the Flames */
+.msot-enter-action-btn {
+    appearance: none;
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.96), rgba(185, 28, 28, 0.98));
+    border: 1.5px solid #fbbf24;
+    color: #ffffff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    padding: 14px 42px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 35px rgba(255, 107, 0, 0.8), 0 0 70px rgba(220, 38, 38, 0.5), 0 4px 20px rgba(0, 0, 0, 0.7);
+    margin-top: 14px;
+}
+
+.msot-enter-action-btn:hover {
+    transform: scale(1.07);
+    background: linear-gradient(135deg, #ff8c00, #dc2626);
+    box-shadow: 0 0 55px rgba(255, 140, 0, 1), 0 0 110px rgba(220, 38, 38, 0.9);
+    border-color: #ffffff;
+}
+
+/* ==========================================================================
+   7. TOP CYBERNETIC HUD CONTROLS BAR
+   ========================================================================= */
+.msot-intro-hud-top {
+    position: absolute;
+    top: 24px;
+    left: 28px;
+    right: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    z-index: 35;
+    pointer-events: auto;
+}
+
+.msot-intro-hud-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(14, 7, 8, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    padding: 7px 18px 7px 10px;
+    border-radius: 999px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7), 0 0 20px rgba(245, 158, 11, 0.25);
+}
+
+.msot-intro-hud-mask-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid #f59e0b;
+    box-shadow: 0 0 14px rgba(255, 107, 0, 0.85);
+    display: block;
+}
+
+.msot-intro-hud-title {
+    font-family: 'JetBrains Mono', 'Cinzel', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #fef2f2;
+    text-transform: uppercase;
+}
+
+.msot-intro-hud-sub {
+    font-size: 10px;
+    color: #fb923c;
+    font-weight: 600;
+    margin-left: 6px;
+    padding-left: 8px;
+    border-left: 1px solid rgba(245, 158, 11, 0.45);
+    letter-spacing: 0.08em;
+}
+
+.msot-intro-hud-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.msot-intro-hud-btn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(14, 8, 12, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #f8fafc;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 9px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.msot-intro-hud-btn:hover {
+    background: rgba(28, 14, 18, 0.95);
+    border-color: rgba(245, 158, 11, 0.7);
+    color: #fed7aa;
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(255, 107, 0, 0.4);
+}
+
+.msot-intro-hud-btn.btn-unmute {
+    border-color: rgba(245, 158, 11, 0.7);
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    animation: introAudioPulse 2s infinite ease-in-out;
+}
+
+.msot-intro-hud-btn.btn-unmute:hover {
+    background: rgba(245, 158, 11, 0.38);
+    border-color: #f59e0b;
+    color: #ffffff;
+}
+
+@keyframes introAudioPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.25); }
+    50% { box-shadow: 0 0 24px rgba(245, 158, 11, 0.75); border-color: rgba(245, 158, 11, 0.95); }
+}
+
+.msot-intro-hud-btn.btn-skip {
+    background: rgba(234, 88, 12, 0.24);
+    border-color: rgba(234, 88, 12, 0.55);
+    color: #fed7aa;
+}
+
+.msot-intro-hud-btn.btn-skip:hover {
+    background: rgba(234, 88, 12, 0.44);
+    border-color: #ea580c;
+    color: #ffffff;
+    box-shadow: 0 0 24px rgba(255, 107, 0, 0.6);
+}
+
+/* ==========================================================================
+   8. SCANLINES, VIGNETTE & FILM OVERLAYS
+   ========================================================================== */
+.msot-intro-scanlines {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%),
+                linear-gradient(90deg, rgba(255, 107, 0, 0.03), rgba(0, 0, 0, 0.02), rgba(245, 158, 11, 0.03));
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0.55;
+}
+
+.msot-intro-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 35%, rgba(2, 2, 4, 0.8) 75%, #020204 100%),
+                linear-gradient(to bottom, rgba(2, 2, 4, 0.75) 0%, transparent 18%, transparent 80%, rgba(2, 2, 4, 0.92) 100%);
+    pointer-events: none;
+    z-index: 11;
+}
+
+/* ==========================================================================
+   9. CINEMATIC PORTAL DISSOLVE & GATEWAY TRANSITION TO DASHBOARD
+   ========================================================================== */
+.msot-transition-portal-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000000;
+    background: radial-gradient(circle at center, rgba(234, 88, 12, 0.5) 0%, rgba(12, 4, 6, 0.98) 70%, #020204 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.5s ease;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.msot-transition-portal-overlay.portal-active {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.msot-portal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.msot-transition-portal-overlay.portal-active .msot-portal-content {
+    transform: scale(1);
+}
+
+.msot-portal-crest-glow {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, #f59e0b, #ea580c, #7f1d1d);
+    box-shadow: 0 0 55px rgba(255, 107, 0, 0.98), 0 0 110px rgba(245, 158, 11, 0.75);
+    animation: portalPulse 1.2s infinite alternate ease-in-out;
+}
+
+.msot-portal-crest-glow img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+@keyframes portalPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 35px rgba(255, 107, 0, 0.7); }
+    100% { transform: scale(1.08); box-shadow: 0 0 85px rgba(255, 140, 0, 1), 0 0 140px rgba(234, 88, 12, 0.9); }
+}
+
+.msot-portal-text-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    color: #fbbf24;
+    text-shadow: 0 0 12px rgba(251, 191, 36, 0.85);
+}
+
+.msot-portal-text-main {
+    font-family: 'Cinzel', serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.12em;
+    margin: 0;
+    text-shadow: 0 0 25px rgba(255, 107, 0, 0.95);
+}
+
+.msot-portal-spinner-bar {
+    width: 220px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+}
+
+.msot-portal-spinner-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ea580c, #f59e0b, #fbbf24);
+    box-shadow: 0 0 16px #f59e0b;
+    animation: portalBarFill 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes portalBarFill {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+/* ==========================================================================
+   10. RESPONSIVE BREAKPOINTS (MOBILE & TABLET)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .msot-fire-website-title {
+        font-size: clamp(26px, 6vw, 36px);
+        letter-spacing: 0.08em;
+    }
+    .msot-enter-action-btn {
+        padding: 12px 28px;
+        font-size: 11px;
+    }
+    .msot-volumetric-rays {
+        width: 700px;
+        height: 700px;
+        margin-top: -350px;
+        margin-left: -350px;
+    }
+}

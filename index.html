@@ -18,6 +18,9 @@
     <link rel="stylesheet" href="css/auth.css?v=47">
     <link rel="stylesheet" href="css/dashboard.css?v=47">
     <link rel="stylesheet" href="css/faculty-flashcard.css?v=47">
+    <link rel="stylesheet" href="css/intro-video.css?v=47">
+    <link rel="stylesheet" href="css/beta.css?v=48">
+    <link rel="stylesheet" href="css/study-tracker.css?v=48">
 
     <!-- Tailwind CSS (core preflight disabled to guarantee zero conflict with custom styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -49,6 +52,120 @@
     </script>
 </head>
 <body data-user-role="STUDENT">
+
+    <!-- ===================================================================
+         CINEMATIC INTRO VIDEO OVERLAY (ASUR GUARDIAN PROTOCOL CINEMA)
+         =================================================================== -->
+    <div id="msotIntroOverlay" class="msot-intro-overlay" role="dialog" aria-modal="true" aria-label="Mirai Academy Cinematic Intro">
+        <!-- SVG Filter for Hyper-Realistic Optical Heat Distortion -->
+        <svg class="msot-svg-filters" width="0" height="0" style="position:absolute;width:0;height:0;pointer-events:none;" aria-hidden="true">
+            <defs>
+                <filter id="msotHeatFilter">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.035 0.07" numOctaves="2" result="noise">
+                        <animate attributeName="baseFrequency" dur="5s" values="0.03 0.06;0.05 0.09;0.03 0.06" repeatCount="indefinite" />
+                    </feTurbulence>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" />
+                </filter>
+            </defs>
+        </svg>
+
+        <!-- Ambient Fiery Mask Blur Atmosphere (Synced Real-time Video Glow) -->
+        <div class="msot-intro-ambient-bg">
+            <video id="msotIntroAmbientVideo" class="msot-ambient-video-layer" playsinline muted loop preload="auto" aria-hidden="true">
+                <source src="assets/videos/asur.mp4" type="video/mp4">
+                <source src="assets/videos/asurbr.mp4" type="video/mp4">
+            </video>
+        </div>
+        <div class="msot-intro-scanlines"></div>
+        <div class="msot-intro-vignette"></div>
+        <div class="msot-intro-cinematic-glow"></div>
+
+        <!-- Top HUD Controls Bar -->
+        <div class="msot-intro-hud-top">
+            <div class="msot-intro-hud-brand">
+                <img src="assets/images/asur.mp4.png" alt="Guardian Demon Mask" class="msot-intro-hud-mask-icon" onerror="this.src='assets/images/intro_mask.jpg'">
+                <span class="msot-intro-hud-title">MIRAI ACADEMY</span>
+                <span class="msot-intro-hud-sub">ASUR PROTOCOL</span>
+            </div>
+            <div class="msot-intro-hud-actions">
+                <button type="button" id="msotIntroUnmuteBtn" class="msot-intro-hud-btn btn-unmute" onclick="window.msotIntroVideo && window.msotIntroVideo.toggleMute()">
+                    <span>🔊</span><span>ENABLE AUDIO</span>
+                </button>
+                <button type="button" class="msot-intro-hud-btn btn-skip" onclick="window.msotIntroVideo && window.msotIntroVideo.enterDashboardWithTransition()" title="Skip intro and enter dashboard">
+                    <span>⏩</span><span>SKIP INTRO (ESC)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Realistic Central Mask Cinema Stage -->
+        <div class="msot-intro-stage" id="msotIntroStage">
+            <!-- Volumetric Light Rays Radiating from Behind Mask -->
+            <div class="msot-volumetric-rays" id="msotVolumetricRays"></div>
+
+            <!-- Atmospheric Floating Fire Embers Canvas Layer -->
+            <canvas id="msotMaskCanvas" class="msot-mask-canvas-layer"></canvas>
+
+            <!-- LAYER 10: Fiery Orange Website Name & Dashboard Button (Underneath the Slider Gate) -->
+            <div class="msot-fire-text-reveal" id="msotFireTextReveal">
+                <div class="msot-fire-text-aura"></div>
+                <h1 class="msot-fire-website-title">MIRAI SCHOOL OF TECHNOLOGY</h1>
+                <button type="button" class="msot-enter-action-btn" onclick="window.msotIntroVideo && window.msotIntroVideo.enterDashboardWithTransition()">
+                    <span>ENTER CADET DASHBOARD ➔</span>
+                </button>
+            </div>
+
+            <!-- LAYER 25: Central Mask & Slider Gate Layer (ON TOP OF TEXT) -->
+            <div class="msot-intro-mask-container" id="msotMaskContainer">
+                <!-- Video wrap playing slow-mo video during buildup -->
+                <div class="msot-mask-video-wrap" id="msotMaskVideoWrap">
+                    <video id="msotHeroVideo" class="msot-hero-mask-video" playsinline muted preload="auto" poster="assets/images/asur.mp4.png">
+                        <source src="assets/videos/asur.mp4" type="video/mp4">
+                        <source src="assets/videos/asurbr.mp4" type="video/mp4">
+                    </video>
+                </div>
+
+                <!-- The Slider Gate (Top layer: splits from middle and slides left & right) -->
+                <div class="msot-mask-slider-gate" id="msotMaskGateDoors">
+                    <!-- Center Laser Crevice / Splitting Energy Seam -->
+                    <div class="msot-slider-center-seam" id="msotCenterCrevice"></div>
+
+                    <!-- Left Slider Door (Slides to the Left) -->
+                    <div class="msot-slider-door left" id="msotGateLeft">
+                        <div class="msot-slider-door-inner">
+                            <img src="assets/images/asur.mp4.png" alt="Mask Left Gate Door" class="msot-slider-mask-img">
+                        </div>
+                        <div class="msot-slider-door-edge edge-right"></div>
+                    </div>
+
+                    <!-- Right Slider Door (Slides to the Right) -->
+                    <div class="msot-slider-door right" id="msotGateRight">
+                        <div class="msot-slider-door-inner">
+                            <img src="assets/images/asur.mp4.png" alt="Mask Right Gate Door" class="msot-slider-mask-img">
+                        </div>
+                        <div class="msot-slider-door-edge edge-left"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dark Side Intro BGM Audio Track -->
+            <audio id="msotIntroBgmAudio" src="assets/audio/asur_dark_side_intro_bgm.mp3" preload="auto" loop></audio>
+        </div>
+
+        <!-- Portal Transition Overlay (Atmospheric Gateway dissolve to Dashboard) -->
+        <div id="msotTransitionPortal" class="msot-transition-portal-overlay">
+            <div class="msot-portal-content">
+                <div class="msot-portal-crest-glow">
+                    <img src="assets/images/asur.mp4.png" alt="Guardian Mask" onerror="this.src='assets/images/intro_mask.jpg'">
+                </div>
+                <span class="msot-portal-text-kicker">⛩️ GUARDIAN PROTOCOL VERIFIED</span>
+                <h3 class="msot-portal-text-main">ENTERING CADET DASHBOARD</h3>
+                <div class="msot-portal-spinner-bar">
+                    <div class="msot-portal-spinner-fill"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
     <!-- Pixel Grid Cursor Trail Canvas (Full-Screen Ambient Grid) -->
     <canvas id="pixel-trail" class="pixel-trail-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
@@ -422,8 +539,9 @@
             </div>
 
             <nav class="main-nav" id="mainNav">
-                <a href="#/gates"     class="nav-link active" data-section="heroSection"    onclick="window.switchSection('heroSection', true); return false;">GATEWAY</a>
-                <a href="#/dashboard" class="nav-link"        data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); return false;">DASHBOARD</a>
+                <a href="#/dashboard" class="nav-link active" data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); return false;">DASHBOARD</a>
+                <a href="#/beta"      class="nav-link"        data-section="betaSection"      onclick="window.switchSection('betaSection', true); return false;">🤖 BETA AI</a>
+                <a href="#/tracker"   class="nav-link"        data-section="trackerSection"   onclick="window.switchSection('trackerSection', true); return false;">⏱️ STUDY TRACKER</a>
                 <a href="#/arcade"    class="nav-link"        data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); return false;">ARCADE (17)</a>
                 <a href="#/daily"     class="nav-link"        data-section="dailySection"   onclick="window.switchSection('dailySection', true); return false;">DAILY TRIAL</a>
                 <a href="#/assignments" class="nav-link"      data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); return false;">WEEKEND LAB</a>
@@ -464,6 +582,10 @@
                     <span id="soundBtnText">🔊 SOUND</span>
                 </button>
 
+                <button type="button" class="top-action-btn-replay-intro" onclick="window.msotIntroVideo && window.msotIntroVideo.playIntro()" title="Watch Intro Video with Guardian Mask">
+                    <span>🎬 INTRO VIDEO</span>
+                </button>
+
                 <button class="how-xp-btn" id="howXPBtn" onclick="window.msotPlatform && window.msotPlatform.openXPExplainedModal(); return false;" title="See how and why your XP increases">
                     <span>💡 HOW XP WORKS</span>
                 </button>
@@ -494,8 +616,9 @@
                 <button type="button" class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">✕</button>
             </div>
             <div class="mobile-nav-links">
-                <a href="#/gates"     class="mobile-nav-link active" data-section="heroSection"    onclick="window.switchSection('heroSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⛩️ GATEWAY</a>
-                <a href="#/dashboard" class="mobile-nav-link"        data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📊 DASHBOARD</a>
+                <a href="#/dashboard" class="mobile-nav-link active" data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📊 DASHBOARD</a>
+                <a href="#/beta"      class="mobile-nav-link"        data-section="betaSection"      onclick="window.switchSection('betaSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🤖 BETA AI (STUDENT TUTOR)</a>
+                <a href="#/tracker"   class="mobile-nav-link"        data-section="trackerSection"   onclick="window.switchSection('trackerSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⏱️ STUDY &amp; CODING TRACKER</a>
                 <a href="#/arcade"    class="mobile-nav-link" data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎮 ARCADE (17 GAMES)</a>
                 <a href="#/daily"     class="mobile-nav-link" data-section="dailySection"   onclick="window.switchSection('dailySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⚡ DAILY TRIAL</a>
                 <a href="#/assignments" class="mobile-nav-link" data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">💻 WEEKEND LAB & COMPILER</a>
@@ -516,10 +639,9 @@
     <main class="app-main">
 
         <!-- ===================================================================
-             1. GAMING PLATFORM HERO GATEWAY (BEFORE DASHBOARD)
-             Full-Bleed Cinematic Neo-Tokyo Cyber Gateway
+             1. GAMING PLATFORM HERO GATEWAY (Hidden - Dashboard is primary)
              =================================================================== -->
-        <section class="app-section active gaming-hero-gateway" id="heroSection">
+        <section class="app-section gaming-hero-gateway" id="heroSection" style="display:none !important;">
             <!-- Cinematic Background with Full-Bleed Original Artwork (NOT a screenshot) -->
             <div class="gaming-hero-backdrop">
                 <div class="gaming-hero-bg-image"></div>
@@ -539,9 +661,14 @@
                         <a href="#/assignments" class="top-pill-link" onclick="window.switchSection('assignmentsSection', true);">WEEKEND LAB</a>
                         <a href="#/battle" class="top-pill-link" onclick="window.switchSection('battleSection', true);">BATTLE ARENA</a>
                     </div>
-                    <button type="button" class="top-action-btn-dash" onclick="window.switchSection('dashboardSection', true)">
-                        <span>📊 OPEN DASHBOARD ➔</span>
-                    </button>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <button type="button" class="top-action-btn-intro" onclick="window.msotIntroVideo && window.msotIntroVideo.playIntro()" title="Watch Academy Intro Animation">
+                            <span>🎬 WATCH INTRO</span>
+                        </button>
+                        <button type="button" class="top-action-btn-dash" onclick="window.switchSection('dashboardSection', true)">
+                            <span>📊 OPEN DASHBOARD ➔</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Hero Content with Settled Typography & Frosted Card -->
@@ -614,6 +741,9 @@
                         <button type="button" class="hero-cta-btn-primary" onclick="window.switchSection('dashboardSection', true)">
                             <span>📊 ENTER CADET DASHBOARD ➔</span>
                         </button>
+                        <button type="button" class="hero-cta-btn-secondary hero-cta-btn-intro" onclick="window.msotIntroVideo && window.msotIntroVideo.playIntro()" title="Watch Academy Intro Video">
+                            <span>🎬 WATCH INTRO</span>
+                        </button>
                         <button type="button" class="hero-cta-btn-secondary" onclick="window.switchSection('arcadeSection', true)">
                             <span>🎮 PLAY ARCADE (17 TRIALS)</span>
                         </button>
@@ -626,9 +756,9 @@
         </section>
 
         <!-- ===================================================================
-             2. MODERN CADET & EDTECH DASHBOARD (ALL ACTIVITIES, METRICS, RESULTS)
+             2. MODERN CADET & EDTECH DASHBOARD (DEFAULT ACTIVE LANDING)
              =================================================================== -->
-        <section class="app-section edtech-dashboard-section" id="dashboardSection">
+        <section class="app-section active edtech-dashboard-section" id="dashboardSection" style="display: block;">
             <div class="content-container" id="dashboardContainer">
                 <!-- Dynamically rendered by window.msotPlatform.renderDashboard() -->
             </div>
@@ -907,6 +1037,659 @@
             <div class="content-container" id="assignmentsContainer"></div>
         </section>
 
+        <!-- ===================================================================
+             10. BETA AI LEARNING COMPANION (CHATGPT-STYLE B.TECH TUTOR)
+             =================================================================== -->
+        <section class="app-section" id="betaSection" style="display: none;">
+            <div class="content-container">
+                <div class="beta-container">
+                    <!-- Left Sidebar (Conversations History & Student Dossier) -->
+                    <aside class="beta-sidebar" id="betaSidebar">
+                        <div class="beta-sidebar-header">
+                            <div class="beta-brand-row">
+                                <div class="beta-brand-title">
+                                    <span class="beta-brand-icon">🤖</span>
+                                    <span>BETA AI</span>
+                                </div>
+                                <span class="beta-brand-badge">ACADEMY TUTOR</span>
+                            </div>
+
+                            <button type="button" class="btn-new-chat" id="betaNewChatBtn" onclick="window.msotBeta && window.msotBeta.createNewChat()">
+                                <span>＋</span>
+                                <span>NEW LEARNING CHAT</span>
+                            </button>
+
+                            <!-- Authenticated Cadet Info Badge -->
+                            <div class="beta-student-dossier-pill" id="betaStudentDossierBadge">
+                                <div class="beta-dossier-avatar">⚔️</div>
+                                <div class="beta-dossier-info">
+                                    <span class="beta-dossier-name">Cadet Utkarsh</span>
+                                    <span class="beta-dossier-stats">LVL 5 • 685 XP • 🔥 6d</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conversation List -->
+                        <div class="beta-conversations-list" id="betaConversationsList">
+                            <!-- Populated dynamically by window.msotBeta.renderConversationsList() -->
+                        </div>
+
+                        <div class="beta-sidebar-footer">
+                            <button type="button" class="btn-clear-chats" id="betaClearAllBtn" onclick="window.msotBeta && window.msotBeta.clearAllConversations()">
+                                <span>🗑️</span>
+                                <span>Clear Conversations</span>
+                            </button>
+                        </div>
+                    </aside>
+
+                    <!-- Main Chat Stage -->
+                    <div class="beta-chat-main">
+                        <!-- Top Active Chat Header -->
+                        <div class="beta-chat-topbar">
+                            <div class="beta-topbar-left">
+                                <button type="button" class="beta-sidebar-toggle-btn" onclick="window.msotBeta && window.msotBeta.toggleSidebar()" title="Toggle Chat History">☰</button>
+                                <div class="beta-chat-active-title" id="betaActiveChatTitle">
+                                    <span>💬</span>
+                                    <span>New Learning Session</span>
+                                </div>
+                            </div>
+                            <div class="beta-topbar-right">
+                                <span class="beta-status-indicator">
+                                    <span class="beta-pulse-dot"></span>
+                                    <span>BETA ONLINE</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Scrollable Message Stream -->
+                        <div class="beta-messages-scroll" id="betaMessagesScroll">
+                            <!-- Populated dynamically by window.msotBeta.renderMessages() -->
+                        </div>
+
+                        <!-- Bottom Input Bar -->
+                        <div class="beta-input-container">
+                            <div class="beta-input-box-wrapper">
+                                <textarea id="betaInputTextarea" class="beta-textarea" placeholder="Ask Beta about B.Tech subjects, C++, DSA, math, or your MSOT progress..." rows="1"></textarea>
+                                <button type="button" class="btn-beta-send" id="betaSendBtn" title="Send message (Enter)">➤</button>
+                            </div>
+                            <div class="beta-input-disclaimer">
+                                Beta is your AI Learning Companion. Personalized with your authorized cadet dossier. Press Enter to send.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDY TRACKER & CODING PRACTICE ENGINE SECTION
+             =================================================================== -->
+        <section class="app-section" id="trackerSection" style="display: none;">
+            <div class="study-tracker-container">
+                <!-- Header -->
+                <div class="st-header">
+                    <div class="st-header-title-box">
+                        <div class="st-badge">
+                            <span>⏱️</span>
+                            <span>EXTERNAL PRACTICE TRACKER</span>
+                        </div>
+                        <h1 class="st-title">Study &amp; Coding Tracker</h1>
+                        <p class="st-subtitle">Track your external coding problem practice (LeetCode, Codeforces, HackerRank, CodeChef) and daily learning consistency.</p>
+                    </div>
+                </div>
+
+                <!-- Sub-Navigation Bar -->
+                <div class="st-nav-bar">
+                    <button type="button" class="st-nav-tab active" data-tab="dashboard" onclick="window.msotTracker && window.msotTracker.switchTab('dashboard')">
+                        <span class="st-tab-icon">📊</span>
+                        <span>Dashboard</span>
+                    </button>
+                    <button type="button" class="st-nav-tab" data-tab="timer" onclick="window.msotTracker && window.msotTracker.switchTab('timer')">
+                        <span class="st-tab-icon">⏱️</span>
+                        <span>Live Practice Timer</span>
+                    </button>
+                    <button type="button" class="st-nav-tab" data-tab="logs" onclick="window.msotTracker && window.msotTracker.switchTab('logs')">
+                        <span class="st-tab-icon">📝</span>
+                        <span>Daily Learning Log</span>
+                    </button>
+                    <button type="button" class="st-nav-tab" data-tab="problems" onclick="window.msotTracker && window.msotTracker.switchTab('problems')">
+                        <span class="st-tab-icon">🧩</span>
+                        <span>Problem Tracker</span>
+                    </button>
+                    <button type="button" class="st-nav-tab" data-tab="analytics" onclick="window.msotTracker && window.msotTracker.switchTab('analytics')">
+                        <span class="st-tab-icon">📈</span>
+                        <span>Goals &amp; Profiles</span>
+                    </button>
+                </div>
+
+                <!-- VIEW 1: DASHBOARD -->
+                <div class="st-view-pane active" id="stView_dashboard">
+                    <!-- Daily Goal Hero Card -->
+                    <div class="st-goal-hero-card">
+                        <div class="st-goal-top">
+                            <div class="st-goal-info">
+                                <h3><span>🎯</span> Daily Study Goal</h3>
+                                <p id="stGoalStatusMsg">Loading your study progress...</p>
+                            </div>
+                            <button type="button" class="st-goal-quick-btn" onclick="window.msotTracker && window.msotTracker.switchTab('timer')">
+                                ⚡ Start Practice Session ➔
+                            </button>
+                        </div>
+                        <div class="st-goal-bar-track">
+                            <div class="st-goal-bar-fill" id="stGoalBarFill" style="width: 0%;"></div>
+                        </div>
+                        <div class="st-goal-labels">
+                            <span>0 mins</span>
+                            <span id="stGoalMinsLabel">0m / 60m (0%)</span>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="st-metrics-grid">
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">Today's Study</span>
+                                <div class="st-stat-icon-wrap" style="color:#38bdf8;">⏳</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatToday">0m</div>
+                            <div class="st-stat-subtext">Real recorded time today</div>
+                        </div>
+
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">This Week</span>
+                                <div class="st-stat-icon-wrap" style="color:#818cf8;">📅</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatWeek">0m</div>
+                            <div class="st-stat-subtext">Rolling 7-day cumulative</div>
+                        </div>
+
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">This Month</span>
+                                <div class="st-stat-icon-wrap" style="color:#c084fc;">🗓️</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatMonth">0m</div>
+                            <div class="st-stat-subtext">Rolling 30-day practice</div>
+                        </div>
+
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">Coding Practice</span>
+                                <div class="st-stat-icon-wrap" style="color:#fbbf24;">💻</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatCoding">0m</div>
+                            <div class="st-stat-subtext">LeetCode, CF, HR, CC</div>
+                        </div>
+
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">General Study</span>
+                                <div class="st-stat-icon-wrap" style="color:#34d399;">📚</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatGeneral">0m</div>
+                            <div class="st-stat-subtext">Theory, Math, Physics</div>
+                        </div>
+
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">Problems Solved</span>
+                                <div class="st-stat-icon-wrap" style="color:#10b981;">✅</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatSolved">0</div>
+                            <div class="st-stat-subtext">Recorded / verified questions</div>
+                        </div>
+
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">Study Sessions</span>
+                                <div class="st-stat-icon-wrap" style="color:#ec4899;">⏱️</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatSessions">0</div>
+                            <div class="st-stat-subtext">Completed practice blocks</div>
+                        </div>
+
+                        <div class="st-stat-card">
+                            <div class="st-stat-head">
+                                <span class="st-stat-label">Study Streak</span>
+                                <div class="st-stat-icon-wrap" style="color:#f97316;">🔥</div>
+                            </div>
+                            <div class="st-stat-value" id="stStatStreak">0 Days</div>
+                            <div class="st-stat-subtext">Consecutive active study days</div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Filter Bar -->
+                    <div class="st-filter-row">
+                        <div class="st-filter-pills">
+                            <button type="button" class="st-filter-pill" data-filter="today" onclick="window.msotTracker && window.msotTracker.setFilter('today')">Today</button>
+                            <button type="button" class="st-filter-pill active" data-filter="7days" onclick="window.msotTracker && window.msotTracker.setFilter('7days')">Last 7 Days</button>
+                            <button type="button" class="st-filter-pill" data-filter="30days" onclick="window.msotTracker && window.msotTracker.setFilter('30days')">Last 30 Days</button>
+                            <button type="button" class="st-filter-pill" data-filter="all" onclick="window.msotTracker && window.msotTracker.setFilter('all')">All Time</button>
+                        </div>
+                    </div>
+
+                    <!-- Grid: 7-Day Activity Chart + Recent Sessions -->
+                    <div class="st-dash-grid-2">
+                        <div class="st-card-panel">
+                            <div class="st-panel-head">
+                                <div class="st-panel-title">
+                                    <span>📊</span>
+                                    <span>Daily Practice Trend (Last 7 Days)</span>
+                                </div>
+                            </div>
+                            <div class="st-chart-container" id="stActivityChart">
+                                <!-- Populated dynamically by window.msotTracker.renderActivityChart() -->
+                            </div>
+                        </div>
+
+                        <div class="st-card-panel">
+                            <div class="st-panel-head">
+                                <div class="st-panel-title">
+                                    <span>⏱️</span>
+                                    <span>Recent Practice Sessions</span>
+                                </div>
+                                <button type="button" class="st-goal-quick-btn" style="padding:4px 10px; font-size:0.75rem;" onclick="window.msotTracker && window.msotTracker.switchTab('timer')">+ New</button>
+                            </div>
+                            <div class="st-sessions-list" id="stRecentSessionsList">
+                                <!-- Populated dynamically by window.msotTracker.renderRecentSessions() -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: LIVE PRACTICE TIMER -->
+                <div class="st-view-pane" id="stView_timer">
+                    <div class="st-timer-stage">
+                        <!-- HUD Card -->
+                        <div class="st-timer-hud-card">
+                            <div class="st-timer-platform-tag" id="stTimerPlatformTag"></div>
+                            <div class="st-timer-state-pill idle" id="stTimerStatePill">
+                                <span>●</span><span>IDLE / READY</span>
+                            </div>
+                            <div class="st-timer-clock-display" id="stTimerClock">00:00:00</div>
+                            <div style="font-size: 0.95rem; font-weight: 700; color: #f8fafc; margin-bottom: 20px;" id="stTimerActiveProbName">No session active</div>
+
+                            <!-- Timer Action Buttons -->
+                            <div class="st-timer-btn-row">
+                                <button type="button" class="st-timer-btn st-timer-btn-start" id="stTimerStartBtn" onclick="window.msotTracker && window.msotTracker.startTimerSession()">
+                                    <span>▶</span><span>Start Session</span>
+                                </button>
+                                <button type="button" class="st-timer-btn st-timer-btn-pause" id="stTimerPauseBtn" style="display:none;" onclick="window.msotTracker && window.msotTracker.pauseTimerSession()">
+                                    <span>⏸</span><span>Pause</span>
+                                </button>
+                                <button type="button" class="st-timer-btn st-timer-btn-resume" id="stTimerResumeBtn" style="display:none;" onclick="window.msotTracker && window.msotTracker.resumeTimerSession()">
+                                    <span>▶</span><span>Resume</span>
+                                </button>
+                                <button type="button" class="st-timer-btn st-timer-btn-stop" id="stTimerStopBtn" style="display:none;" onclick="window.msotTracker && window.msotTracker.stopTimerSession()">
+                                    <span>⏹</span><span>Stop &amp; Save</span>
+                                </button>
+                                <button type="button" class="st-timer-btn st-timer-btn-discard" id="stTimerDiscardBtn" style="display:none;" onclick="window.msotTracker && window.msotTracker.discardTimerSession()">
+                                    <span>✕</span><span>Discard</span>
+                                </button>
+                            </div>
+
+                            <div class="st-timer-honesty-note">
+                                ℹ️ <em>Honest Tracking Notice:</em> This timer tracks your focused practice interval inside MSOT using precise timestamp calculations. Paused time is excluded. It survives page refreshes and navigation.
+                            </div>
+                        </div>
+
+                        <!-- Session Setup Form Card -->
+                        <div class="st-timer-form-card">
+                            <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                                <span>⚙️</span> Practice Session Setup
+                            </h3>
+                            <div class="st-form-group">
+                                <label class="st-form-label">Platform</label>
+                                <select id="stTimerPlatform" class="st-form-select">
+                                    <option value="LeetCode">LeetCode</option>
+                                    <option value="Codeforces">Codeforces</option>
+                                    <option value="HackerRank">HackerRank</option>
+                                    <option value="CodeChef">CodeChef</option>
+                                    <option value="General Study">General Study / Theory</option>
+                                    <option value="Other">Other Platform</option>
+                                </select>
+                            </div>
+
+                            <div class="st-form-group">
+                                <label class="st-form-label">Problem / Subject Title</label>
+                                <input type="text" id="stTimerTitle" class="st-form-input" placeholder="e.g. Two Sum, 1582A - Shifting Stacks, or Eigenvalues">
+                            </div>
+
+                            <div class="st-form-group">
+                                <label class="st-form-label">Problem URL (Optional)</label>
+                                <input type="url" id="stTimerUrl" class="st-form-input" placeholder="https://leetcode.com/problems/...">
+                            </div>
+
+                            <div class="st-form-row-2">
+                                <div class="st-form-group">
+                                    <label class="st-form-label">Topic / Category</label>
+                                    <input type="text" id="stTimerTopic" class="st-form-input" placeholder="e.g. Dynamic Programming, Graphs, Math">
+                                </div>
+                                <div class="st-form-group">
+                                    <label class="st-form-label">Difficulty</label>
+                                    <select id="stTimerDifficulty" class="st-form-select">
+                                        <option value="Easy">Easy</option>
+                                        <option value="Medium" selected>Medium</option>
+                                        <option value="Hard">Hard</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="st-form-group">
+                                <label class="st-form-label">Session Notes / Insights</label>
+                                <textarea id="stTimerNotes" class="st-form-textarea" rows="2" placeholder="Approach used, time complexity, edge cases..."></textarea>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <input type="checkbox" id="stTimerMarkSolved" checked style="accent-color:#8b5cf6; width:16px; height:16px; cursor:pointer;">
+                                <label for="stTimerMarkSolved" style="font-size:0.82rem; color:#cbd5e1; cursor:pointer;">
+                                    Automatically add this to Problem Tracker when stopped as Solved
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: DAILY LEARNING LOG -->
+                <div class="st-view-pane" id="stView_logs">
+                    <div class="st-logs-toolbar">
+                        <div id="stLogsSummaryBox"></div>
+                        <button type="button" class="st-btn-primary" onclick="window.msotTracker && window.msotTracker.openAddLogModal()">
+                            <span>＋</span><span>Add Log Entry</span>
+                        </button>
+                    </div>
+
+                    <div class="st-logs-table-wrap">
+                        <table class="st-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Platform</th>
+                                    <th>Subject &amp; Topic</th>
+                                    <th>Time</th>
+                                    <th>Problems</th>
+                                    <th>What I Learned / Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stLogsTableBody">
+                                <!-- Populated dynamically by window.msotTracker.renderLogs() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: CODING PROBLEM TRACKER -->
+                <div class="st-view-pane" id="stView_problems">
+                    <div class="st-logs-toolbar">
+                        <div id="stProblemsSummaryBox"></div>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <select id="stProbFilterPlatform" class="st-form-select" style="width:auto; padding:6px 12px; font-size:0.8rem;" onchange="window.msotTracker && window.msotTracker.renderProblemTracker()">
+                                <option value="ALL">All Platforms</option>
+                                <option value="LeetCode">LeetCode</option>
+                                <option value="Codeforces">Codeforces</option>
+                                <option value="HackerRank">HackerRank</option>
+                                <option value="CodeChef">CodeChef</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <select id="stProbFilterStatus" class="st-form-select" style="width:auto; padding:6px 12px; font-size:0.8rem;" onchange="window.msotTracker && window.msotTracker.renderProblemTracker()">
+                                <option value="ALL">All Statuses</option>
+                                <option value="Solved">Solved</option>
+                                <option value="Needs Revision">Needs Revision</option>
+                                <option value="Attempted">Attempted</option>
+                            </select>
+                            <button type="button" class="st-btn-primary" onclick="window.msotTracker && window.msotTracker.openAddProblemModal()">
+                                <span>＋</span><span>Add Problem</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="st-logs-table-wrap">
+                        <table class="st-table">
+                            <thead>
+                                <tr>
+                                    <th>Platform</th>
+                                    <th>Problem Title</th>
+                                    <th>Topic</th>
+                                    <th>Difficulty</th>
+                                    <th>Status (Click to toggle)</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stProblemsTableBody">
+                                <!-- Populated dynamically by window.msotTracker.renderProblemTracker() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW 5: GOALS & EXTERNAL PROFILES -->
+                <div class="st-view-pane" id="stView_analytics">
+                    <div class="st-analytics-grid">
+                        <!-- Goals Setup Card -->
+                        <div class="st-card-panel">
+                            <h3 class="st-panel-title"><span>🎯</span> Study Targets &amp; Goals</h3>
+                            <p style="font-size:0.82rem; color:#94a3b8; margin: 4px 0 16px;">Set your daily and weekly focused practice goals to maintain consistency.</p>
+
+                            <div class="st-form-group" style="margin-bottom:14px;">
+                                <label class="st-form-label">Daily Goal (Minutes)</label>
+                                <input type="number" id="stGoalDailyInput" class="st-form-input" min="15" max="720" value="60">
+                            </div>
+
+                            <div class="st-form-group" style="margin-bottom:18px;">
+                                <label class="st-form-label">Weekly Goal (Minutes)</label>
+                                <input type="number" id="stGoalWeeklyInput" class="st-form-input" min="60" max="5000" value="420">
+                            </div>
+
+                            <button type="button" class="st-btn-primary" style="width:100%; justify-content:center;" onclick="window.msotTracker && window.msotTracker.saveGoalsAndProfiles()">
+                                💾 Save Study Targets
+                            </button>
+                        </div>
+
+                        <!-- External Platform Profiles Card -->
+                        <div class="st-card-panel">
+                            <h3 class="st-panel-title"><span>🌐</span> Public Coding Profiles</h3>
+                            <p style="font-size:0.82rem; color:#94a3b8; margin: 4px 0 16px;">Link your public handles for quick profile access and verification.</p>
+
+                            <div class="st-form-group" style="margin-bottom:10px;">
+                                <label class="st-form-label">LeetCode Username</label>
+                                <input type="text" id="stProfileLeetcode" class="st-form-input" placeholder="e.g. utkarshraj14">
+                            </div>
+
+                            <div class="st-form-group" style="margin-bottom:10px;">
+                                <label class="st-form-label">Codeforces Handle</label>
+                                <input type="text" id="stProfileCodeforces" class="st-form-input" placeholder="e.g. tourist">
+                            </div>
+
+                            <div class="st-form-group" style="margin-bottom:10px;">
+                                <label class="st-form-label">CodeChef Handle</label>
+                                <input type="text" id="stProfileCodechef" class="st-form-input" placeholder="e.g. chef_raj">
+                            </div>
+
+                            <div class="st-form-group" style="margin-bottom:16px;">
+                                <label class="st-form-label">HackerRank Username</label>
+                                <input type="text" id="stProfileHackerrank" class="st-form-input" placeholder="e.g. coder_raj">
+                            </div>
+
+                            <button type="button" class="st-btn-primary" style="width:100%; justify-content:center;" onclick="window.msotTracker && window.msotTracker.saveGoalsAndProfiles()">
+                                🔗 Update Public Profiles
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Linked Profiles Display -->
+                    <div class="st-card-panel">
+                        <h3 class="st-panel-title" style="margin-bottom:14px;"><span>🚀</span> Linked Public Accounts</h3>
+                        <div id="stLinkedProfilesList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             MODALS: ADD/EDIT DAILY LOG & CODING PROBLEM
+             =================================================================== -->
+        <!-- 1. Daily Log Modal -->
+        <div class="st-modal-overlay" id="stLogModal">
+            <div class="st-modal-card">
+                <div class="st-modal-head">
+                    <h3 class="st-modal-title" id="stLogModalTitle">Add Daily Learning Log</h3>
+                    <button type="button" class="st-modal-close-btn" onclick="window.msotTracker && window.msotTracker.closeAddLogModal()">✕</button>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="st-form-row-2">
+                        <div class="st-form-group">
+                            <label class="st-form-label">Date</label>
+                            <input type="date" id="stLogDate" class="st-form-input">
+                        </div>
+                        <div class="st-form-group">
+                            <label class="st-form-label">Platform</label>
+                            <select id="stLogPlatform" class="st-form-select">
+                                <option value="General Study">General Study / Theory</option>
+                                <option value="LeetCode">LeetCode</option>
+                                <option value="Codeforces">Codeforces</option>
+                                <option value="HackerRank">HackerRank</option>
+                                <option value="CodeChef">CodeChef</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Subject / Area *</label>
+                        <input type="text" id="stLogSubject" class="st-form-input" placeholder="e.g. C++ DSA, Discrete Mathematics, Physics, Web Dev">
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Topic or Problem Name</label>
+                        <input type="text" id="stLogTopicName" class="st-form-input" placeholder="e.g. Binary Search Trees, Matrix Multiplication">
+                    </div>
+
+                    <div class="st-form-row-2">
+                        <div class="st-form-group">
+                            <label class="st-form-label">Time Spent (Minutes)</label>
+                            <input type="number" id="stLogMinutes" class="st-form-input" value="45" min="5" max="1440">
+                        </div>
+                        <div class="st-form-group">
+                            <label class="st-form-label">Difficulty Experienced</label>
+                            <select id="stLogDifficulty" class="st-form-select">
+                                <option value="Easy">Easy</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="st-form-row-2">
+                        <div class="st-form-group">
+                            <label class="st-form-label">Problems Attempted</label>
+                            <input type="number" id="stLogAttempted" class="st-form-input" value="0" min="0">
+                        </div>
+                        <div class="st-form-group">
+                            <label class="st-form-label">Problems Solved</label>
+                            <input type="number" id="stLogSolved" class="st-form-input" value="0" min="0">
+                        </div>
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">What Did You Learn?</label>
+                        <textarea id="stLogLearned" class="st-form-textarea" rows="2" placeholder="Key concepts, breakthroughs, theorems understood..."></textarea>
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Next Learning Goal</label>
+                        <input type="text" id="stLogNextGoal" class="st-form-input" placeholder="e.g. Solve 3 medium problems on tree traversals tomorrow">
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Personal Notes</label>
+                        <textarea id="stLogNotes" class="st-form-textarea" rows="2" placeholder="Any extra remarks or questions to ask faculty/Beta AI..."></textarea>
+                    </div>
+                </div>
+
+                <div class="st-modal-footer">
+                    <button type="button" class="st-btn-secondary" onclick="window.msotTracker && window.msotTracker.closeAddLogModal()">Cancel</button>
+                    <button type="button" class="st-btn-primary" onclick="window.msotTracker && window.msotTracker.saveLogEntry()">Save Log Entry</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Problem Tracker Modal -->
+        <div class="st-modal-overlay" id="stProblemModal">
+            <div class="st-modal-card">
+                <div class="st-modal-head">
+                    <h3 class="st-modal-title" id="stProblemModalTitle">Add Problem to Tracker</h3>
+                    <button type="button" class="st-modal-close-btn" onclick="window.msotTracker && window.msotTracker.closeAddProblemModal()">✕</button>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="st-form-row-2">
+                        <div class="st-form-group">
+                            <label class="st-form-label">Platform *</label>
+                            <select id="stProbPlatform" class="st-form-select">
+                                <option value="LeetCode">LeetCode</option>
+                                <option value="Codeforces">Codeforces</option>
+                                <option value="HackerRank">HackerRank</option>
+                                <option value="CodeChef">CodeChef</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="st-form-group">
+                            <label class="st-form-label">Difficulty</label>
+                            <select id="stProbDifficulty" class="st-form-select">
+                                <option value="Easy">Easy</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Problem Title *</label>
+                        <input type="text" id="stProbTitle" class="st-form-input" placeholder="e.g. 1. Two Sum">
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Problem URL</label>
+                        <input type="url" id="stProbUrl" class="st-form-input" placeholder="https://leetcode.com/problems/two-sum/">
+                    </div>
+
+                    <div class="st-form-row-2">
+                        <div class="st-form-group">
+                            <label class="st-form-label">Topic / Data Structure</label>
+                            <input type="text" id="stProbTopic" class="st-form-input" placeholder="e.g. Hash Table, Two Pointers">
+                        </div>
+                        <div class="st-form-group">
+                            <label class="st-form-label">Status</label>
+                            <select id="stProbStatus" class="st-form-select">
+                                <option value="Solved" selected>Solved</option>
+                                <option value="Needs Revision">Needs Revision</option>
+                                <option value="Attempted">Attempted</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Time Spent (Minutes)</label>
+                        <input type="number" id="stProbTime" class="st-form-input" value="25" min="1">
+                    </div>
+
+                    <div class="st-form-group">
+                        <label class="st-form-label">Personal Notes / Complexity</label>
+                        <textarea id="stProbNotes" class="st-form-textarea" rows="2" placeholder="O(N) time with hash map, space complexity, edge case note..."></textarea>
+                    </div>
+                </div>
+
+                <div class="st-modal-footer">
+                    <button type="button" class="st-btn-secondary" onclick="window.msotTracker && window.msotTracker.closeAddProblemModal()">Cancel</button>
+                    <button type="button" class="st-btn-primary" onclick="window.msotTracker && window.msotTracker.saveProblemEntry()">Save Problem Record</button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- ===================================================================
@@ -1028,7 +1811,7 @@
         };
 
         var HASH_TO_SECTION_MAP = {
-            '#/gates': 'heroSection',
+            '#/gates': 'dashboardSection',
             '#/dashboard': 'dashboardSection',
             '#/home': 'dashboardSection',
             '#/arcade': 'arcadeSection',
@@ -1053,7 +1836,7 @@
 
         window.switchSection = function(sectionId, updateHash) {
             if (updateHash === undefined) updateHash = true;
-            if (!sectionId) sectionId = 'heroSection';
+            if (!sectionId || sectionId === 'heroSection') sectionId = 'dashboardSection';
 
             // Role guard
             var curRole = (window.msotPlatform && window.msotPlatform.activeRole) || (window.msotState && window.msotState.currentRole) || (window.msotAuth && window.msotAuth.session && window.msotAuth.session.role) || 'STUDENT';
@@ -1142,7 +1925,7 @@
 
         function routeFromHashEarly() {
             var raw = (window.location.hash || '').toLowerCase().split('?')[0];
-            if (!raw || raw === '#' || raw === '#/') raw = '#/gates';
+            if (!raw || raw === '#' || raw === '#/' || raw === '#/gates') raw = '#/dashboard';
             if (raw === '#/login' || raw === '#/signup') {
                 if (window.msotAuth && window.msotAuth.showAuthScreen) {
                     window.msotAuth.showAuthScreen(true);
@@ -1158,7 +1941,7 @@
         window.addEventListener('popstate', routeFromHashEarly);
 
         // Pre-run on initial load if hash is present
-        if (window.location.hash && window.location.hash !== '#/gates') {
+        if (window.location.hash && window.location.hash !== '#/dashboard') {
             routeFromHashEarly();
         }
 
@@ -1212,6 +1995,9 @@
     <script src="js/react-league-module.js?v=47"></script>
     <script src="js/dashboard-service.js?v=47"></script>
     <script src="js/platform.js?v=47"></script>
+    <script src="js/intro-video.js?v=47"></script>
+    <script src="js/beta.js?v=48"></script>
+    <script src="js/study-tracker.js?v=48"></script>
     <script src="js/app.js?v=47"></script>
 </body>
 </html>

@@ -427,6 +427,14 @@ class MSOTPlatformController {
                                 <span class="nav-ico">🏠</span>
                                 <span class="nav-text">Dashboard</span>
                             </button>
+                            <button type="button" class="dash-nav-btn" onclick="window.switchSection('betaSection', true)" title="AI Learning Companion">
+                                <span class="nav-ico">🤖</span>
+                                <span class="nav-text">Beta AI</span>
+                            </button>
+                            <button type="button" class="dash-nav-btn" onclick="window.switchSection('trackerSection', true)" title="External Study &amp; Coding Practice Tracker">
+                                <span class="nav-ico">⏱️</span>
+                                <span class="nav-text">Study Tracker</span>
+                            </button>
                             <button type="button" class="dash-nav-btn" onclick="window.switchSection('arcadeSection', true)" title="1. Sacred Trials Arcade">
                                 <span class="nav-ico">🎮</span>
                                 <span class="nav-text">Arcade</span>
@@ -480,6 +488,23 @@ class MSOTPlatformController {
                                     <span class="theme-dot" style="background:#38bdf8;"></span> 🌌 Slate
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- Ask Beta AI Quick Banner -->
+                        <div class="beta-dash-banner" onclick="window.switchSection('betaSection', true)" role="button" tabindex="0" title="Open Beta AI Tutor" style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; padding:12px 18px; background:linear-gradient(135deg, rgba(99,102,241,0.16), rgba(168,85,247,0.1)); border:1px solid rgba(139,92,246,0.3); border-radius:14px; cursor:pointer; transition:all 0.2s cubic-bezier(0.16,1,0.3,1);">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 0 16px rgba(99,102,241,0.35); flex-shrink:0;">🤖</div>
+                                <div>
+                                    <div style="font-weight:700; font-size:0.92rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+                                        <span>Ask Beta AI</span>
+                                        <span style="font-size:0.65rem; padding:2px 8px; border-radius:999px; background:rgba(99,102,241,0.25); border:1px solid rgba(139,92,246,0.4); color:#c4b5fd; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">B.Tech Tutor</span>
+                                    </div>
+                                    <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Need help with C++, DSA, or what to study today? Personalized to your level & progress.</div>
+                                </div>
+                            </div>
+                            <span class="btn btn-sm" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border:none; padding:8px 14px; border-radius:10px; font-weight:600; font-size:0.82rem; display:inline-flex; align-items:center; gap:6px; cursor:pointer; white-space:nowrap; flex-shrink:0;">
+                                Chat Now ➔
+                            </span>
                         </div>
 
                         <!-- Top Row: Results Card (DSA & Web Dev) + Attendance/Calendar -->

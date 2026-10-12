@@ -19,7 +19,7 @@ try {
 // ─── Route Registry ──────────────────────────────────────────────────────────
 const ROUTE_MAP = {
     '#/dashboard': { section: 'dashboardSection', title: 'Dashboard Today • MSOT Learn' },
-    '#/gates':     { section: 'heroSection',     title: 'The Gates • MSOT Learn' },
+    '#/gates':     { section: 'dashboardSection', title: 'Dashboard Today • MSOT Learn' },
     '#/home':      { section: 'dashboardSection', title: 'Dashboard Today • MSOT Learn' },
     '#/arcade':    { section: 'arcadeSection',   title: '17 Sacred Trials • MSOT Learn' },
     '#/daily':     { section: 'dailySection',    title: 'Daily Speed Trial • MSOT Learn' },
@@ -39,14 +39,19 @@ const ROUTE_MAP = {
     '#/xp-rules':  { section: 'adminSection',    title: 'Admin XP Economy Rules • MSOT Learn' },
     '#/about':     { section: 'aboutSection',    title: 'About Academy & Pedagogy • MSOT Learn', allowedRoles: ['STUDENT', 'FACULTY', 'ADMIN'] },
     '#/profile':   { section: 'profileSection',  title: 'Cadet Profile & Dossier • MSOT Learn' },
+    '#/beta':      { section: 'betaSection',     title: 'Beta AI Learning Companion • MSOT Learn' },
+    '#/tracker':   { section: 'trackerSection',  title: 'Study & Coding Tracker • MSOT Learn' },
+    '#/study-tracker': { section: 'trackerSection', title: 'Study & Coding Tracker • MSOT Learn' },
     '#/login':     { authMode: 'signin',         title: 'Sign In • MSOT Learn' },
     '#/signup':    { authMode: 'signup',         title: 'Register Cadet • MSOT Learn' },
-    '#/intro':     { section: 'heroSection',     title: 'Cinematic Gateway • MSOT Learn', isIntro: true }
+    '#/intro':     { section: 'dashboardSection', title: 'Cadet Dashboard • MSOT Learn', isIntro: true }
 };
 
 const SECTION_TO_HASH = {
     'dashboardSection':   '#/dashboard',
     'heroSection':        '#/gates',
+    'betaSection':        '#/beta',
+    'trackerSection':     '#/tracker',
     'arcadeSection':      '#/arcade',
     'dailySection':       '#/daily',
     'assignmentsSection': '#/assignments',
@@ -92,7 +97,7 @@ window.updateNavRoleVisibility = function () {
 
 // ─── Direct Unconditional Section Switcher ───────────────────────────────────
 window.switchSection = function (sectionId, updateHash = true) {
-    if (!sectionId) sectionId = 'heroSection';
+    if (!sectionId || sectionId === 'heroSection') sectionId = 'dashboardSection';
 
     // Role-based navigation guard (Three-Role RBAC Enforcement)
     const effectiveRole = (window.msotRBAC ? window.msotRBAC.getCurrentRole() : (window.msotPlatform?.activeRole || window.msotState?.currentRole || window.msotAuth?.session?.role || 'STUDENT')).toUpperCase();
@@ -179,6 +184,14 @@ window.switchSection = function (sectionId, updateHash = true) {
                 p.renderStudentProfile?.();
                 p.renderBadgesVault?.();
                 p.renderXPLedger?.();
+            } else if (sectionId === 'betaSection') {
+                if (window.msotBeta && typeof window.msotBeta.initView === 'function') {
+                    window.msotBeta.initView();
+                }
+            } else if (sectionId === 'trackerSection') {
+                if (window.msotTracker && typeof window.msotTracker.initView === 'function') {
+                    window.msotTracker.initView();
+                }
             }
         } catch (renderErr) {
             console.warn("Reactive section render note:", renderErr);
