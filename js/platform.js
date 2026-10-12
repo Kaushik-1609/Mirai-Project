@@ -1977,10 +1977,14 @@ class MSOTPlatformController {
                     <button type="button" class="faculty-subnav-btn ${activeTab === 'questions' ? 'active' : ''}" onclick="window.msotPlatform.switchFacultySubTab('questions')">
                         ❓ QUESTION BANK (${myQuestions.length})
                     </button>
+                    <button type="button" class="faculty-subnav-btn ${activeTab === 'integrity' ? 'active' : ''}" style="${(window.msotIntegrity?.getPendingCount?.() || 0) > 0 ? 'border-color: #f59e0b; color: #f59e0b; font-weight: 800;' : ''}" onclick="window.msotPlatform.switchFacultySubTab('integrity')">
+                        🛡️ INTEGRITY REVIEW (${window.msotIntegrity?.getPendingCount?.() || 0})
+                    </button>
                     <button type="button" class="faculty-subnav-btn faculty-action-btn-highlight" onclick="window.msotRBAC && window.msotRBAC.openAssignmentModal()">
                         ➕ CREATE ASSIGNMENT
                     </button>
                 </div>
+
 
                 <!-- 1. OVERVIEW TAB -->
                 ${activeTab === 'overview' ? `
@@ -2782,8 +2786,12 @@ class MSOTPlatformController {
                         </div>
                     </div>
                 ` : ''}
+                <!-- 9. INTEGRITY REVIEW DESK -->
+                ${activeTab === 'integrity' ? (window.msotIntegrity ? window.msotIntegrity.renderFacultyIntegrityView() : '') : ''}
             </div>
+
         `;
+
     }
 
     // =========================================================================
@@ -2922,6 +2930,9 @@ class MSOTPlatformController {
                     </button>
                     <button type="button" class="admin-subnav-btn ${activeTab === 'reward_store' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('reward_store')">
                         🎁 REWARD STORE
+                    </button>
+                    <button type="button" class="admin-subnav-btn ${activeTab === 'integrity_audit' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('integrity_audit')">
+                        ⚖️ INTEGRITY & AUDIT
                     </button>
                     <button type="button" class="admin-subnav-btn ${activeTab === 'audit' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('audit')">
                         📜 AUDIT LOGS (${auditLogs.length})
@@ -3631,7 +3642,11 @@ class MSOTPlatformController {
                     </div>
                 ` : ''}
 
+                <!-- ANTI-CHEATING & AUDIT CONFIGURATION (Feature 8) -->
+                ${activeTab === 'integrity_audit' ? (window.msotIntegrity ? window.msotIntegrity.renderAdminIntegrityView() : '') : ''}
+
                 <!-- 10. AUDIT LOGS (Preserved) -->
+
                 ${activeTab === 'audit' ? `
                     <div>
                         <div class="admin-header">
@@ -4106,6 +4121,21 @@ class MSOTPlatformController {
                     </p>
                 </div>
 
+                <!-- Academic Fairness & Student Appeal Banner (Feature 7) -->
+                <div class="ia-appeal-banner">
+                    <div>
+                        <div style="font-weight: 800; color: #fbbf24; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                            🛡️ ACADEMIC FAIRNESS &amp; INTEGRITY PROTECTION
+                        </div>
+                        <p style="font-size: 0.82rem; color: #cbd5e1; margin: 4px 0 0; max-width: 620px;">
+                            MSOT guarantees procedural fairness. Automated detection flags are signals for investigation, not proof of cheating. Fast solving is never penalized without human review. If an XP adjustment affects your account, you have the right to submit an explanation.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-action-sm" style="border-color:#fbbf24; color:#fbbf24;" onclick="window.msotPlatform.openStudentAppealPrompt()">
+                        📩 SUBMIT CASE APPEAL / CONTEXT
+                    </button>
+                </div>
+
                 <div class="ledger-table-wrap">
                     <table class="audit-table">
                         <thead>
@@ -4117,25 +4147,38 @@ class MSOTPlatformController {
                                 <th>JUSTIFICATION REASON</th>
                                 <th>CREATED BY</th>
                                 <th>INTEGRITY STATUS</th>
+                                <th>FAIRNESS ACTION</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${txs.map(t => `
-                                <tr class="${t.status === 'VOIDED' ? 'voided-row' : ''}">
-                                    <td><code>${t.id}</code></td>
-                                    <td>${t.created_at}</td>
-                                    <td><span class="action-tag">${t.action_type}</span></td>
-                                    <td><strong class="${t.status === 'VOIDED' ? 'text-strike' : 'text-green'}">+${t.xp_amount} XP</strong></td>
-                                    <td>${t.reason}</td>
-                                    <td><small>${t.created_by}</small></td>
-                                    <td><span class="status-chip ${t.status.toLowerCase()}">${t.status}</span></td>
-                                </tr>
-                            `).join('')}
+                            ${txs.map(t => {
+                                const isAdjustment = t.action_type.startsWith('FACULTY_') || !!t.metadata?.case_id;
+                                const isDeduct = t.xp_amount < 0 || t.action_type === 'FACULTY_DEDUCTION';
+                                return `
+                                    <tr class="${t.status === 'VOIDED' ? 'voided-row' : ''}">
+                                        <td><code>${t.id}</code></td>
+                                        <td>${t.created_at}</td>
+                                        <td><span class="action-tag">${t.action_type}</span></td>
+                                        <td><strong class="${t.status === 'VOIDED' ? 'text-strike' : (isDeduct ? 'text-red' : 'text-green')}">${t.xp_amount > 0 ? '+' : ''}${t.xp_amount} XP</strong></td>
+                                        <td>${t.reason}</td>
+                                        <td><small>${t.created_by}</small></td>
+                                        <td><span class="status-chip ${t.status.toLowerCase()}">${t.status}</span></td>
+                                        <td>
+                                            ${isAdjustment ? `
+                                                <button type="button" class="btn-action-sm" style="padding:2px 8px; font-size:0.7rem;" onclick="window.msotPlatform.openStudentAppealPrompt('${t.metadata?.case_id || t.id}')">
+                                                    APPEAL
+                                                </button>
+                                            ` : '—'}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
                         </tbody>
                     </table>
                 </div>
             </div>
         `;
+
     }
 
     // =========================================================================
@@ -6810,7 +6853,17 @@ Given an array of integers nums and an integer k, find the maximum sum of any co
             alert('Refund failed: ' + res.message);
         }
     }
+
+    openStudentAppealPrompt(flagOrCaseId) {
+        if (!window.msotIntegrity) return;
+        const caseRef = flagOrCaseId || prompt('Enter Flag Case ID or Transaction Reference (e.g. FLAG-2026-081):', 'FLAG-2026-081');
+        if (!caseRef) return;
+        const explanation = prompt(`[Student Fairness Review]\nPlease provide an explanation or context regarding Case ${caseRef} for the Academic Review Board:\n(e.g., "I solved this problem yesterday on LeetCode so I was already familiar with the algorithm.")`);
+        if (!explanation) return;
+        window.msotIntegrity.submitStudentAppeal(caseRef, explanation, 'Submitted from Cadet Dashboard');
+    }
 }
+
 
 window.msotPlatform = new MSOTPlatformController();
 // Pointer for backward compatibility

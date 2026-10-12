@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/beta.css?v=48">
     <link rel="stylesheet" href="css/study-tracker.css?v=48">
     <link rel="stylesheet" href="css/reward-store.css?v=48">
+    <link rel="stylesheet" href="css/integrity-audit.css?v=48">
 
     <!-- Tailwind CSS (core preflight disabled to guarantee zero conflict with custom styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2166,6 +2167,113 @@
     <script src="js/beta.js?v=48"></script>
     <script src="js/study-tracker.js?v=48"></script>
     <script src="js/reward-store.js?v=48"></script>
+    <script src="js/integrity-audit.js?v=48"></script>
     <script src="js/app.js?v=47"></script>
+
+    <!-- ===================================================================
+         INTEGRITY CASE INSPECTION MODAL (Faculty Desk)
+         =================================================================== -->
+    <div class="ia-case-modal-overlay" id="iaCaseModal">
+        <div class="ia-case-modal-card">
+            <button type="button" class="st-modal-close-btn" style="position:absolute; top:20px; right:24px;" onclick="window.msotIntegrity && window.msotIntegrity.closeCaseModal()">✕</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-right:40px;">
+                <h3 style="font-size:1.25rem; font-weight:800; color:#fff; margin:0;" id="iaCaseCode">FLAG-CASE // DETAILS</h3>
+                <div style="display:flex; gap:8px;">
+                    <span id="iaCaseRiskBadge" class="ia-risk-badge ia-risk-medium">MEDIUM RISK</span>
+                    <span id="iaCaseStatus" class="ia-status-badge ia-status-pending">PENDING</span>
+                </div>
+            </div>
+            <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:14px;">
+                Subject: <strong style="color:#fff;" id="iaCaseStudent">Cadet Name</strong>
+            </div>
+
+            <!-- Reason Description -->
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 16px; margin-bottom:14px;">
+                <div style="font-size:0.75rem; text-transform:uppercase; color:#fbbf24; font-weight:700; margin-bottom:4px;">Flag Investigation Reason</div>
+                <div style="font-size:0.88rem; color:#e2e8f0;" id="iaCaseReason">Automated flag reason details...</div>
+            </div>
+
+            <!-- Expected vs Observed Comparison Box -->
+            <div class="ia-comparison-wrap">
+                <div class="ia-comparison-box ia-expected-box">
+                    <div style="font-weight:700; text-transform:uppercase; font-size:0.72rem; margin-bottom:4px;">Expected Learning Baseline</div>
+                    <div id="iaCaseExpected">Standard expected behavior criteria...</div>
+                </div>
+                <div class="ia-comparison-box ia-actual-box">
+                    <div style="font-weight:700; text-transform:uppercase; font-size:0.72rem; margin-bottom:4px;">Actual Observed Behavior</div>
+                    <div id="iaCaseActual">Observed submission telemetry data...</div>
+                </div>
+            </div>
+
+            <!-- Supporting Technical Evidence JSON -->
+            <div style="margin-top:14px;">
+                <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:4px;">Verified Technical Evidence Telemetry</div>
+                <pre class="ia-evidence-pre" id="iaCaseEvidence">{}</pre>
+            </div>
+
+            <!-- Faculty Review Notes -->
+            <div style="margin-top:14px;">
+                <label style="display:block; font-size:0.75rem; text-transform:uppercase; color:#cbd5e1; font-weight:700; margin-bottom:6px;">Faculty Pedagogical Review Notes</label>
+                <textarea id="iaCaseReviewNotes" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px; color:#fff; font-size:0.85rem; min-height:70px;" placeholder="Add private faculty notes explaining investigative context or student correspondence..."></textarea>
+            </div>
+
+            <!-- Action Buttons Strip -->
+            <div class="ia-action-group">
+                <button type="button" class="ia-btn ia-btn-review" onclick="window.msotIntegrity && window.msotIntegrity.recordReviewDecision('UNDER_REVIEW')">Mark Under Review</button>
+                <button type="button" class="ia-btn ia-btn-dismiss" onclick="window.msotIntegrity && window.msotIntegrity.recordReviewDecision('DISMISSED_FALSE_POSITIVE', 'Verified genuine fast problem solving / false positive')">Dismiss (False Positive)</button>
+                <button type="button" class="ia-btn ia-btn-dismiss" onclick="window.msotIntegrity && window.msotIntegrity.recordReviewDecision('TECHNICAL_ISSUE', 'Network retry / client clock desynchronization')">Mark Technical Issue</button>
+                <button type="button" class="ia-btn ia-btn-escalate" onclick="window.msotIntegrity && window.msotIntegrity.recordReviewDecision('ESCALATED_TO_ADMIN', 'Requires Admin verification')">Escalate to Admin</button>
+                <button type="button" class="ia-btn ia-btn-confirm" onclick="window.msotIntegrity && window.msotIntegrity.recordReviewDecision('CONFIRMED_VIOLATION', 'Supported by conclusive submission telemetry')">Confirm Violation</button>
+                <button type="button" class="ia-btn ia-btn-adjust" onclick="window.msotIntegrity && window.msotIntegrity.openManualAdjustmentModal()">Adjust Student XP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         MANUAL XP ADJUSTMENT MODAL (Authorized Faculty / Admin)
+         =================================================================== -->
+    <div class="ia-case-modal-overlay" id="iaAdjustmentModal">
+        <div class="ia-case-modal-card" style="max-width:540px;">
+            <button type="button" class="st-modal-close-btn" style="position:absolute; top:20px; right:24px;" onclick="window.msotIntegrity && window.msotIntegrity.closeAdjustmentModal()">✕</button>
+            <h3 style="font-size:1.25rem; font-weight:800; color:#fff; margin:0 0 12px;">⚖️ Faculty XP Adjustment Workflow</h3>
+            <p style="font-size:0.82rem; color:#94a3b8; margin-bottom:18px;">
+                Authorized faculty can correct erroneously awarded XP or reverse deductions. All adjustments are atomic, idempotent, non-negative, and appended to the immutable audit ledger.
+            </p>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                    <label style="font-size:0.75rem; text-transform:uppercase; color:#cbd5e1; font-weight:700; display:block; margin-bottom:4px;">Target Student ID</label>
+                    <input type="text" id="iaAdjStudentId" value="MSOT-CADET" class="ia-search-input" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; text-transform:uppercase; color:#cbd5e1; font-weight:700; display:block; margin-bottom:4px;">Target Student Name</label>
+                    <input type="text" id="iaAdjStudentName" value="Cadet" class="ia-search-input" style="width:100%;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; color:#cbd5e1; font-weight:700; display:block; margin-bottom:4px;">Action Type</label>
+                        <select id="iaAdjType" class="ia-select-filter" style="width:100%;">
+                            <option value="DEDUCT">Deduct Exploited XP</option>
+                            <option value="AWARD">Award Justified Correction</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; color:#cbd5e1; font-weight:700; display:block; margin-bottom:4px;">XP Amount</label>
+                        <input type="number" id="iaAdjAmount" value="50" min="1" max="10000" class="ia-search-input" style="width:100%;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; text-transform:uppercase; color:#cbd5e1; font-weight:700; display:block; margin-bottom:4px;">Documented Justification Reason</label>
+                    <textarea id="iaAdjReason" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px; color:#fff; font-size:0.85rem; min-height:60px;" placeholder="Document pedagogical justification (e.g. Reversed duplicate submission award from Case FLAG-2026-082)..."></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="btn-action-sm" onclick="window.msotIntegrity && window.msotIntegrity.closeAdjustmentModal()">Cancel</button>
+                <button type="button" class="ia-btn ia-btn-adjust" onclick="window.msotIntegrity && window.msotIntegrity.submitAdjustmentForm()">Execute XP Adjustment</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

@@ -322,7 +322,21 @@ class MiraiGameEngine {
         const fbPanel = document.getElementById('feedbackPanel');
         const optionBtns = document.querySelectorAll('.option-btn');
         const timeTaken = (Date.now() - this.questionStartTime) / 1000;
+        const durationMs = Date.now() - (this.questionStartTime || Date.now());
         const isCritical = timeTaken <= 10;
+
+        // Pedagogical Integrity Telemetry
+        if (window.msotIntegrity && typeof window.msotIntegrity.monitorEvent === 'function') {
+            window.msotIntegrity.monitorEvent(isCorrect ? 'QUESTION_SOLVED' : 'ATTEMPT_FAILED', {
+                question_id: `${this.currentGame?.id || 'game'}_q${this.currentQIndex}`,
+                difficulty: this.currentGame?.difficulty || 'MEDIUM',
+                duration_ms: durationMs,
+                trusted_start_time: !!this.questionStartTime,
+                solution_verified: true,
+                answer: chosenIdx
+            });
+        }
+
 
         // Disable all option buttons
         optionBtns.forEach((btn, idx) => {

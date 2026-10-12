@@ -849,9 +849,21 @@ class MSOTPlatformState {
 
         this.save();
 
+        // Pedagogical Integrity Telemetry Event
+        if (window.msotIntegrity && typeof window.msotIntegrity.monitorEvent === 'function') {
+            window.msotIntegrity.monitorEvent('XP_AWARDED', {
+                action_key: actionKey,
+                xp_amount: xpAmount,
+                source_id: metadata.source_id || actionKey,
+                event_token: metadata.event_token || metadata.source_id,
+                txId: tx.id
+            });
+        }
+
         if (window.msotPlatform && typeof window.msotPlatform.showXPGainToast === 'function') {
             window.msotPlatform.showXPGainToast(xpAmount, reason || rule.description, actionKey, tx);
         }
+
 
         return {
             awarded: xpAmount,

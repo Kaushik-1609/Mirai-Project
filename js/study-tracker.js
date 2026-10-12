@@ -247,6 +247,17 @@
 
             this.sessions.unshift(newSession);
 
+            if (window.msotIntegrity && typeof window.msotIntegrity.monitorEvent === 'function') {
+                window.msotIntegrity.monitorEvent('SESSION_FINISH', {
+                    session_id: newSession.id,
+                    platform: newSession.platform,
+                    duration_minutes: Math.round(durationSeconds / 60),
+                    duration_seconds: durationSeconds,
+                    difficulty: newSession.difficulty
+                });
+            }
+
+
             // If user checked "Mark as Solved", also add to Coding Problem Tracker
             if (isSolved && this.activeTimer.platform !== 'General Study') {
                 const newProb = {
