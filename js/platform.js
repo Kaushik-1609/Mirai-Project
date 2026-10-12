@@ -435,6 +435,10 @@ class MSOTPlatformController {
                                 <span class="nav-ico">⏱️</span>
                                 <span class="nav-text">Study Tracker</span>
                             </button>
+                            <button type="button" class="dash-nav-btn" onclick="window.switchSection('storeSection', true)" title="XP Reward Store">
+                                <span class="nav-ico">🎁</span>
+                                <span class="nav-text">Reward Store</span>
+                            </button>
                             <button type="button" class="dash-nav-btn" onclick="window.switchSection('arcadeSection', true)" title="1. Sacred Trials Arcade">
                                 <span class="nav-ico">🎮</span>
                                 <span class="nav-text">Arcade</span>
@@ -2916,6 +2920,9 @@ class MSOTPlatformController {
                     <button type="button" class="admin-subnav-btn ${activeTab === 'rules' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('rules')">
                         ⚙️ XP RULES
                     </button>
+                    <button type="button" class="admin-subnav-btn ${activeTab === 'reward_store' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('reward_store')">
+                        🎁 REWARD STORE
+                    </button>
                     <button type="button" class="admin-subnav-btn ${activeTab === 'audit' ? 'active' : ''}" onclick="window.msotPlatform.switchAdminSubTab('audit')">
                         📜 AUDIT LOGS (${auditLogs.length})
                     </button>
@@ -3504,6 +3511,117 @@ class MSOTPlatformController {
                                             </td>
                                             <td>
                                                 <button class="save-rule-btn" onclick="window.msotPlatform.saveAdminRule('${key}')">APPLY</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- REWARD STORE MANAGEMENT CONSOLE (8 Categories Only) -->
+                ${activeTab === 'reward_store' ? `
+                    <div>
+                        <div class="admin-header">
+                            <div>
+                                <span class="admin-tag">COMMERCE &amp; XP ECONOMY // 8 APPROVED CATEGORIES</span>
+                                <h2 class="section-title">REWARD STORE MANAGEMENT CONSOLE</h2>
+                                <p class="section-subtitle">
+                                    Admins can configure digital reward catalog items, edit XP prices, toggle availability, view transaction history, and issue verified refunds.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Catalog Items Table -->
+                        <div class="rules-table-wrap mb-24">
+                            <h3 style="color:#fbbf24; font-size:1.1rem; margin-bottom:12px; font-weight:700;">🎁 Digital Reward Catalog (Approved Categories)</h3>
+                            <table class="rules-table">
+                                <thead>
+                                    <tr>
+                                        <th>ASSET</th>
+                                        <th>ITEM NAME</th>
+                                        <th>CATEGORY</th>
+                                        <th>RARITY</th>
+                                        <th>XP PRICE</th>
+                                        <th>ACTIVE</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${((window.msotStore?.catalog) || []).map(item => `
+                                        <tr>
+                                            <td style="font-size:1.4rem;">${item.asset || '🎁'}</td>
+                                            <td><strong>${item.name}</strong></td>
+                                            <td><span class="st-platform-badge st-badge-general">${item.category.replace('_', ' ')}</span></td>
+                                            <td><span class="rs-rarity-badge rs-rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></td>
+                                            <td>
+                                                <input type="number" min="0" max="50000" value="${item.xpPrice}" id="adminPrice_${item.id}" class="xp-num-input" style="width:90px;">
+                                            </td>
+                                            <td>
+                                                <input type="checkbox" ${item.isActive ? 'checked' : ''} id="adminActive_${item.id}">
+                                            </td>
+                                            <td>
+                                                <button class="save-rule-btn" onclick="window.msotPlatform.saveAdminRewardItem('${item.id}')">SAVE</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mystery Box Odds Configuration Box -->
+                        <div class="dashboard-panel mb-24" style="border-color:rgba(245, 158, 11, 0.35);">
+                            <h3 style="color:#fbbf24; font-size:1rem; margin-bottom:8px; font-weight:700;">🎲 Mystery Box Drop Odds Configuration</h3>
+                            <p style="font-size:0.82rem; color:#94a3b8; margin-bottom:12px;">Auditable odds displayed transparently to students before unboxing. Only approved items are eligible drops.</p>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                                <div style="background:rgba(255,255,255,0.04); padding:10px 14px; border-radius:10px;">
+                                    <div style="font-size:0.75rem; color:#94a3b8;">Common Drop Rate</div>
+                                    <div style="font-size:1.2rem; font-weight:800; color:#cbd5e1;">45%</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.04); padding:10px 14px; border-radius:10px;">
+                                    <div style="font-size:0.75rem; color:#94a3b8;">Rare Drop Rate</div>
+                                    <div style="font-size:1.2rem; font-weight:800; color:#38bdf8;">30%</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.04); padding:10px 14px; border-radius:10px;">
+                                    <div style="font-size:0.75rem; color:#94a3b8;">Epic Drop Rate</div>
+                                    <div style="font-size:1.2rem; font-weight:800; color:#c084fc;">18%</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.04); padding:10px 14px; border-radius:10px;">
+                                    <div style="font-size:0.75rem; color:#94a3b8;">Legendary Drop Rate</div>
+                                    <div style="font-size:1.2rem; font-weight:800; color:#fbbf24;">7%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Transactions & Refund Ledger -->
+                        <div class="rules-table-wrap">
+                            <h3 style="color:#fbbf24; font-size:1.1rem; margin-bottom:12px; font-weight:700;">📜 Purchase Transactions &amp; Refund Audit</h3>
+                            <table class="rules-table">
+                                <thead>
+                                    <tr>
+                                        <th>TRANSACTION ID</th>
+                                        <th>ITEM</th>
+                                        <th>TYPE</th>
+                                        <th>XP</th>
+                                        <th>STATUS</th>
+                                        <th>DATE</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${((window.msotStore?.transactions) || []).map(tx => `
+                                        <tr>
+                                            <td style="font-family:monospace; font-size:0.75rem;">${tx.id.substring(0, 12)}...</td>
+                                            <td><strong>${tx.metadata?.itemName || tx.item_id}</strong></td>
+                                            <td>${tx.transaction_type}</td>
+                                            <td style="color:#fbbf24; font-weight:700;">${tx.xp_amount} XP</td>
+                                            <td><span class="rs-rarity-badge ${tx.status === 'REFUNDED' ? 'rs-rarity-common' : 'rs-rarity-legendary'}">${tx.status}</span></td>
+                                            <td style="font-size:0.75rem;">${new Date(tx.created_at).toLocaleString()}</td>
+                                            <td>
+                                                ${tx.status === 'COMPLETED' ? `
+                                                    <button class="st-table-btn st-table-btn-del" onclick="window.msotPlatform.adminRefundRewardTx('${tx.id}')">REFUND XP</button>
+                                                ` : '<span style="font-size:0.75rem; color:#94a3b8;">Refunded</span>'}
                                             </td>
                                         </tr>
                                     `).join('')}
@@ -6645,6 +6763,52 @@ Given an array of integers nums and an integer k, find the maximum sum of any co
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
+    }
+
+    saveAdminRewardItem(itemId) {
+        if (!window.msotStore) return;
+        const priceInput = document.getElementById(`adminPrice_${itemId}`);
+        const activeInput = document.getElementById(`adminActive_${itemId}`);
+        const newPrice = priceInput ? parseInt(priceInput.value, 10) : null;
+        const isActive = activeInput ? activeInput.checked : true;
+        
+        if (isNaN(newPrice) || newPrice < 0) {
+            alert('Please enter a valid non-negative XP price.');
+            return;
+        }
+
+        const item = window.msotStore.catalog.find(i => i.id === itemId);
+        if (item) {
+            item.xpPrice = newPrice;
+            item.isActive = isActive;
+            window.msotStore.saveCatalog();
+            // Also sync to Supabase if available
+            if (window.msotState?.supabaseClient) {
+                window.msotState.supabaseClient
+                    .from('reward_store_items')
+                    .update({ xp_price: newPrice, is_active: isActive })
+                    .eq('id', itemId)
+                    .then(({ error }) => {
+                        if (error) console.warn('[RewardStore] Supabase update note:', error);
+                    });
+            }
+            alert(`Reward "${item.name}" updated successfully! Price: ${newPrice.toLocaleString()} XP | Active: ${isActive ? 'YES' : 'NO'}`);
+            this.renderAdminView();
+        }
+    }
+
+    async adminRefundRewardTx(txId) {
+        if (!confirm('Are you sure you want to refund this reward transaction? The student will receive their XP back and the item will be unequipped/removed.')) {
+            return;
+        }
+        if (!window.msotStore) return;
+        const res = await window.msotStore.refundTransaction(txId);
+        if (res.success) {
+            alert(res.message);
+            this.renderAdminView();
+        } else {
+            alert('Refund failed: ' + res.message);
+        }
     }
 }
 

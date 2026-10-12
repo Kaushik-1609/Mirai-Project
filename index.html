@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="css/intro-video.css?v=47">
     <link rel="stylesheet" href="css/beta.css?v=48">
     <link rel="stylesheet" href="css/study-tracker.css?v=48">
+    <link rel="stylesheet" href="css/reward-store.css?v=48">
 
     <!-- Tailwind CSS (core preflight disabled to guarantee zero conflict with custom styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -542,6 +543,7 @@
                 <a href="#/dashboard" class="nav-link active" data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); return false;">DASHBOARD</a>
                 <a href="#/beta"      class="nav-link"        data-section="betaSection"      onclick="window.switchSection('betaSection', true); return false;">🤖 BETA AI</a>
                 <a href="#/tracker"   class="nav-link"        data-section="trackerSection"   onclick="window.switchSection('trackerSection', true); return false;">⏱️ STUDY TRACKER</a>
+                <a href="#/rewards"   class="nav-link"        data-section="storeSection"     onclick="window.switchSection('storeSection', true); return false;">🎁 REWARDS</a>
                 <a href="#/arcade"    class="nav-link"        data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); return false;">ARCADE (17)</a>
                 <a href="#/daily"     class="nav-link"        data-section="dailySection"   onclick="window.switchSection('dailySection', true); return false;">DAILY TRIAL</a>
                 <a href="#/assignments" class="nav-link"      data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); return false;">WEEKEND LAB</a>
@@ -619,6 +621,7 @@
                 <a href="#/dashboard" class="mobile-nav-link active" data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📊 DASHBOARD</a>
                 <a href="#/beta"      class="mobile-nav-link"        data-section="betaSection"      onclick="window.switchSection('betaSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🤖 BETA AI (STUDENT TUTOR)</a>
                 <a href="#/tracker"   class="mobile-nav-link"        data-section="trackerSection"   onclick="window.switchSection('trackerSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⏱️ STUDY &amp; CODING TRACKER</a>
+                <a href="#/rewards"   class="mobile-nav-link"        data-section="storeSection"     onclick="window.switchSection('storeSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎁 REWARD STORE (SPEND XP)</a>
                 <a href="#/arcade"    class="mobile-nav-link" data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎮 ARCADE (17 GAMES)</a>
                 <a href="#/daily"     class="mobile-nav-link" data-section="dailySection"   onclick="window.switchSection('dailySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⚡ DAILY TRIAL</a>
                 <a href="#/assignments" class="mobile-nav-link" data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">💻 WEEKEND LAB & COMPILER</a>
@@ -1690,6 +1693,170 @@
             </div>
         </div>
 
+        <!-- ===================================================================
+             REWARD STORE & XP ECONOMY SECTION (8 APPROVED CATEGORIES ONLY)
+             =================================================================== -->
+        <section class="app-section" id="storeSection" style="display: none;">
+            <div class="reward-store-container">
+                <!-- Header -->
+                <div class="rs-header">
+                    <div class="rs-header-title-box">
+                        <div class="rs-badge">
+                            <span>🎁</span>
+                            <span>OFFICIAL XP REWARD STORE</span>
+                        </div>
+                        <h1 class="rs-title">Academy Reward Store</h1>
+                        <p class="rs-subtitle">Spend your hard-earned XP on avatars, profile cosmetics, streak protection, mystery boxes, and elite upgrades.</p>
+                    </div>
+
+                    <!-- HUD Balance & Freeze Status -->
+                    <div class="rs-hud-pills">
+                        <div class="rs-hud-card">
+                            <span class="rs-hud-icon">🪙</span>
+                            <div>
+                                <div class="rs-hud-label">Current Balance</div>
+                                <div class="rs-hud-val xp-gold" id="rsHudXP">0 XP</div>
+                            </div>
+                        </div>
+                        <div class="rs-hud-card">
+                            <span class="rs-hud-icon">🧊</span>
+                            <div>
+                                <div class="rs-hud-label">Monthly Streak Freezes</div>
+                                <div class="rs-hud-val ice-cyan" id="rsHudFreezes">3 Free / 0 Paid</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Streak Freeze Active Status & Action Banner -->
+                <div class="rs-freeze-banner">
+                    <div class="rs-freeze-info">
+                        <div class="rs-freeze-icon-wrap">🧊</div>
+                        <div>
+                            <div class="rs-freeze-title">
+                                <span>Monthly Streak Freeze Protocol</span>
+                                <span class="rs-rarity-badge rs-rarity-rare" id="rsFreezeLeftBadge">3 of 3 Free Monthly Freezes Left</span>
+                            </div>
+                            <div class="rs-freeze-desc">
+                                Protects your streak for 24 hours if you miss daily activity. Resets on 1st of every calendar month (Asia/Kolkata).
+                            </div>
+                            <div style="font-family:monospace; font-size:0.75rem; color:#38bdf8; margin-top:4px; font-weight:700;" id="rsFreezeCountdown">
+                                NO ACTIVE FREEZE
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rs-freeze-actions">
+                        <button type="button" class="rs-btn-freeze rs-btn-freeze-activate" onclick="window.msotStore && window.msotStore.activateStreakFreeze()">
+                            <span>⚡</span><span>Activate 24h Freeze</span>
+                        </button>
+                        <button type="button" class="rs-btn-freeze rs-btn-freeze-buy" onclick="window.msotStore && window.msotStore.purchaseItem('freeze_streak_token')">
+                            <span>🪙</span><span>Buy Emergency Freeze (1,000 XP)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Store Navigation Sub-Tabs -->
+                <div class="rs-main-tabs">
+                    <button type="button" class="rs-tab-btn active" data-tab="store" onclick="window.msotStore && window.msotStore.switchViewTab('store')">
+                        <span>🛒</span><span>Reward Catalog</span>
+                    </button>
+                    <button type="button" class="rs-tab-btn" data-tab="inventory" onclick="window.msotStore && window.msotStore.switchViewTab('inventory')">
+                        <span>🎒</span><span>My Inventory</span>
+                    </button>
+                    <button type="button" class="rs-tab-btn" data-tab="ledger" onclick="window.msotStore && window.msotStore.switchViewTab('ledger')">
+                        <span>📜</span><span>XP Transaction Ledger</span>
+                    </button>
+                </div>
+
+                <!-- VIEW 1: REWARD STORE CATALOG -->
+                <div class="rs-view-stage active" id="rsView_store">
+                    <!-- Category Filter Pills: ONLY The 8 Approved Categories -->
+                    <div class="rs-cat-filter-bar">
+                        <button type="button" class="rs-cat-pill active" data-cat="ALL" onclick="window.msotStore && window.msotStore.setCategoryFilter('ALL')">All Categories</button>
+                        <button type="button" class="rs-cat-pill" data-cat="avatar" onclick="window.msotStore && window.msotStore.setCategoryFilter('avatar')">🥷 1. Avatar Store</button>
+                        <button type="button" class="rs-cat-pill" data-cat="profile_customization" onclick="window.msotStore && window.msotStore.setCategoryFilter('profile_customization')">🎨 2. Profile Customization</button>
+                        <button type="button" class="rs-cat-pill" data-cat="xp_shield" onclick="window.msotStore && window.msotStore.setCategoryFilter('xp_shield')">🛡️ 3. XP Shield</button>
+                        <button type="button" class="rs-cat-pill" data-cat="streak_freeze" onclick="window.msotStore && window.msotStore.setCategoryFilter('streak_freeze')">🧊 4. Streak Freeze</button>
+                        <button type="button" class="rs-cat-pill" data-cat="mystery_box" onclick="window.msotStore && window.msotStore.setCategoryFilter('mystery_box')">🎁 5. Mystery Box</button>
+                        <button type="button" class="rs-cat-pill" data-cat="elite_membership" onclick="window.msotStore && window.msotStore.setCategoryFilter('elite_membership')">👑 6. Elite Membership</button>
+                        <button type="button" class="rs-cat-pill" data-cat="guild_rewards" onclick="window.msotStore && window.msotStore.setCategoryFilter('guild_rewards')">🐉 7. Guild Rewards</button>
+                        <button type="button" class="rs-cat-pill" data-cat="seasonal_collectibles" onclick="window.msotStore && window.msotStore.setCategoryFilter('seasonal_collectibles')">🦊 8. Seasonal Collectibles</button>
+                    </div>
+
+                    <!-- Grid of Catalog Items -->
+                    <div class="rs-items-grid" id="rsStoreCatalogGrid">
+                        <!-- Populated dynamically by window.msotStore.renderStoreCatalog() -->
+                    </div>
+                </div>
+
+                <!-- VIEW 2: MY INVENTORY -->
+                <div class="rs-view-stage" id="rsView_inventory">
+                    <div class="rs-ledger-table-wrap">
+                        <table class="rs-table">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Reward Item</th>
+                                    <th>Rarity</th>
+                                    <th>Quantity</th>
+                                    <th>Equip / Use Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rsInventoryTableBody">
+                                <!-- Populated dynamically by window.msotStore.renderInventory() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: TRANSACTION LEDGER -->
+                <div class="rs-view-stage" id="rsView_ledger">
+                    <div class="rs-ledger-table-wrap">
+                        <table class="rs-table">
+                            <thead>
+                                <tr>
+                                    <th>TX ID</th>
+                                    <th>Item Name</th>
+                                    <th>Type</th>
+                                    <th>XP Spent</th>
+                                    <th>Balance After</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rsLedgerTableBody">
+                                <!-- Populated dynamically by window.msotStore.renderLedger() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             MYSTERY BOX REVEAL MODAL & ODDS DISCLOSURE
+             =================================================================== -->
+        <div class="rs-mystery-modal-overlay" id="rsMysteryModal">
+            <div class="rs-mystery-box-card">
+                <button type="button" class="st-modal-close-btn" style="position:absolute; top:16px; right:20px;" onclick="window.msotStore && window.msotStore.closeMysteryModal()">✕</button>
+                <div class="rs-mystery-chest-anim" id="rsChestAnim">🎁</div>
+                <div style="font-size:2.8rem; margin-bottom:8px;" id="rsWonItemAsset">✨</div>
+                <h3 style="margin:0 0 6px; font-size:1.35rem; color:#fff;" id="rsWonItemTitle">Unboxing Mystery Cache...</h3>
+                <p style="font-size:0.85rem; color:#94a3b8; margin:0 0 16px;" id="rsWonItemDesc">Calculating algorithmic reward from approved categories...</p>
+
+                <div class="rs-odds-disclosure-table">
+                    <div style="font-weight:700; color:#fbbf24; margin-bottom:6px; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.5px;">Transparent Auditable Odds</div>
+                    <div class="rs-odds-row"><span>Common Tier Rewards (Avatars, Guild Titles)</span><strong style="color:#cbd5e1;">45%</strong></div>
+                    <div class="rs-odds-row"><span>Rare Tier Rewards (Neon Frames, Shields, Shinobi)</span><strong style="color:#38bdf8;">30%</strong></div>
+                    <div class="rs-odds-row"><span>Epic Tier Rewards (Tokyo Gold, Samurai, Guild Banner)</span><strong style="color:#c084fc;">18%</strong></div>
+                    <div class="rs-odds-row"><span>Legendary Tier Rewards (Asur Ascendant, Kitsune)</span><strong style="color:#fbbf24;">7%</strong></div>
+                </div>
+
+                <button type="button" class="rs-btn-action rs-btn-buy" style="padding:10px 24px;" onclick="window.msotStore && window.msotStore.closeMysteryModal()">
+                    Collect Reward &amp; Close
+                </button>
+            </div>
+        </div>
+
     </main>
 
     <!-- ===================================================================
@@ -1998,6 +2165,7 @@
     <script src="js/intro-video.js?v=47"></script>
     <script src="js/beta.js?v=48"></script>
     <script src="js/study-tracker.js?v=48"></script>
+    <script src="js/reward-store.js?v=48"></script>
     <script src="js/app.js?v=47"></script>
 </body>
 </html>

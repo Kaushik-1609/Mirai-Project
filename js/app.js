@@ -42,6 +42,8 @@ const ROUTE_MAP = {
     '#/beta':      { section: 'betaSection',     title: 'Beta AI Learning Companion • MSOT Learn' },
     '#/tracker':   { section: 'trackerSection',  title: 'Study & Coding Tracker • MSOT Learn' },
     '#/study-tracker': { section: 'trackerSection', title: 'Study & Coding Tracker • MSOT Learn' },
+    '#/rewards':   { section: 'storeSection',    title: 'Reward Store • MSOT Learn' },
+    '#/store':     { section: 'storeSection',    title: 'Reward Store • MSOT Learn' },
     '#/login':     { authMode: 'signin',         title: 'Sign In • MSOT Learn' },
     '#/signup':    { authMode: 'signup',         title: 'Register Cadet • MSOT Learn' },
     '#/intro':     { section: 'dashboardSection', title: 'Cadet Dashboard • MSOT Learn', isIntro: true }
@@ -52,6 +54,7 @@ const SECTION_TO_HASH = {
     'heroSection':        '#/gates',
     'betaSection':        '#/beta',
     'trackerSection':     '#/tracker',
+    'storeSection':       '#/rewards',
     'arcadeSection':      '#/arcade',
     'dailySection':       '#/daily',
     'assignmentsSection': '#/assignments',
@@ -191,6 +194,10 @@ window.switchSection = function (sectionId, updateHash = true) {
             } else if (sectionId === 'trackerSection') {
                 if (window.msotTracker && typeof window.msotTracker.initView === 'function') {
                     window.msotTracker.initView();
+                }
+            } else if (sectionId === 'storeSection') {
+                if (window.msotStore && typeof window.msotStore.initView === 'function') {
+                    window.msotStore.initView();
                 }
             }
         } catch (renderErr) {
