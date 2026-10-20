@@ -2,10 +2,10 @@
   "name": "msot-learn",
   "version": "1.0.0",
   "description": "Mirai School of Technology (未来工科大学) - Gamified Cadet Academy",
-  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 3000",
-    "serve": "python3 -m http.server 8080"
+    "start": "node server.js",
+    "serve": "node server.js"
   },
   "dependencies": {
     "framer-motion": "^10.18.0",

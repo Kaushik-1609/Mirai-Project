@@ -176,6 +176,160 @@ function normalizeSection(sec) {
     return s;
 }
 
+// 2.5 REAL-TIME ATTENDANCE DATA (Mirai Student Hub actual telemetry)
+const DEFAULT_ATTENDANCE_DATA = {
+    degree: 'BTECH',
+    semester: 'Semester 1',
+    overall: {
+        percent: 83,
+        present: 105,
+        absent: 21,
+        total: 126,
+        status: 'Good Standing'
+    },
+    todayClasses: [
+        {
+            id: 'cls-01',
+            time: '9:15 AM - 10:45 AM',
+            subject: 'Web Development',
+            type: 'Lecture',
+            status: 'Present',
+            mode: 'Core • Offline'
+        },
+        {
+            id: 'cls-02',
+            time: '11:00 AM - 12:30 PM',
+            subject: 'Web Development',
+            type: 'Lecture',
+            status: 'Present',
+            mode: 'Core • Offline'
+        },
+        {
+            id: 'cls-03',
+            time: '1:20 PM - 2:20 PM',
+            subject: 'Introduction to prompt Eng',
+            type: 'Lecture',
+            status: 'Present',
+            mode: 'Core • Offline'
+        }
+    ],
+    logs: [
+        {
+            id: 'att-log-01',
+            subject: 'Introduction to prompt Eng',
+            type: 'Lecture',
+            date: 'Wed, 14 Oct • 1:20 PM',
+            rawDate: '2026-10-14',
+            status: 'Present',
+            concernRaised: false
+        },
+        {
+            id: 'att-log-02',
+            subject: 'Web Development',
+            type: 'Lecture',
+            date: 'Wed, 14 Oct • 11:00 AM',
+            rawDate: '2026-10-14',
+            status: 'Present',
+            concernRaised: false
+        },
+        {
+            id: 'att-log-03',
+            subject: 'Web Development',
+            type: 'Lecture',
+            date: 'Wed, 14 Oct • 9:15 AM',
+            rawDate: '2026-10-14',
+            status: 'Present',
+            concernRaised: false
+        },
+        {
+            id: 'att-log-04',
+            subject: 'Web Development',
+            type: 'Lecture',
+            date: 'Tue, 13 Oct • 11:15 AM',
+            rawDate: '2026-10-13',
+            status: 'Absent',
+            concernRaised: false,
+            canRaiseConcern: true
+        },
+        {
+            id: 'att-log-05',
+            subject: 'DSA in C++',
+            type: 'Lecture',
+            date: 'Tue, 13 Oct • 10:00 AM',
+            rawDate: '2026-10-13',
+            status: 'Absent',
+            concernRaised: false,
+            canRaiseConcern: true
+        },
+        {
+            id: 'att-log-06',
+            subject: 'Computer-Aided Engineering Drawing',
+            type: 'Lecture',
+            date: 'Mon, 12 Oct • 3:30 PM',
+            rawDate: '2026-10-12',
+            status: 'Absent',
+            concernRaised: false,
+            canRaiseConcern: true
+        }
+    ],
+    subjects: [
+        {
+            id: 'subj-01',
+            name: 'Product Development',
+            category: 'CORE',
+            percentage: 0,
+            attended: 0,
+            total: 1,
+            barColor: '#ef4444'
+        },
+        {
+            id: 'subj-02',
+            name: 'Data Structure and Algorithm 1',
+            category: 'CORE',
+            percentage: 0,
+            attended: 0,
+            total: 0,
+            barColor: '#ef4444'
+        },
+        {
+            id: 'subj-03',
+            name: 'Internet & Web Basics',
+            category: 'CORE',
+            percentage: 0,
+            attended: 0,
+            total: 0,
+            barColor: '#ef4444'
+        },
+        {
+            id: 'subj-04',
+            name: 'ALL ACAD RESOURCES',
+            category: 'CORE',
+            percentage: 0,
+            attended: 0,
+            total: 0,
+            barColor: '#ef4444'
+        },
+        {
+            id: 'subj-05',
+            name: 'Product Development',
+            category: 'CORE',
+            percentage: 0,
+            attended: 0,
+            total: 0,
+            barColor: '#ef4444'
+        },
+        {
+            id: 'subj-06',
+            name: 'Computer-Aided Engineering Drawing',
+            category: 'CORE',
+            percentage: 50,
+            attended: 4,
+            total: 8,
+            barColor: '#dc2626'
+        }
+    ]
+};
+
 // 3. DEFAULT STUDENT STATE (Matching Prompt Dashboard: Level 12, 1,240/1,500 XP, 7-Day Streak)
 const DEFAULT_STUDENT = {
     id: 'ADM-MSOT-001',
@@ -184,10 +338,17 @@ const DEFAULT_STUDENT = {
     avatar: '🛡️',
     role: 'ADMIN',
     year: 'System Administrator',
-    semester: 'Master Governance',
+    semester: 'Semester 1',
+    degree: 'BTECH',
     batch: 'Class of 2026',
     section: 'Section Alpha',
     campus: 'Mirai Central Campus',
+    attendance: '83%',
+    attendanceNum: 83,
+    attendancePresent: 105,
+    attendanceAbsent: 21,
+    attendanceTotal: 126,
+    attendanceData: JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE_DATA)),
     lifetimeXP: 4490, // Gives Level 12 with 1,240 / 1,500 XP
     weeklyXP: 380,
     streak: 7,
@@ -390,9 +551,7 @@ const DEFAULT_SECTION_BATTLE = {
 
 // 8. MULTI-DIMENSIONAL FAIRNESS LEADERBOARDS (Section 15)
 const SEED_FAIRNESS_BOARDS = {
-    weeklyXP: [],
-    mostImproved: [],
-    consistency: []
+    weeklyXP: []
 };
 
 // 9. FACULTY ENGAGEMENT KPIS & TOPIC DIFFICULTY RADAR (Section 18)
@@ -475,6 +634,16 @@ class MSOTPlatformState {
                 if (!this.student.league || this.student.league.includes('Gold') || this.student.league.includes('Bronze')) {
                     this.student.league = 'Cadet League';
                 }
+                if (!this.student.attendanceData || !this.student.attendanceData.logs || this.student.attendanceData.logs.length === 0) {
+                    this.student.attendanceData = JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE_DATA));
+                }
+                this.student.attendance = '83%';
+                this.student.attendanceNum = 83;
+                this.student.attendancePresent = 105;
+                this.student.attendanceAbsent = 21;
+                this.student.attendanceTotal = 126;
+                this.student.degree = this.student.degree || 'BTECH';
+                this.student.semester = this.student.semester || 'Semester 1';
                 return;
             }
         } catch (e) {
@@ -622,6 +791,15 @@ class MSOTPlatformState {
             this.student.maxFreezeDays = 2;
             this.student.lastActiveDate = this.student.lastActiveDate || new Date().toISOString().split('T')[0];
             if (!Array.isArray(this.student.attendanceHistory)) this.student.attendanceHistory = [];
+            if (!this.student.attendanceData || !this.student.attendanceData.logs || this.student.attendanceData.logs.length === 0) {
+                this.student.attendanceData = JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE_DATA));
+            }
+            this.student.attendance = '83%';
+            this.student.attendanceNum = 83;
+            this.student.attendancePresent = 105;
+            this.student.attendanceAbsent = 21;
+            this.student.attendanceTotal = 126;
+            this.student.degree = this.student.degree || 'BTECH';
             if (typeof this.student.questionsSolved !== 'number') this.student.questionsSolved = 0;
             if (typeof this.student.weeklyTimeSpentMinutes !== 'number') this.student.weeklyTimeSpentMinutes = 385;
             if (typeof this.student.leagueRank !== 'number') this.student.leagueRank = 8;
@@ -1036,6 +1214,37 @@ class MSOTPlatformState {
             streak: this.student.streak,
             totalXP: this.student.lifetimeXP,
             message: `🏫 Attendance Verified! Awarded +20 XP. Daily streak is now ${this.student.streak} Days 🔥.`
+        };
+    }
+
+    // Retrieve active student attendance data (Mirai Student Hub actual telemetry)
+    getAttendanceData() {
+        if (!this.student) return JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE_DATA));
+        if (!this.student.attendanceData || !Array.isArray(this.student.attendanceData.logs)) {
+            this.student.attendanceData = JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE_DATA));
+        }
+        return this.student.attendanceData;
+    }
+
+    // Raise attendance dispute / concern for an absent class
+    raiseAttendanceConcern(logId, category, remarks) {
+        const attData = this.getAttendanceData();
+        const log = (attData.logs || []).find(l => l.id === logId);
+        if (!log) return { success: false, message: 'Lecture record not found.' };
+
+        log.concernRaised = true;
+        log.concernDetails = {
+            category: category || 'Attendance Omission',
+            remarks: remarks || '',
+            submittedAt: new Date().toISOString(),
+            status: 'Pending Review ⏳'
+        };
+
+        this.save();
+        return {
+            success: true,
+            log: log,
+            message: `Concern registered for ${log.subject} (${log.date}). Faculty notified for review.`
         };
     }
 

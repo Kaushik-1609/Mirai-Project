@@ -3,26 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mirai School of Technology | 未来工科大学 • Gamified Academy</title>
+    <title>NUHK X | FOUR MINDS. ONE VISION. ZERO LIMITS.</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Noto+Serif+JP:wght@600;700;900&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Noto+Serif+JP:wght@600;700;900&family=Noto+Serif+Devanagari:wght@600;700;800;900&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Rozha+One&family=Yatra+One&display=swap" rel="stylesheet">
     
-    <!-- Stylesheets & Favicon (v=46 forces clean load across GitHub and Live Server) -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Stylesheets & Favicon -->
+    <link rel="icon" type="image/png" href="assets/images/nuhk_x_logo.png">
     <link rel="stylesheet" href="css/main.css?v=47">
     <link rel="stylesheet" href="css/hero-gate.css?v=47">
-    <link rel="stylesheet" href="css/games.css?v=47">
+    <link rel="stylesheet" href="css/games.css?v=55">
     <link rel="stylesheet" href="css/auth.css?v=47">
     <link rel="stylesheet" href="css/dashboard.css?v=47">
     <link rel="stylesheet" href="css/faculty-flashcard.css?v=47">
-    <link rel="stylesheet" href="css/intro-video.css?v=47">
+    <link rel="stylesheet" href="css/intro-video.css?v=58">
     <link rel="stylesheet" href="css/beta.css?v=48">
     <link rel="stylesheet" href="css/study-tracker.css?v=48">
     <link rel="stylesheet" href="css/reward-store.css?v=48">
     <link rel="stylesheet" href="css/integrity-audit.css?v=48">
+    <link rel="stylesheet" href="css/daily-trial.css?v=1">
 
     <!-- Tailwind CSS (core preflight disabled to guarantee zero conflict with custom styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +38,11 @@
         // Pre-initialize theme & active session before first paint
         (function() {
             try {
-                var savedTheme = localStorage.getItem('MSOT_THEME') || 'lavender';
+                var savedTheme = localStorage.getItem('MSOT_THEME');
+                if (!savedTheme || savedTheme === 'lavender') {
+                    savedTheme = 'cyber';
+                    localStorage.setItem('MSOT_THEME', 'cyber');
+                }
                 document.documentElement.setAttribute('data-theme', savedTheme);
 
                 var rawSession = localStorage.getItem('MSOT_LEARN_AUTH_SESSION_V1');
@@ -56,7 +61,7 @@
 <body data-user-role="STUDENT">
 
     <!-- ===================================================================
-         CINEMATIC INTRO VIDEO OVERLAY (ASUR GUARDIAN PROTOCOL CINEMA)
+         CINEMATIC GUARDIAN PROTOCOL INTRO — SACRED MASK SPLIT & SANSKRIT REVEAL
          =================================================================== -->
     <div id="msotIntroOverlay" class="msot-intro-overlay" role="dialog" aria-modal="true" aria-label="Mirai Academy Cinematic Intro">
         <!-- SVG Filter for Hyper-Realistic Optical Heat Distortion -->
@@ -71,13 +76,14 @@
             </defs>
         </svg>
 
-        <!-- Ambient Fiery Mask Blur Atmosphere (Synced Real-time Video Glow) -->
+        <!-- Ambient Fiery Blur Atmosphere -->
         <div class="msot-intro-ambient-bg">
             <video id="msotIntroAmbientVideo" class="msot-ambient-video-layer" playsinline muted loop preload="auto" aria-hidden="true">
                 <source src="assets/videos/asur.mp4" type="video/mp4">
                 <source src="assets/videos/asurbr.mp4" type="video/mp4">
             </video>
         </div>
+        <div class="msot-intro-crimson-backdrop"></div>
         <div class="msot-intro-scanlines"></div>
         <div class="msot-intro-vignette"></div>
         <div class="msot-intro-cinematic-glow"></div>
@@ -85,9 +91,9 @@
         <!-- Top HUD Controls Bar -->
         <div class="msot-intro-hud-top">
             <div class="msot-intro-hud-brand">
-                <img src="assets/images/asur.mp4.png" alt="Guardian Demon Mask" class="msot-intro-hud-mask-icon" onerror="this.src='assets/images/intro_mask.jpg'">
+                <img src="assets/images/intro_mask.jpg" alt="Guardian Mask" class="msot-intro-hud-mask-icon" onerror="this.src='assets/images/asur.mp4.png'">
                 <span class="msot-intro-hud-title">MIRAI ACADEMY</span>
-                <span class="msot-intro-hud-sub">ASUR PROTOCOL</span>
+                <span class="msot-intro-hud-sub">GUARDIAN PROTOCOL</span>
             </div>
             <div class="msot-intro-hud-actions">
                 <button type="button" id="msotIntroUnmuteBtn" class="msot-intro-hud-btn btn-unmute" onclick="window.msotIntroVideo && window.msotIntroVideo.toggleMute()">
@@ -104,52 +110,93 @@
             <!-- Volumetric Light Rays Radiating from Behind Mask -->
             <div class="msot-volumetric-rays" id="msotVolumetricRays"></div>
 
-            <!-- Atmospheric Floating Fire Embers Canvas Layer -->
+            <!-- Atmospheric Floating Fire Embers & Smoke Canvas Layer -->
             <canvas id="msotMaskCanvas" class="msot-mask-canvas-layer"></canvas>
 
-            <!-- LAYER 10: Fiery Orange Website Name & Dashboard Button (Underneath the Slider Gate) -->
-            <div class="msot-fire-text-reveal" id="msotFireTextReveal">
-                <div class="msot-fire-text-aura"></div>
-                <h1 class="msot-fire-website-title">MIRAI SCHOOL OF TECHNOLOGY</h1>
-                <button type="button" class="msot-enter-action-btn" onclick="window.msotIntroVideo && window.msotIntroVideo.enterDashboardWithTransition()">
-                    <span>ENTER CADET DASHBOARD ➔</span>
-                </button>
+            <!-- INNER SANCTUM WORLD: Sanskrit & Brand Reveals (Emerges Behind Parting Mask) -->
+            <div class="msot-inner-sanctum" id="msotInnerSanctum">
+                <!-- Shockwave Ring Effect (Fires at split instant) -->
+                <div class="msot-shockwave-ring" id="msotShockwaveRing"></div>
+
+                <!-- Fiery Backing Aura -->
+                <div class="msot-sanctum-fire-aura"></div>
+
+                <!-- REVEAL PHASE 1: SANSKRIT TEXT ("अंतः अस्ति प्रारंभ") -->
+                <div class="msot-sanskrit-container" id="msotSanskritContainer">
+                    <div class="msot-sanskrit-radiance"></div>
+                    <div class="msot-sanskrit-inscription" data-text="अंतः अस्ति प्रारंभ">
+                        <span class="sanskrit-char">अं</span><span class="sanskrit-char">तः</span>
+                        <span class="sanskrit-space">&nbsp;</span>
+                        <span class="sanskrit-char">अ</span><span class="sanskrit-char">स्ति</span>
+                        <span class="sanskrit-space">&nbsp;</span>
+                        <span class="sanskrit-char">प्रा</span><span class="sanskrit-char">रं</span><span class="sanskrit-char">भ</span>
+                    </div>
+                    <div class="msot-sanskrit-sub">END IS THE NEW BEGINNING</div>
+                    <div class="msot-sanskrit-ember-line"></div>
+                </div>
+
+                <!-- REVEAL PHASE 2: BRAND NAME & OPEN DASHBOARD BUTTON -->
+                <div class="msot-brand-container" id="msotBrandContainer">
+                    <div class="msot-brand-molten-aura"></div>
+                    <h1 class="msot-brand-title" data-text="MIRAI SCHOOL OF TECHNOLOGY">
+                        MIRAI SCHOOL OF TECHNOLOGY
+                    </h1>
+                    <div class="msot-brand-light-sweep"></div>
+
+                    <!-- ⚔ OPEN DASHBOARD ⚔ BUTTON -->
+                    <button type="button" class="msot-open-dashboard-btn" id="msotOpenDashboardBtn" onclick="window.msotIntroVideo && window.msotIntroVideo.enterDashboardWithTransition()">
+                        <span class="btn-fire-edge"></span>
+                        <span class="btn-text">⚔ OPEN DASHBOARD ⚔</span>
+                        <span class="btn-ambient-glow"></span>
+                    </button>
+                </div>
             </div>
 
-            <!-- LAYER 25: Central Mask & Slider Gate Layer (ON TOP OF TEXT) -->
-            <div class="msot-intro-mask-container" id="msotMaskContainer">
-                <!-- Video wrap playing slow-mo video during buildup -->
-                <div class="msot-mask-video-wrap" id="msotMaskVideoWrap">
-                    <video id="msotHeroVideo" class="msot-hero-mask-video" playsinline muted preload="auto" poster="assets/images/asur.mp4.png">
+            <!-- MASK VIEWPORT & SPLIT MECHANISM (Foreground) -->
+            <div class="msot-mask-viewport" id="msotMaskViewport">
+                <!-- Center Fissure Cracks Overlay (Ignites before splitting) -->
+                <div class="msot-crack-overlay" id="msotCrackOverlay">
+                    <div class="msot-crack-laser-line" id="msotCrackLaserLine"></div>
+                    <div class="msot-crack-branch left"></div>
+                    <div class="msot-crack-branch right"></div>
+                    <div class="msot-crack-burst-sparks"></div>
+                </div>
+
+                <!-- Split Left Mask Half -->
+                <div class="msot-mask-half left" id="msotMaskLeft">
+                    <div class="msot-mask-half-inner">
+                        <img src="assets/images/intro_mask.jpg" alt="Guardian Mask Left" class="msot-split-mask-img">
+                    </div>
+                    <div class="msot-split-molten-edge edge-left"></div>
+                </div>
+
+                <!-- Split Right Mask Half -->
+                <div class="msot-mask-half right" id="msotMaskRight">
+                    <div class="msot-mask-half-inner">
+                        <img src="assets/images/intro_mask.jpg" alt="Guardian Mask Right" class="msot-split-mask-img">
+                    </div>
+                    <div class="msot-split-molten-edge edge-right"></div>
+                </div>
+
+                <!-- Full Solid Mask (Plays slow-mo video approach 0-5s before crack) -->
+                <div class="msot-mask-solid" id="msotMaskSolid">
+                    <!-- Dynamic Backlight Corona Halo -->
+                    <div class="msot-mask-backlight-corona"></div>
+
+                    <!-- Hero Mask Video Layer -->
+                    <video id="msotHeroVideo" class="msot-hero-mask-video" playsinline muted preload="auto" poster="assets/images/intro_mask.jpg">
                         <source src="assets/videos/asur.mp4" type="video/mp4">
                         <source src="assets/videos/asurbr.mp4" type="video/mp4">
                     </video>
-                </div>
+                    <img src="assets/images/intro_mask.jpg" alt="Guardian Mask" class="msot-mask-fallback-img">
 
-                <!-- The Slider Gate (Top layer: splits from middle and slides left & right) -->
-                <div class="msot-mask-slider-gate" id="msotMaskGateDoors">
-                    <!-- Center Laser Crevice / Splitting Energy Seam -->
-                    <div class="msot-slider-center-seam" id="msotCenterCrevice"></div>
+                    <!-- Anamorphic Specular Sweep Beam -->
+                    <div class="msot-mask-specular-sweep"></div>
 
-                    <!-- Left Slider Door (Slides to the Left) -->
-                    <div class="msot-slider-door left" id="msotGateLeft">
-                        <div class="msot-slider-door-inner">
-                            <img src="assets/images/asur.mp4.png" alt="Mask Left Gate Door" class="msot-slider-mask-img">
-                        </div>
-                        <div class="msot-slider-door-edge edge-right"></div>
-                    </div>
-
-                    <!-- Right Slider Door (Slides to the Right) -->
-                    <div class="msot-slider-door right" id="msotGateRight">
-                        <div class="msot-slider-door-inner">
-                            <img src="assets/images/asur.mp4.png" alt="Mask Right Gate Door" class="msot-slider-mask-img">
-                        </div>
-                        <div class="msot-slider-door-edge edge-left"></div>
-                    </div>
                 </div>
             </div>
 
-            <!-- Dark Side Intro BGM Audio Track -->
+            <!-- Dark Ambient Intro BGM Audio Track -->
             <audio id="msotIntroBgmAudio" src="assets/audio/asur_dark_side_intro_bgm.mp3" preload="auto" loop></audio>
         </div>
 
@@ -157,7 +204,7 @@
         <div id="msotTransitionPortal" class="msot-transition-portal-overlay">
             <div class="msot-portal-content">
                 <div class="msot-portal-crest-glow">
-                    <img src="assets/images/asur.mp4.png" alt="Guardian Mask" onerror="this.src='assets/images/intro_mask.jpg'">
+                    <img src="assets/images/intro_mask.jpg" alt="Guardian Mask" onerror="this.src='assets/images/asur.mp4.png'">
                 </div>
                 <span class="msot-portal-text-kicker">⛩️ GUARDIAN PROTOCOL VERIFIED</span>
                 <h3 class="msot-portal-text-main">ENTERING CADET DASHBOARD</h3>
@@ -181,10 +228,12 @@
 
             <!-- Brand Crest -->
             <div class="auth-brand">
-                <div class="auth-crest">⛩️</div>
+                <div class="auth-crest" style="overflow:hidden;padding:0;background:#000;border:1.5px solid rgba(244,63,94,0.6);border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
+                    <img src="assets/images/nuhk_x_logo.png" alt="NUHK X Logo" style="width:100%;height:100%;object-fit:cover;display:block;">
+                </div>
                 <div>
-                    <div class="auth-kicker">未来工科大学 • NEO-TOKYO</div>
-                    <h1>MSOT <span>LEARN</span></h1>
+                    <div class="auth-kicker">FOUR MINDS. ONE VISION. ZERO LIMITS.</div>
+                    <h1>NUHK <span>X</span></h1>
                 </div>
             </div>
 
@@ -194,85 +243,19 @@
                 <button type="button" class="auth-tab-btn" id="tabSignUpBtn" role="tab" aria-selected="false">REGISTER CADET</button>
             </div>
 
-            <!-- Pane 1: Sign In -->
+            <!-- Pane 1: Sign In (Unified Single Sign-In) -->
             <div id="signInPane" class="auth-pane">
-                <!-- State A: Role Portal Selector -->
-                <div id="rolePortalSelector" class="role-portals-container">
-                    <div class="auth-heading">
-                        <span class="auth-tag">THREE-ROLE ACADEMY GATEWAY</span>
-                        <h2>Select Login Portal</h2>
-                        <p>Choose your authorized academic role to access your dedicated terminal, dashboard, and permissions.</p>
-                    </div>
+                <!-- Role portal selector removed; hidden stub retained to avoid script reference issues -->
+                <div id="rolePortalSelector" style="display:none !important;" aria-hidden="true"></div>
 
-                    <div class="role-portals-grid">
-                        <!-- 1. Student Portal -->
-                        <div class="role-portal-card role-student" onclick="window.msotAuth && window.msotAuth.selectLoginRole('STUDENT')">
-                            <div class="rpc-icon-box">
-                                ⚔️
-                                <span class="rpc-kanji-stamp">学</span>
-                            </div>
-                            <div class="rpc-content">
-                                <span class="rpc-tag">CADET ADMISSIONS</span>
-                                <h3 class="rpc-title">Student Login</h3>
-                                <p class="rpc-desc">Solve Daily Trials, participate in Weekend Labs, view streaks, XP wallet & cohort rankings.</p>
-                            </div>
-                            <div class="rpc-arrow">➔</div>
-                        </div>
-
-                        <!-- 2. Faculty Portal -->
-                        <div class="role-portal-card role-faculty" onclick="window.msotAuth && window.msotAuth.selectLoginRole('FACULTY')">
-                            <div class="rpc-icon-box">
-                                🎓
-                                <span class="rpc-kanji-stamp">師</span>
-                            </div>
-                            <div class="rpc-content">
-                                <span class="rpc-tag">PEDAGOGICAL COMMAND</span>
-                                <h3 class="rpc-title">Faculty Login</h3>
-                                <p class="rpc-desc">Manage Daily Trials, publish Weekend Lab sprints, monitor syllabus difficulty radar & log attendance.</p>
-                            </div>
-                            <div class="rpc-arrow">➔</div>
-                        </div>
-
-                        <!-- 3. Admin Portal -->
-                        <div class="role-portal-card role-admin" onclick="window.msotAuth && window.msotAuth.selectLoginRole('ADMIN')">
-                            <div class="rpc-icon-box">
-                                🛡️
-                                <span class="rpc-kanji-stamp">統</span>
-                            </div>
-                            <div class="rpc-content">
-                                <span class="rpc-tag">MASTER ADMINISTRATION</span>
-                                <h3 class="rpc-title">Admin Login</h3>
-                                <p class="rpc-desc">Manage user roles, platform governance, XP economy calibration & full academic control.</p>
-                            </div>
-                            <div class="rpc-arrow">➔</div>
-                        </div>
-                    </div>
-
-                    <div class="auth-switch-footer" style="margin-top:20px;">
-                        New Cadet? <a href="javascript:void(0)" id="switchToSignUpLink">Create a student account here</a>
-                    </div>
+                <div class="auth-heading">
+                    <span class="auth-tag">ACCESS GATEWAY</span>
+                    <h2>Sign In to MSOT Learn</h2>
+                    <p>Enter your institutional email or username to access your academic terminal.</p>
                 </div>
 
-                <!-- State B: Role-Specific Login Form (Initially Hidden until Role Chosen) -->
-                <div id="roleLoginFormContainer" style="display:none;">
-                    <div class="role-active-banner" id="roleActiveBanner">
-                        <div class="rab-left">
-                            <span class="rab-icon" id="rabIcon">⚔️</span>
-                            <div class="rab-title-box">
-                                <span id="rabTag">CADET AUTHENTICATION</span>
-                                <h3 id="rabTitle">Student Login</h3>
-                            </div>
-                        </div>
-                        <button type="button" class="back-to-portals-btn" onclick="window.msotAuth && window.msotAuth.showPortalSelector()">
-                            ← CHANGE ROLE
-                        </button>
-                    </div>
-
-                    <div class="role-notice-pill" id="roleNoticePill">
-                        <span>🔒</span>
-                        <span>Authorized for <strong id="roleNoticeRoleText">STUDENTS</strong> only. Cross-role logins are rejected by server validation.</span>
-                    </div>
-
+                <!-- Unified Login Form Container (Visible by default) -->
+                <div id="roleLoginFormContainer" style="display:block;">
                     <form id="loginForm" class="auth-form" novalidate>
                         <div class="form-group">
                             <label class="auth-label" for="loginEmail" id="loginEmailLabel">GMAIL, COLLEGE EMAIL, OR USERNAME</label>
@@ -301,26 +284,62 @@
                         <div class="auth-success" id="loginSuccess" role="alert"></div>
                     </form>
 
-                    <!-- Role-Specific 1-Click Demo Section (Removed: strictly real logged users only) -->
-                    <div class="demo-access" id="roleDemoSection" style="display:none !important;">
-                        <div class="demo-title" id="roleDemoTitle">⚡ VERIFIED CADET ACCESS</div>
-                        <div class="demo-buttons" id="roleDemoButtons">
-                            <button type="button" id="roleSpecificDemoBtn" style="width:100%;display:none;">⚔️ ACCESS CADET</button>
+                    <!-- Quick 1-Click Pre-Configured Test Credentials Section -->
+                    <div class="demo-access" id="roleDemoSection" style="display:block;margin-top:16px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;">
+                        <div class="demo-title" id="roleDemoTitle" style="font-size:11px;font-weight:700;letter-spacing:1px;color:#94a3b8;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+                            <span>⚡ QUICK 1-CLICK TEST CREDENTIALS</span>
+                            <span style="color:#64748b;font-weight:500;">PASS: msot1234</span>
+                        </div>
+                        <div class="demo-buttons" id="roleDemoButtons" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                            <button type="button" class="demo-pill-btn" data-demo-email="student@msot.edu" style="background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.3);color:#00f0ff;padding:8px 4px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;" title="Login as Student (student@msot.edu)">
+                                <span>⚔️ STUDENT</span>
+                                <span style="font-size:9px;color:#94a3b8;font-weight:400;">student@msot.edu</span>
+                            </button>
+                            <button type="button" class="demo-pill-btn" data-demo-email="faculty@msot.edu" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);color:#c084fc;padding:8px 4px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;" title="Login as Faculty (faculty@msot.edu)">
+                                <span>🎓 FACULTY</span>
+                                <span style="font-size:9px;color:#94a3b8;font-weight:400;">faculty@msot.edu</span>
+                            </button>
+                            <button type="button" class="demo-pill-btn" data-demo-email="admin@msot.edu" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#f87171;padding:8px 4px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;" title="Login as Admin (admin@msot.edu)">
+                                <span>🛡️ ADMIN</span>
+                                <span style="font-size:9px;color:#94a3b8;font-weight:400;">admin@msot.edu</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="auth-switch-footer">
-                        New Cadet? <a href="javascript:void(0)" onclick="window.msotAuth && window.msotAuth.switchAuthTab('signup')">Create an account here</a>
+                    <div class="auth-switch-footer" style="margin-top:20px;">
+                        New Cadet? <a href="javascript:void(0)" id="switchToSignUpLink" onclick="window.msotAuth && window.msotAuth.switchAuthTab('signup')">Create an account here</a>
                     </div>
                 </div>
+
+                <script>
+                    // Inline safety guard: Keep unified single login form visible
+                    (function() {
+                        function enforceUnifiedLogin() {
+                            var fc = document.getElementById('roleLoginFormContainer');
+                            if (fc) fc.style.display = 'block';
+                            var ps = document.getElementById('rolePortalSelector');
+                            if (ps) ps.style.display = 'none';
+                            if (window.msotAuth) {
+                                window.msotAuth.showPortalSelector = function() {
+                                    var f = document.getElementById('roleLoginFormContainer');
+                                    if (f) f.style.display = 'block';
+                                    var p = document.getElementById('rolePortalSelector');
+                                    if (p) p.style.display = 'none';
+                                };
+                            }
+                        }
+                        enforceUnifiedLogin();
+                        document.addEventListener('DOMContentLoaded', enforceUnifiedLogin);
+                    })();
+                </script>
             </div>
 
-            <!-- Pane 2: Sign Up / Cadet Registration -->
+            <!-- Pane 2: Sign Up / Cadet Registration (Simplified Form) -->
             <div id="signUpPane" class="auth-pane" style="display:none;">
                 <div class="auth-heading">
                     <span class="auth-tag">ENROLLMENT PROTOCOL</span>
                     <h2>Create Cadet Account</h2>
-                    <p>Register as a new cadet, select your avatar badge, and initialize your XP wallet.</p>
+                    <p>Register as a new cadet to initialize your academic terminal and XP wallet.</p>
                 </div>
                 <form id="registerForm" class="auth-form" novalidate>
                     <!-- 1. Identity Row: Full Name & Unique Username -->
@@ -341,7 +360,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. Email & Student ID -->
+                    <!-- 2. Academic ID Row: Email & Student ID -->
                     <div class="form-row-2">
                         <div class="form-group">
                             <label class="auth-label" for="regEmail">GMAIL / COLLEGE EMAIL</label>
@@ -359,36 +378,8 @@
                         </div>
                     </div>
 
-                    <!-- 3. Academic Year, Semester & Section -->
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label class="auth-label" for="regYear">ACADEMIC YEAR</label>
-                            <div class="auth-input-wrap">
-                                <span class="auth-input-icon">📅</span>
-                                <select id="regYear" required>
-                                    <option value="1st Year">1st Year (Freshman)</option>
-                                    <option value="2nd Year" selected>2nd Year (Sophomore)</option>
-                                    <option value="3rd Year">3rd Year (Junior)</option>
-                                    <option value="4th Year">4th Year (Senior)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="auth-label" for="regSemester">SEMESTER</label>
-                            <div class="auth-input-wrap">
-                                <span class="auth-input-icon">📚</span>
-                                <select id="regSemester" required>
-                                    <option value="Semester 1">Semester 1</option>
-                                    <option value="Semester 2">Semester 2</option>
-                                    <option value="Semester 3">Semester 3</option>
-                                    <option value="Semester 4" selected>Semester 4</option>
-                                    <option value="Semester 5">Semester 5</option>
-                                    <option value="Semester 6">Semester 6</option>
-                                    <option value="Semester 7">Semester 7</option>
-                                    <option value="Semester 8">Semester 8</option>
-                                </select>
-                            </div>
-                        </div>
+                    <!-- 3. Academic Placement Row: Section & Branch -->
+                    <div class="form-row-2">
                         <div class="form-group">
                             <label class="auth-label" for="regSection">SECTION</label>
                             <div class="auth-input-wrap">
@@ -399,10 +390,6 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- 4. Branch / Engineering Department & Discipline Track -->
-                    <div class="form-row-2">
                         <div class="form-group">
                             <label class="auth-label" for="regBranch">BRANCH / DEPARTMENT</label>
                             <div class="auth-input-wrap">
@@ -417,58 +404,18 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="auth-label" for="regTrack">DISCIPLINE TRACK</label>
-                            <div class="auth-input-wrap">
-                                <span class="auth-input-icon">🎯</span>
-                                <select id="regTrack">
-                                    <option value="C++ Algorithms & DSA" selected>C++ Algorithms & DSA (7 Trials)</option>
-                                    <option value="Web Architecture & HTML">Web Architecture & HTML (10 Trials)</option>
-                                    <option value="Full Spectrum Systems">Full Spectrum Systems</option>
-                                </select>
-                            </div>
+                    </div>
+
+                    <!-- 4. Contact Row: Phone / WhatsApp (Optional) -->
+                    <div class="form-group">
+                        <label class="auth-label" for="regPhone">PHONE / WHATSAPP (OPTIONAL)</label>
+                        <div class="auth-input-wrap">
+                            <span class="auth-input-icon">📱</span>
+                            <input id="regPhone" type="tel" placeholder="e.g. +91 9876543210">
                         </div>
                     </div>
 
-                    <!-- 5. Phone Number & Role -->
-                    <div class="form-row-2">
-                        <div class="form-group">
-                            <label class="auth-label" for="regPhone">PHONE / WHATSAPP (OPTIONAL)</label>
-                            <div class="auth-input-wrap">
-                                <span class="auth-input-icon">📱</span>
-                                <input id="regPhone" type="tel" placeholder="e.g. +91 9876543210">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="auth-label" for="regRole">ACADEMY ROLE</label>
-                            <div class="auth-input-wrap">
-                                <span class="auth-input-icon">🎖️</span>
-                                <select id="regRole">
-                                    <option value="STUDENT" selected>CADET (Student Registration — Verification Required)</option>
-                                    <option value="FACULTY">FACULTY (Instructor Registration — Verification Required)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Avatar Picker -->
-                    <div class="avatar-picker-section">
-                        <div class="avatar-picker-header">
-                            <label class="auth-label">CHOOSE CADET AVATAR CREST</label>
-                            <div class="avatar-preview-badge" id="regAvatarPreview">⚔️</div>
-                        </div>
-                        <div class="avatar-choices-grid">
-                            <button type="button" class="avatar-choice-btn selected" data-avatar="⚔️" title="Swordsman">⚔️</button>
-                            <button type="button" class="avatar-choice-btn" data-avatar="🛡️" title="Guardian">🛡️</button>
-                            <button type="button" class="avatar-choice-btn" data-avatar="🧙‍♂️" title="Archmage">🧙‍♂️</button>
-                            <button type="button" class="avatar-choice-btn" data-avatar="⚡" title="Volt Runner">⚡</button>
-                            <button type="button" class="avatar-choice-btn" data-avatar="🤖" title="Mecha Core">🤖</button>
-                            <button type="button" class="avatar-choice-btn" data-avatar="🌸" title="Cherry Blossom">🌸</button>
-                            <button type="button" class="avatar-choice-btn" data-avatar="🔥" title="Inferno">🔥</button>
-                            <button type="button" class="avatar-choice-btn" data-avatar="🏹" title="Shadow Archer">🏹</button>
-                        </div>
-                    </div>
-
+                    <!-- 5. Credentials Row: Password & Confirm Password -->
                     <div class="form-row-2">
                         <div class="form-group">
                             <label class="auth-label" for="regPassword">PASSWORD</label>
@@ -497,7 +444,7 @@
                 </form>
 
                 <div class="auth-switch-footer">
-                    Already enrolled? <a href="javascript:void(0)" id="switchToSignInLink">Sign in to your account</a>
+                    Already enrolled? <a href="javascript:void(0)" id="switchToSignInLink" onclick="window.msotAuth && window.msotAuth.switchAuthTab('signin')">Sign in to your account</a>
                 </div>
             </div>
 
@@ -533,34 +480,19 @@
         <div id="roleIndicatorBanner" class="role-indicator-banner student" style="display:none"></div>
         <div class="header-inner">
             <div class="brand-block" onclick="window.location.hash='#/gates'">
-                <div class="brand-crest">⛩️</div>
+                <div class="brand-crest">
+                    <img src="assets/images/nuhk_x_logo.png" alt="NUHK X Logo" class="brand-logo-img">
+                </div>
                 <div class="brand-titles">
-                    <span class="brand-kanji">未来工科大学 • NEO-TOKYO</span>
-                    <span class="brand-name">MIRAI <span>TECH</span></span>
+                    <span class="brand-kanji">FOUR MINDS. ONE VISION. ZERO LIMITS.</span>
+                    <span class="brand-name">NUHK <span>X</span></span>
                 </div>
             </div>
 
-            <nav class="main-nav" id="mainNav">
-                <a href="#/dashboard" class="nav-link active" data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); return false;">DASHBOARD</a>
-                <a href="#/beta"      class="nav-link"        data-section="betaSection"      onclick="window.switchSection('betaSection', true); return false;">🤖 BETA AI</a>
-                <a href="#/tracker"   class="nav-link"        data-section="trackerSection"   onclick="window.switchSection('trackerSection', true); return false;">⏱️ STUDY TRACKER</a>
-                <a href="#/rewards"   class="nav-link"        data-section="storeSection"     onclick="window.switchSection('storeSection', true); return false;">🎁 REWARDS</a>
-                <a href="#/arcade"    class="nav-link"        data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); return false;">ARCADE (17)</a>
-                <a href="#/daily"     class="nav-link"        data-section="dailySection"   onclick="window.switchSection('dailySection', true); return false;">DAILY TRIAL</a>
-                <a href="#/assignments" class="nav-link"      data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); return false;">WEEKEND LAB</a>
-                <a href="#/leagues"   class="nav-link"        data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); return false;">LEAGUES</a>
-                <a href="#/battle"    class="nav-link"        data-section="battleSection"  onclick="window.switchSection('battleSection', true); return false;">BATTLE</a>
-                <a href="#/faculty"   class="nav-link"        data-section="facultySection" data-nav-role="FACULTY" style="display: none !important;" onclick="window.switchSection('facultySection', true); return false;">FACULTY</a>
-                <a href="#/admin"     class="nav-link"        data-section="adminSection"   data-nav-role="ADMIN"   style="display: none !important;" onclick="window.switchSection('adminSection', true); return false;">ADMIN</a>
-                <a href="#/about"     class="nav-link"        data-section="aboutSection"   onclick="window.switchSection('aboutSection', true); return false;">ABOUT</a>
-                <a href="#/profile"   class="nav-link"        data-section="profileSection" onclick="window.switchSection('profileSection', true); return false;">PROFILE</a>
-            </nav>
-
             <div class="header-hud">
-                <!-- Theme Preference Switcher (Lavender / Cyber / Slate) -->
+                <!-- Theme Preference Switcher (Cyber / Slate) -->
                 <div class="theme-switch-control" id="headerThemeSwitcher" title="Change Theme Preference">
-                    <button type="button" class="theme-pill-btn active" data-theme="lavender" onclick="window.msotSetTheme('lavender', event)" title="Lavender Light (EdTech)">💜 Lavender</button>
-                    <button type="button" class="theme-pill-btn" data-theme="cyber" onclick="window.msotSetTheme('cyber', event)" title="Cyber Neon Dark">🌙 Cyber</button>
+                    <button type="button" class="theme-pill-btn active" data-theme="cyber" onclick="window.msotSetTheme('cyber', event)" title="Cyber Neon Dark">🌙 Cyber</button>
                     <button type="button" class="theme-pill-btn" data-theme="midnight" onclick="window.msotSetTheme('midnight', event)" title="Midnight Slate Tablet">🌌 Slate</button>
                 </div>
 
@@ -605,39 +537,90 @@
 
                 <button class="logout-btn" id="logoutBtn" title="Sign out of MSOT Learn">⎋ LOGOUT</button>
 
-                <!-- Mobile Hamburger Button -->
-                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu">
+                <!-- Mobile Hamburger Button (Hidden: permanent sidebar is active) -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu" style="display:none !important;">
                     <span></span><span></span><span></span>
                 </button>
             </div>
         </div>
 
-        <!-- Mobile Slide-out Drawer -->
-        <div class="mobile-nav-drawer" id="mobileNavDrawer">
+        <!-- Permanent Left Sidebar Navigation -->
+        <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Main Navigation Sidebar">
             <div class="mobile-nav-header">
-                <div class="mobile-brand-title">⛩️ MSOT ACADEMY</div>
-                <button type="button" class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">✕</button>
+                <div class="mobile-brand-title">
+                    <span class="brand-crest-icon" style="display:flex;align-items:center;justify-content:center;width:52px;min-width:52px;height:36px;margin:0;padding:0;">
+                        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;overflow:hidden;background:#000;border:1px solid rgba(244,63,94,0.5);">
+                            <img src="assets/images/nuhk_x_logo.png" alt="NUHK X Logo" style="width:100%;height:100%;object-fit:cover;display:block;margin:0;padding:0;float:none;">
+                        </span>
+                    </span>
+                    <span class="brand-title-text" style="font-weight:900;letter-spacing:1px;color:#fff;">NUHK <span style="color:#f43f5e;">X</span></span>
+                </div>
             </div>
             <div class="mobile-nav-links">
-                <a href="#/dashboard" class="mobile-nav-link active" data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📊 DASHBOARD</a>
-                <a href="#/beta"      class="mobile-nav-link"        data-section="betaSection"      onclick="window.switchSection('betaSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🤖 BETA AI (STUDENT TUTOR)</a>
-                <a href="#/tracker"   class="mobile-nav-link"        data-section="trackerSection"   onclick="window.switchSection('trackerSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⏱️ STUDY &amp; CODING TRACKER</a>
-                <a href="#/rewards"   class="mobile-nav-link"        data-section="storeSection"     onclick="window.switchSection('storeSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎁 REWARD STORE (SPEND XP)</a>
-                <a href="#/arcade"    class="mobile-nav-link" data-section="arcadeSection"  onclick="window.switchSection('arcadeSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎮 ARCADE (17 GAMES)</a>
-                <a href="#/daily"     class="mobile-nav-link" data-section="dailySection"   onclick="window.switchSection('dailySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⚡ DAILY TRIAL</a>
-                <a href="#/assignments" class="mobile-nav-link" data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">💻 WEEKEND LAB & COMPILER</a>
-                <a href="#/leagues"   class="mobile-nav-link" data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🏆 LEAGUES</a>
-                <a href="#/battle"    class="mobile-nav-link" data-section="battleSection"  onclick="window.switchSection('battleSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">⚔️ BATTLE</a>
-                <a href="#/faculty"   class="mobile-nav-link" data-section="facultySection" data-nav-role="FACULTY" style="display: none !important;" onclick="window.switchSection('facultySection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🎓 FACULTY DASHBOARD</a>
-                <a href="#/admin"     class="mobile-nav-link" data-section="adminSection"   data-nav-role="ADMIN"   style="display: none !important;" onclick="window.switchSection('adminSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">🛡️ ADMIN CONSOLE</a>
-                <a href="#/about"     class="mobile-nav-link" data-section="aboutSection"   onclick="window.switchSection('aboutSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">📖 ABOUT ACADEMY</a>
-                <a href="#/profile"   class="mobile-nav-link" data-section="profileSection" onclick="window.switchSection('profileSection', true); document.getElementById('mobileNavDrawer')?.classList.remove('open'); return false;">👤 CADET PROFILE</a>
+                <a href="#/dashboard" class="mobile-nav-link active" data-section="dashboardSection" onclick="window.switchSection('dashboardSection', true); return false;" title="Dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">DASHBOARD</span>
+                </a>
+                <a href="#/beta" class="mobile-nav-link" data-section="betaSection" onclick="window.switchSection('betaSection', true); return false;" title="Aham Brahmasmi (अहं ब्रह्मास्मि) AI Tutor">
+                    <span class="nav-icon">🕉️</span>
+                    <span class="nav-text">AHAM BRAHMASMI</span>
+                </a>
+                <a href="#/tracker" class="mobile-nav-link" data-section="trackerSection" onclick="window.switchSection('trackerSection', true); return false;" title="Study & Coding Tracker">
+                    <span class="nav-icon">⏱️</span>
+                    <span class="nav-text">TRACKER</span>
+                </a>
+                <a href="#/rewards" class="mobile-nav-link" data-section="storeSection" onclick="window.switchSection('storeSection', true); return false;" title="Reward Store (Spend XP)">
+                    <span class="nav-icon">🎁</span>
+                    <span class="nav-text">REWARDS</span>
+                </a>
+                <a href="#/arcade" class="mobile-nav-link" data-section="arcadeSection" onclick="window.switchSection('arcadeSection', true); return false;" title="Arcade (17 Games)">
+                    <span class="nav-icon">🎮</span>
+                    <span class="nav-text">ARCADE (17)</span>
+                </a>
+                <a href="#/daily" class="mobile-nav-link" data-section="dailySection" onclick="window.switchSection('dailySection', true); return false;" title="Daily Trial">
+                    <span class="nav-icon">⚡</span>
+                    <span class="nav-text">DAILY TRIAL</span>
+                </a>
+                <a href="#/assignments" class="mobile-nav-link" data-section="assignmentsSection" onclick="window.switchSection('assignmentsSection', true); return false;" title="Weekend Lab & Compiler">
+                    <span class="nav-icon">💻</span>
+                    <span class="nav-text">WEEKEND LAB</span>
+                </a>
+                <a href="#/leagues" class="mobile-nav-link" data-section="leaguesSection" onclick="window.switchSection('leaguesSection', true); return false;" title="Cadet Leagues">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-text">LEAGUES</span>
+                </a>
+                <a href="#/battle" class="mobile-nav-link" data-section="battleSection" onclick="window.switchSection('battleSection', true); return false;" title="Battle Arena">
+                    <span class="nav-icon">⚔️</span>
+                    <span class="nav-text">BATTLE</span>
+                </a>
+                <a href="#/faculty" class="mobile-nav-link" data-section="facultySection" data-nav-role="FACULTY" style="display: none !important;" onclick="window.switchSection('facultySection', true); return false;" title="Faculty Dashboard">
+                    <span class="nav-icon">🎓</span>
+                    <span class="nav-text">FACULTY</span>
+                </a>
+                <a href="#/admin" class="mobile-nav-link" data-section="adminSection" data-nav-role="ADMIN" style="display: none !important;" onclick="window.switchSection('adminSection', true); return false;" title="Admin Console">
+                    <span class="nav-icon">🛡️</span>
+                    <span class="nav-text">ADMIN</span>
+                </a>
+                <a href="#/about" class="mobile-nav-link" data-section="aboutSection" onclick="window.switchSection('aboutSection', true); return false;" title="About Academy">
+                    <span class="nav-icon">📖</span>
+                    <span class="nav-text">ABOUT</span>
+                </a>
+                <a href="#/profile" class="mobile-nav-link" data-section="profileSection" onclick="window.switchSection('profileSection', true); return false;" title="Cadet Profile">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">PROFILE</span>
+                </a>
             </div>
-            <div style="padding-top: 15px; border-top: 1px solid rgba(255,42,75,0.25); margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
-                <button type="button" class="how-xp-btn" style="width: 100%; justify-content: center; padding: 10px; font-size: 11px;" onclick="window.msotPlatform && window.msotPlatform.openXPExplainedModal(); document.getElementById('mobileNavDrawer')?.classList.remove('open');">💡 HOW XP INCREASES (GUIDE)</button>
-                <button type="button" class="logout-btn" style="width: 100%; justify-content: center; padding: 10px; font-size: 11px;" onclick="window.msotAuth && window.msotAuth.logout(); document.getElementById('mobileNavDrawer')?.classList.remove('open');">⎋ LOGOUT FROM ACADEMY</button>
+            <div class="mobile-nav-footer">
+                <button type="button" class="how-xp-btn nav-drawer-btn" onclick="window.msotPlatform && window.msotPlatform.openXPExplainedModal();" title="How XP Increases">
+                    <span class="nav-icon">💡</span>
+                    <span class="nav-text">HOW XP INCREASES</span>
+                </button>
+                <button type="button" class="logout-btn nav-drawer-btn" onclick="window.msotAuth && window.msotAuth.logout();" title="Logout">
+                    <span class="nav-icon">⎋</span>
+                    <span class="nav-text">LOGOUT</span>
+                </button>
             </div>
-        </div>
+        </aside>
     </header>
 
     <main class="app-main">
@@ -768,7 +751,6 @@
             </div>
         </section>
 
-
         <!-- ===================================================================
              2. GAMES ARCADE HUB (ALL 17 GAMES & 170 QUESTIONS)
              =================================================================== -->
@@ -836,6 +818,14 @@
                         <span class="rule-chip">📋 Copy-Paste Disabled</span>
                     </div>
                     <div class="dq-cta mt-16">
+                        <!-- Language Selector for Daily Trial -->
+                        <div class="dq-lang-selector-box" style="margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                            <label for="dailyQuizLangSelect" style="font-size: 12px; font-weight: 800; color: #00f0ff; letter-spacing: 1px;">⚡ TRIAL LANGUAGE:</label>
+                            <select id="dailyQuizLangSelect" style="background: rgba(18, 22, 38, 0.95); color: #ffffff; border: 1.5px solid #00f0ff; border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);">
+                                <option value="cpp" selected>⚡ C++ Data Structures &amp; Algorithms</option>
+                                <option value="html">🌐 Web Development (HTML)</option>
+                            </select>
+                        </div>
                         <button class="primary-btn pulse-glow" onclick="window.msotPlatform ? window.msotPlatform.startDailyQuiz() : (window.miraiGame && window.miraiGame.openGame('game_cpp_1'))">
                             BEGIN 5-QUESTION SPEED TRIAL ➔
                         </button>
@@ -1042,20 +1032,26 @@
         </section>
 
         <!-- ===================================================================
-             10. BETA AI LEARNING COMPANION (CHATGPT-STYLE B.TECH TUTOR)
+             10. AHAM BRAHMASMI (अहं ब्रह्मास्मि 🕉️) AI LEARNING COMPANION
              =================================================================== -->
         <section class="app-section" id="betaSection" style="display: none;">
             <div class="content-container">
                 <div class="beta-container">
+                    <!-- Mobile Backdrop Overlay -->
+                    <div class="beta-sidebar-backdrop" id="betaSidebarBackdrop" onclick="window.msotBeta && window.msotBeta.closeSidebar()"></div>
+
                     <!-- Left Sidebar (Conversations History & Student Dossier) -->
                     <aside class="beta-sidebar" id="betaSidebar">
                         <div class="beta-sidebar-header">
                             <div class="beta-brand-row">
                                 <div class="beta-brand-title">
-                                    <span class="beta-brand-icon">🤖</span>
-                                    <span>BETA AI</span>
+                                    <span class="beta-brand-icon">🕉️</span>
+                                    <span>AHAM BRAHMASMI</span>
                                 </div>
-                                <span class="beta-brand-badge">ACADEMY TUTOR</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="beta-brand-badge">ACADEMY TUTOR</span>
+                                    <button type="button" class="beta-sidebar-close-btn" id="betaSidebarCloseBtn" onclick="window.msotBeta && window.msotBeta.closeSidebar()" aria-label="Close sidebar">✕</button>
+                                </div>
                             </div>
 
                             <button type="button" class="btn-new-chat" id="betaNewChatBtn" onclick="window.msotBeta && window.msotBeta.createNewChat()">
@@ -1097,10 +1093,16 @@
                                     <span>New Learning Session</span>
                                 </div>
                             </div>
-                            <div class="beta-topbar-right">
+                            <div class="beta-topbar-right" style="display: flex; align-items: center; gap: 10px;">
+                                <button type="button" class="beta-api-key-btn" onclick="window.msotBeta && window.msotBeta.openApiKeyModal()" title="Gemini API Key Settings">
+                                    <span class="beta-api-key-icon">⚡</span>
+                                    <span class="beta-api-key-label" id="betaApiBtnLabel">Gemini API</span>
+                                    <span class="beta-api-key-dot"></span>
+                                </button>
+                                <span class="beta-brand-badge" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; font-size: 9.5px; padding: 3px 8px; border-radius: 6px;">🌐 HINDI • ENGLISH • HINGLISH</span>
                                 <span class="beta-status-indicator">
                                     <span class="beta-pulse-dot"></span>
-                                    <span>BETA ONLINE</span>
+                                    <span class="beta-status-text">AHAM BRAHMASMI ONLINE</span>
                                 </span>
                             </div>
                         </div>
@@ -1113,11 +1115,11 @@
                         <!-- Bottom Input Bar -->
                         <div class="beta-input-container">
                             <div class="beta-input-box-wrapper">
-                                <textarea id="betaInputTextarea" class="beta-textarea" placeholder="Ask Beta about B.Tech subjects, C++, DSA, math, or your MSOT progress..." rows="1"></textarea>
+                                <textarea id="betaInputTextarea" class="beta-textarea" placeholder="Pucho kuch bhi (Hindi, English, Hinglish)... e.g. 'hii bro', 'recursion samjhao', 'pointers vs references'..." rows="1"></textarea>
                                 <button type="button" class="btn-beta-send" id="betaSendBtn" title="Send message (Enter)">➤</button>
                             </div>
                             <div class="beta-input-disclaimer">
-                                Beta is your AI Learning Companion. Personalized with your authorized cadet dossier. Press Enter to send.
+                                🕉️ Aham Brahmasmi AI Companion — Chat naturally in <strong>Hindi</strong>, <strong>English</strong>, or <strong>Hinglish</strong>. Powered by intelligent adaptive reasoning.
                             </div>
                         </div>
                     </div>
@@ -1849,7 +1851,7 @@
                     <div class="rs-odds-row"><span>Common Tier Rewards (Avatars, Guild Titles)</span><strong style="color:#cbd5e1;">45%</strong></div>
                     <div class="rs-odds-row"><span>Rare Tier Rewards (Neon Frames, Shields, Shinobi)</span><strong style="color:#38bdf8;">30%</strong></div>
                     <div class="rs-odds-row"><span>Epic Tier Rewards (Tokyo Gold, Samurai, Guild Banner)</span><strong style="color:#c084fc;">18%</strong></div>
-                    <div class="rs-odds-row"><span>Legendary Tier Rewards (Asur Ascendant, Kitsune)</span><strong style="color:#fbbf24;">7%</strong></div>
+                    <div class="rs-odds-row"><span>Legendary Tier Rewards (Ancient Ascendant, Kitsune)</span><strong style="color:#fbbf24;">7%</strong></div>
                 </div>
 
                 <button type="button" class="rs-btn-action rs-btn-buy" style="padding:10px 24px;" onclick="window.msotStore && window.msotStore.closeMysteryModal()">
@@ -1864,8 +1866,19 @@
          INTERACTIVE GAME RUNTIME MODAL
          =================================================================== -->
     <div class="game-modal-overlay" id="gameModal" style="display:none !important; pointer-events:none !important;">
+        <!-- Level 1 Dynamic Video Background -->
+        <video id="gameModalBgVideo" class="game-modal-bg-video" autoplay loop muted playsinline preload="auto" style="display: none;">
+            <source src="assets/videos/code(MP4).mp4" type="video/mp4">
+            <source src="assets/videos/code.mp4" type="video/mp4">
+        </video>
         <div class="game-arena-card" id="gameArenaContainer">
-            <!-- Dynamically populated by window.miraiGame -->
+            <!-- Left Pane: All Interactive Game Content (Questions, Options, Details & Actions) -->
+            <div class="game-pane-left" id="gameArenaLeftPane">
+                <!-- Dynamically populated by window.miraiGame -->
+            </div>
+
+            <!-- Right Pane: Empty Placeholder (Reserved for custom animations) -->
+            <div class="game-pane-right" id="gameArenaRightPane"></div>
         </div>
     </div>
 
@@ -2151,10 +2164,10 @@
     <script src="js/auth.js?v=47"></script>
     <script src="js/audio.js?v=47"></script>
     <script src="js/state.js?v=47"></script>
-    <script src="js/games-data.js?v=47"></script>
+    <script src="js/games-data.js?v=55"></script>
     <script src="js/three-viewport.js?v=47"></script>
     <script src="js/gate-canvas.js?v=47"></script>
-    <script src="js/game-engine.js?v=47"></script>
+    <script src="js/game-engine.js?v=55"></script>
     <script src="js/scroll-animations.js?v=47"></script>
     <script src="js/pixel-grid-trail.js?v=47"></script>
     <script src="js/guild.js?v=47"></script>
@@ -2162,9 +2175,12 @@
     <script src="js/battle.js?v=47"></script>
     <script src="js/react-league-module.js?v=47"></script>
     <script src="js/dashboard-service.js?v=47"></script>
+    <script src="js/questions-dsa.js?v=1"></script>
+    <script src="js/questions-html.js?v=1"></script>
+    <script src="js/daily-trial.js?v=1"></script>
     <script src="js/platform.js?v=47"></script>
-    <script src="js/intro-video.js?v=47"></script>
-    <script src="js/beta.js?v=48"></script>
+    <script src="js/intro-video.js?v=58"></script>
+    <script src="js/beta.js?v=50"></script>
     <script src="js/study-tracker.js?v=48"></script>
     <script src="js/reward-store.js?v=48"></script>
     <script src="js/integrity-audit.js?v=48"></script>
@@ -2275,5 +2291,221 @@
         </div>
     </div>
 
+    <!-- ===================================================================
+         FACULTY OVERVIEW: CREATE ASSIGNMENT POPUP MODAL
+         =================================================================== -->
+    <div class="rbac-modal-overlay" id="facultyCreateAssignmentModal" style="display:none !important; pointer-events:none !important;">
+        <div class="rbac-modal-card" style="max-width: 620px;">
+            <div class="rbac-modal-header">
+                <div class="rm-title-box">
+                    <span class="rm-tag">FACULTY CURRICULUM // COURSEWORK DISPATCH</span>
+                    <h3>Create New Assignment</h3>
+                </div>
+                <button type="button" class="rm-close-btn" onclick="closeFacultyModal('facultyCreateAssignmentModal')">✕</button>
+            </div>
+            <form class="rbac-form" onsubmit="handleFacultyCreateAssignmentSubmit(event)">
+                <div class="form-group">
+                    <label class="auth-label">ASSIGNMENT TITLE</label>
+                    <input type="text" id="facAsgTitle" required class="opt-input" placeholder="e.g. Dynamic Heap Allocation Vector Implementation" style="width:100%;">
+                </div>
+                <div class="form-row-2" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group">
+                        <label class="auth-label">SUBJECT / MODULE</label>
+                        <input type="text" id="facAsgSubject" class="opt-input" placeholder="e.g. C++ DSA" value="Data Structures & Algorithms" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label class="auth-label">TARGET SECTION</label>
+                        <select id="facAsgSection" class="opt-input" style="width:100%; background:rgba(10,10,16,0.9); color:#fff;">
+                            <option value="ALL">All Sections (Open Broadcast)</option>
+                            <option value="CSE-A">CSE - Section A</option>
+                            <option value="CSE-B">CSE - Section B</option>
+                            <option value="AIML-A">AIML - Section A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="auth-label">INSTRUCTIONS & REQUIREMENTS</label>
+                    <textarea id="facAsgInstructions" rows="4" required class="rbac-textarea" placeholder="Detail the problem requirements, expected algorithm, deliverables, and test cases..."></textarea>
+                </div>
+                <div class="rm-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:14px;">
+                    <button type="button" class="secondary-btn" onclick="closeFacultyModal('facultyCreateAssignmentModal')">CANCEL</button>
+                    <button type="submit" class="primary-btn">PUBLISH ASSIGNMENT ➔</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         FACULTY OVERVIEW: SEND MESSAGE POPUP MODAL
+         =================================================================== -->
+    <div class="rbac-modal-overlay" id="facultySendMessageModal" style="display:none !important; pointer-events:none !important;">
+        <div class="rbac-modal-card" style="max-width: 580px;">
+            <div class="rbac-modal-header">
+                <div class="rm-title-box">
+                    <span class="rm-tag">COMMUNICATION // DIRECT DISPATCH</span>
+                    <h3>Send Message to Cadet / Section</h3>
+                </div>
+                <button type="button" class="rm-close-btn" onclick="closeFacultyModal('facultySendMessageModal')">✕</button>
+            </div>
+            <form class="rbac-form" onsubmit="handleFacultySendMessageSubmit(event)">
+                <div class="form-row-2" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group">
+                        <label class="auth-label">RECIPIENT (ID / SECTION / EMAIL)</label>
+                        <input type="text" id="facMsgRecipient" required class="opt-input" placeholder="e.g. All Students, CSE-A, or student@msot.edu" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label class="auth-label">SUBJECT</label>
+                        <input type="text" id="facMsgSubject" required class="opt-input" value="Academic Guidance & Feedback" style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="auth-label">MESSAGE CONTENT</label>
+                    <textarea id="facMsgContent" rows="5" required class="rbac-textarea" placeholder="Type your message, attendance advisory, or feedback clearly..."></textarea>
+                </div>
+                <div class="rm-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:14px;">
+                    <button type="button" class="secondary-btn" onclick="closeFacultyModal('facultySendMessageModal')">CANCEL</button>
+                    <button type="submit" class="primary-btn">SEND MESSAGE ➔</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // =============================================================================
+        // FACULTY POPUP MODAL CONTROLLER (Create Assignment & Send Message)
+        // =============================================================================
+        function openCreateAssignmentModal() {
+            const modal = document.getElementById('facultyCreateAssignmentModal');
+            if (!modal) return;
+            modal.classList.add('active');
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.style.setProperty('pointer-events', 'auto', 'important');
+            modal.style.setProperty('visibility', 'visible', 'important');
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+        }
+
+        function openSendMessageModal(prefilledRecipient = '') {
+            const modal = document.getElementById('facultySendMessageModal');
+            if (!modal) return;
+            if (prefilledRecipient) {
+                const recipInput = document.getElementById('facMsgRecipient');
+                if (recipInput) recipInput.value = prefilledRecipient;
+            }
+            modal.classList.add('active');
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.style.setProperty('pointer-events', 'auto', 'important');
+            modal.style.setProperty('visibility', 'visible', 'important');
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+        }
+
+        function closeFacultyModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.remove('active');
+            modal.style.setProperty('display', 'none', 'important');
+            modal.style.setProperty('pointer-events', 'none', 'important');
+            modal.style.setProperty('visibility', 'hidden', 'important');
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+        }
+
+        function handleFacultyCreateAssignmentSubmit(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const title = document.getElementById('facAsgTitle')?.value || '';
+            const subject = document.getElementById('facAsgSubject')?.value || 'Data Structures & Algorithms';
+            const section = document.getElementById('facAsgSection')?.value || 'ALL';
+            const instructions = document.getElementById('facAsgInstructions')?.value || '';
+
+            if (window.msotRBAC && typeof window.msotRBAC.createAssignment === 'function') {
+                window.msotRBAC.createAssignment({
+                    title: title,
+                    subject: subject,
+                    topic: 'Module Exercise',
+                    description: instructions,
+                    target_section: section,
+                    is_published: true,
+                    isPublished: true,
+                    xp_reward: 50,
+                    max_marks: 100
+                });
+            }
+
+            if (typeof window.showToast === 'function') {
+                window.showToast('✅ Assignment published and pushed to student portal!');
+            } else {
+                alert('✅ Assignment published successfully!');
+            }
+
+            closeFacultyModal('facultyCreateAssignmentModal');
+
+            if (window.msotPlatform && typeof window.msotPlatform.renderFacultyDashboard === 'function') {
+                window.msotPlatform.renderFacultyDashboard();
+            }
+        }
+
+        function handleFacultySendMessageSubmit(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const recipient = document.getElementById('facMsgRecipient')?.value || 'ALL';
+            const subject = document.getElementById('facMsgSubject')?.value || 'Academic Communication';
+            const content = document.getElementById('facMsgContent')?.value || '';
+
+            if (window.msotRBAC && typeof window.msotRBAC.sendMessage === 'function') {
+                window.msotRBAC.sendMessage({
+                    receiver_email: recipient,
+                    subject: subject,
+                    content: content
+                });
+            }
+
+            if (typeof window.showToast === 'function') {
+                window.showToast('✉️ Message dispatched to recipient inbox!');
+            } else {
+                alert('✉️ Message dispatched successfully!');
+            }
+
+            closeFacultyModal('facultySendMessageModal');
+
+            if (window.msotPlatform && typeof window.msotPlatform.renderFacultyDashboard === 'function') {
+                window.msotPlatform.renderFacultyDashboard();
+            }
+        }
+
+        // Attach backdrop dismiss and expose to window
+        window.openCreateAssignmentModal = openCreateAssignmentModal;
+        window.openSendMessageModal = openSendMessageModal;
+        window.closeFacultyModal = closeFacultyModal;
+        window.handleFacultyCreateAssignmentSubmit = handleFacultyCreateAssignmentSubmit;
+        window.handleFacultySendMessageSubmit = handleFacultySendMessageSubmit;
+        window.openStudentFlashCardModal = function(email) {
+            if (window.msotRBAC && typeof window.msotRBAC.openStudentFlashCardModal === 'function') {
+                window.msotRBAC.openStudentFlashCardModal(email);
+            }
+        };
+        window.closeStudentFlashCardModal = function() {
+            if (window.msotRBAC && typeof window.msotRBAC.closeStudentFlashCardModal === 'function') {
+                window.msotRBAC.closeStudentFlashCardModal();
+            } else {
+                const el = document.getElementById('msotStudentFlashModal');
+                if (el) {
+                    el.classList.remove('active');
+                    el.style.setProperty('display', 'none', 'important');
+                }
+            }
+        };
+
+        ['facultyCreateAssignmentModal', 'facultySendMessageModal'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.onclick = function(e) {
+                    if (e.target === el) closeFacultyModal(id);
+                };
+            }
+        });
+    </script>
 </body>
 </html>

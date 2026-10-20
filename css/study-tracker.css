@@ -1,6 +1,6 @@
 /* ==============================================================================
    MSOT LEARN — STUDY TRACKER & CODING PRACTICE ENGINE STYLES
-   Themes: Cyber (Dark Neon), Lavender (Soft Violet), Midnight Slate
+   Themes: Cyber (Dark Neon), disabled-lavender (Soft Violet), Midnight Slate
    ============================================================================== */
 
 .study-tracker-container {
@@ -958,47 +958,4 @@
     color: #ffffff;
 }
 
-/* Theme overrides */
-[data-theme="lavender"] .study-tracker-container {
-    color: #1e1b4b;
-}
 
-[data-theme="lavender"] .st-stat-card,
-[data-theme="lavender"] .st-card-panel,
-[data-theme="lavender"] .st-timer-form-card,
-[data-theme="lavender"] .st-logs-table-wrap {
-    background: rgba(255, 255, 255, 0.85);
-    border-color: rgba(139, 92, 246, 0.2);
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
-}
-
-[data-theme="lavender"] .st-title,
-[data-theme="lavender"] .st-panel-title,
-[data-theme="lavender"] .st-stat-value {
-    color: #1e1b4b;
-    -webkit-text-fill-color: #1e1b4b;
-}
-
-[data-theme="lavender"] .st-table th {
-    background: rgba(139, 92, 246, 0.08);
-    color: #6b21a8;
-}
-
-[data-theme="lavender"] .st-table td {
-    color: #334155;
-    border-color: rgba(139, 92, 246, 0.1);
-}
-
-[data-theme="lavender"] .st-modal-card {
-    background: #ffffff;
-    color: #1e1b4b;
-    border-color: rgba(139, 92, 246, 0.3);
-}
-
-[data-theme="lavender"] .st-form-input,
-[data-theme="lavender"] .st-form-select,
-[data-theme="lavender"] .st-form-textarea {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    color: #0f172a;
-}

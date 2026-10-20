@@ -1,6 +1,6 @@
 /* ==============================================================================
    MSOT LEARN — REWARD STORE & DIGITAL ASSET VAULT STYLES
-   Themes: Cyber Dark, Lavender EdTech, Midnight Slate
+   Themes: Cyber Dark, disabled-lavender EdTech, Midnight Slate
    ============================================================================== */
 
 .reward-store-container {
@@ -554,30 +554,4 @@
     background: rgba(255, 255, 255, 0.02);
 }
 
-/* Theme overrides */
-[data-theme="lavender"] .reward-store-container {
-    color: #1e1b4b;
-}
 
-[data-theme="lavender"] .rs-item-card,
-[data-theme="lavender"] .rs-ledger-table-wrap,
-[data-theme="lavender"] .rs-hud-card {
-    background: rgba(255, 255, 255, 0.85);
-    border-color: rgba(245, 158, 11, 0.25);
-    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
-}
-
-[data-theme="lavender"] .rs-title,
-[data-theme="lavender"] .rs-item-name {
-    color: #1e1b4b;
-    -webkit-text-fill-color: #1e1b4b;
-}
-
-[data-theme="lavender"] .rs-table th {
-    background: rgba(245, 158, 11, 0.08);
-    color: #92400e;
-}
-
-[data-theme="lavender"] .rs-table td {
-    color: #334155;
-}

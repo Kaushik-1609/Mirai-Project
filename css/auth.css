@@ -597,13 +597,22 @@ html.has-session .app-section {
     pointer-events: none !important;
 }
 
-/* Modals must remain hidden and non-blocking when inactive */
-.rbac-modal-overlay:not(.active),
+/* Modals must remain hidden and non-blocking when inactive or explicitly set to display: none */
+.rbac-modal-overlay[style*="display: none"],
+.rbac-modal-overlay[style*="display:none"],
+.rbac-modal-overlay:not(.active):not([style*="display: flex"]):not([style*="display:flex"]),
 .forgot-modal-overlay:not(.active),
 .game-modal-overlay:not(.active) {
     display: none !important;
     pointer-events: none !important;
     visibility: hidden !important;
+}
+
+.rbac-modal-overlay.active:not([style*="display: none"]):not([style*="display:none"]),
+.rbac-modal-overlay[style*="display: flex"]:not([style*="display: none"]):not([style*="display:none"]) {
+    display: flex !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
 }
 
 /* Forgot Password Modal */

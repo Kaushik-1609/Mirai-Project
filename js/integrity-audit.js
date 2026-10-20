@@ -487,7 +487,18 @@
                 statusEl.className = `ia-status-badge ia-status-${flag.review_status.toLowerCase()}`;
                 statusEl.textContent = flag.review_status.replace('_', ' ');
             }
-            if (studentEl) studentEl.textContent = `${flag.student_name} (${flag.student_id})`;
+            if (studentEl) {
+                const avatarBadge = window.msotPlatform?.renderDynamicAvatar 
+                    ? window.msotPlatform.renderDynamicAvatar(flag.student_email || flag.student_id, { size: 30 })
+                    : '';
+                studentEl.innerHTML = `
+                    <span style="display:inline-flex; align-items:center; gap:8px; vertical-align:middle;">
+                        ${avatarBadge}
+                        <strong style="color:#fff;">${flag.student_name}</strong>
+                        <span style="color:#94a3b8; font-family:var(--font-mono, monospace); font-size:12px;">(${flag.student_id})</span>
+                    </span>
+                `;
+            }
             if (reasonEl) reasonEl.textContent = flag.reason;
             if (expEl) expEl.textContent = flag.expected_behavior;
             if (actEl) actEl.textContent = flag.actual_behavior;

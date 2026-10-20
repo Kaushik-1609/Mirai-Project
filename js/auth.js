@@ -497,7 +497,7 @@
         }
 
         const roleDemoSec = $('roleDemoSection');
-        if (roleDemoSec) roleDemoSec.style.display = 'none';
+        if (roleDemoSec) roleDemoSec.style.display = 'block';
 
         emailInput?.focus();
     }
@@ -511,8 +511,9 @@
         if (loginErr) loginErr.classList.remove('show');
         if (loginSucc) loginSucc.classList.remove('show');
 
-        if (portalSelector) portalSelector.style.display = 'block';
-        if (formContainer) formContainer.style.display = 'none';
+        // ALWAYS keep unified single sign-in form visible and role portal selector hidden
+        if (portalSelector) portalSelector.style.display = 'none';
+        if (formContainer) formContainer.style.display = 'block';
     }
 
     function switchAuthTab(tab) {
@@ -520,6 +521,8 @@
         const signUpBtn = $('tabSignUpBtn');
         const signInPane = $('signInPane');
         const signUpPane = $('signUpPane');
+        const formContainer = $('roleLoginFormContainer');
+        const portalSelector = $('rolePortalSelector');
         const loginErr = $('loginError');
         const regErr = $('registerError');
 
@@ -529,15 +532,22 @@
         if (tab === 'signup') {
             signInBtn?.classList.remove('active');
             signUpBtn?.classList.add('active');
+            signInBtn?.setAttribute('aria-selected', 'false');
+            signUpBtn?.setAttribute('aria-selected', 'true');
             if (signInPane) signInPane.style.display = 'none';
             if (signUpPane) signUpPane.style.display = 'block';
             $('regName')?.focus();
         } else {
             signUpBtn?.classList.remove('active');
             signInBtn?.classList.add('active');
+            signUpBtn?.setAttribute('aria-selected', 'false');
+            signInBtn?.setAttribute('aria-selected', 'true');
             if (signUpPane) signUpPane.style.display = 'none';
             if (signInPane) signInPane.style.display = 'block';
+            if (portalSelector) portalSelector.style.display = 'none';
+            if (formContainer) formContainer.style.display = 'block';
             showPortalSelector();
+            $('loginEmail')?.focus();
         }
     }
 
@@ -609,19 +619,45 @@
             }
         });
 
-        // Admin Notification Bell HUD
-        const adminBell = $('adminNotifBellBtn');
-        const adminBadge = $('adminNotifBadge');
-        if (adminBell) {
+        // Notification Bell HUD (Admin Notifications for Admin; Academic Inbox for Student)
+        const notifBell = $('adminNotifBellBtn');
+        const notifBadge = $('adminNotifBadge');
+        if (notifBell) {
+            notifBell.style.display = 'inline-flex';
             if (curRole === 'ADMIN') {
-                adminBell.style.display = 'inline-flex';
+                notifBell.title = "Admin Notifications & Approvals";
+                notifBell.onclick = () => {
+                    window.switchSection('adminSection', true);
+                    window.msotPlatform && window.msotPlatform.switchAdminSubTab('notifications');
+                };
                 const unreadCount = window.msotRBAC ? window.msotRBAC.getUnreadNotificationsCount() : 0;
-                if (adminBadge) {
-                    adminBadge.textContent = unreadCount;
-                    adminBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+                if (notifBadge) {
+                    notifBadge.textContent = unreadCount;
+                    notifBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+                }
+            } else if (curRole === 'FACULTY') {
+                notifBell.title = "Faculty Academic Messages";
+                notifBell.onclick = () => {
+                    window.switchSection('facultySection', true);
+                    window.msotPlatform && window.msotPlatform.switchFacultySubTab('messages');
+                };
+                const userEmail = (session.email || '').toLowerCase();
+                const msgs = window.msotRBAC ? window.msotRBAC.getMessages(userEmail) : [];
+                if (notifBadge) {
+                    notifBadge.textContent = msgs.length;
+                    notifBadge.style.display = msgs.length > 0 ? 'inline-block' : 'none';
                 }
             } else {
-                adminBell.style.display = 'none';
+                notifBell.title = "Academic Inbox (Messages from Faculty)";
+                notifBell.onclick = () => {
+                    window.msotRBAC && window.msotRBAC.openStudentInboxModal();
+                };
+                const userEmail = (session.email || '').toLowerCase();
+                const msgs = window.msotRBAC ? window.msotRBAC.getMessages(userEmail) : [];
+                if (notifBadge) {
+                    notifBadge.textContent = msgs.length;
+                    notifBadge.style.display = msgs.length > 0 ? 'inline-block' : 'none';
+                }
             }
         }
 
@@ -822,10 +858,74 @@
 
             // 1. Pending Approval Check
             if (approvalStatus === 'PENDING') {
+                const uEmail = u.email.toLowerCase();
+                const reqRole = (meta.requested_role || profileRole || 'STUDENT').toUpperCase();
+
+                // Persistently track account in local accounts store with PENDING status
+                saveAccount({
+                    id: u.id,
+                    email: u.email,
+                    name: rawName,
+                    username: cleanUser,
+                    alias: `@${cleanUser}`,
+                    studentId: meta.studentId || (builtIn ? builtIn.studentId : `MSOT-${cleanUser.toUpperCase()}`),
+                    year: meta.year || '1st Year',
+                    semester: meta.semester || 'Semester 1',
+                    section: normalizeSection(meta.section || 'Section Alpha'),
+                    branch: meta.branch || 'CSE',
+                    phone: meta.phone || '',
+                    role: reqRole,
+                    requested_role: reqRole,
+                    approval_status: 'PENDING',
+                    status: 'PENDING',
+                    registeredAt: u.created_at || new Date().toISOString(),
+                    lastLoginAttempt: new Date().toISOString()
+                });
+
+                // Dispatch persistent Admin Notification for this login attempt
+                const notifData = {
+                    id: 'notif_login_' + Date.now(),
+                    type: 'LOGIN_REQUEST',
+                    notification_type: 'LOGIN_REQUEST',
+                    user_id: u.id,
+                    userId: u.id,
+                    user_name: rawName,
+                    userName: rawName,
+                    user_email: uEmail,
+                    userEmail: uEmail,
+                    requested_role: reqRole,
+                    requestedRole: reqRole,
+                    title: `⚠️ Login Attempt: ${rawName} awaits approval`,
+                    message: `${rawName} (${u.email}) attempted to log in, but their ${reqRole} account is pending Admin approval.`,
+                    read: false,
+                    created_at: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+
+                if (window.msotRBAC && window.msotRBAC.addAdminNotification) {
+                    window.msotRBAC.addAdminNotification(notifData);
+                }
+
+                if (supabaseClient) {
+                    try {
+                        supabaseClient.from('admin_notifications').insert([{
+                            user_id: u.id || null,
+                            user_name: rawName,
+                            user_email: uEmail,
+                            requested_role: reqRole.toLowerCase(),
+                            notification_type: 'LOGIN_REQUEST',
+                            title: `⚠️ Login Attempt: ${rawName} awaits approval`,
+                            message: `${rawName} (${u.email}) attempted to log in, but their account is awaiting Admin authorization.`,
+                            read: false,
+                            created_at: new Date().toISOString()
+                        }]).then(() => {}).catch(err => console.warn("Supabase login notif note:", err.message));
+                    } catch(e) {}
+                }
+
                 showAccountStatusModal('PENDING', {
                     name: rawName,
                     email: u.email,
-                    requestedRole: meta.requested_role || profileRole,
+                    requestedRole: reqRole,
                     status: 'PENDING'
                 });
                 clearSession();
@@ -878,14 +978,10 @@
             session.approval_status = 'APPROVED';
             session.role = profileRole;
 
-            // Strict Role-Based Portal Validation (Prevents cross-role privilege escalation)
+            // Auto-align role with registered account role (Student, Admin, Faculty)
             const actualRole = (session.role || 'STUDENT').toUpperCase();
-            if (currentLoginRole && actualRole !== currentLoginRole) {
-                showLoginError(`⚠️ Role Access Mismatch: Account [${email}] is registered as [${actualRole}]. You cannot sign in through the ${currentLoginRole} Portal. Please click "Change Role" above and log in via the ${actualRole} Login portal.`);
-                if (window.miraiAudio) window.miraiAudio.playError?.();
-                clearSession();
-                return false;
-            }
+            currentLoginRole = actualRole;
+            session.role = actualRole;
 
             setSession(session, remember);
             applySessionToUI(session);
@@ -914,10 +1010,36 @@
             if (isAdminAccount) localApproval = 'APPROVED';
 
             if (localApproval === 'PENDING') {
+                const uEmail = localUser.email.toLowerCase();
+                const reqRole = (localUser.requested_role || userRole || 'STUDENT').toUpperCase();
+
+                const notifData = {
+                    id: 'notif_login_' + Date.now(),
+                    type: 'LOGIN_REQUEST',
+                    notification_type: 'LOGIN_REQUEST',
+                    user_id: localUser.id || `local_${localUser.email}`,
+                    userId: localUser.id || `local_${localUser.email}`,
+                    user_name: rawName,
+                    userName: rawName,
+                    user_email: uEmail,
+                    userEmail: uEmail,
+                    requested_role: reqRole,
+                    requestedRole: reqRole,
+                    title: `⚠️ Login Attempt: ${rawName} awaits approval`,
+                    message: `${rawName} (${localUser.email}) attempted to log in, but their ${reqRole} account is pending Admin approval.`,
+                    read: false,
+                    created_at: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+
+                if (window.msotRBAC && window.msotRBAC.addAdminNotification) {
+                    window.msotRBAC.addAdminNotification(notifData);
+                }
+
                 showAccountStatusModal('PENDING', {
                     name: rawName,
                     email: localUser.email,
-                    requestedRole: localUser.requested_role || userRole,
+                    requestedRole: reqRole,
                     status: 'PENDING'
                 });
                 clearSession();
@@ -973,14 +1095,10 @@
                 return false;
             }
 
-            // Strict Role-Based Portal Validation
+            // Auto-align role with registered account role (Student, Admin, Faculty)
             const actualRole = (session.role || 'STUDENT').toUpperCase();
-            if (currentLoginRole && actualRole !== currentLoginRole) {
-                showLoginError(`⚠️ Role Access Mismatch: Account [${email}] is registered as [${actualRole}]. You cannot sign in through the ${currentLoginRole} Portal. Please click "Change Role" above and log in via the ${actualRole} Login portal.`);
-                if (window.miraiAudio) window.miraiAudio.playError?.();
-                clearSession();
-                return false;
-            }
+            currentLoginRole = actualRole;
+            session.role = actualRole;
 
             setSession(session, remember);
             applySessionToUI(session);
@@ -1497,8 +1615,14 @@
 
         // 1-Click Demo Badges
         document.querySelectorAll('[data-demo-email]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                login(btn.dataset.demoEmail, DEFAULT_PASS, true);
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const email = btn.dataset.demoEmail;
+                const emailInput = $('loginEmail');
+                const passInput = $('loginPassword');
+                if (emailInput) emailInput.value = email;
+                if (passInput) passInput.value = DEFAULT_PASS;
+                login(email, DEFAULT_PASS, true);
             });
         });
 

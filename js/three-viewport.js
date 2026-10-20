@@ -467,6 +467,34 @@ class Mirai3DEngine {
                 ctx.stroke();
 
                 ctx.restore();
+            } else {
+                // Ambient Cyber Neon Flow Grid for other categories
+                ctx.save();
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
+                ctx.lineWidth = 1;
+                const gridSize = 24;
+                for (let x = 0; x <= w; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, h);
+                    ctx.stroke();
+                }
+                for (let y = 0; y <= h; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(w, y);
+                    ctx.stroke();
+                }
+                // Pulsing data packet
+                const px = (t * 80) % (w + 40) - 20;
+                const py = (h / 2) + Math.sin(t * 2) * 20;
+                ctx.fillStyle = '#00f0ff';
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
             }
         };
 

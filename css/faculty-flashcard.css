@@ -573,16 +573,18 @@
     animation: fadeInModal 0.25s ease-out;
 }
 
-.cadet-flash-modal-overlay.active {
-    display: flex !important;
-    pointer-events: auto !important;
-    visibility: visible !important;
-}
-
+.cadet-flash-modal-overlay[style*="display: none"],
+.cadet-flash-modal-overlay[style*="display:none"],
 .cadet-flash-modal-overlay:not(.active) {
     display: none !important;
     pointer-events: none !important;
     visibility: hidden !important;
+}
+
+.cadet-flash-modal-overlay.active:not([style*="display: none"]):not([style*="display:none"]) {
+    display: flex !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
 }
 
 @keyframes fadeInModal {

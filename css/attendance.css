@@ -1,0 +1,1014 @@
+/* ==========================================================================
+   MSOT LEARN — MY ATTENDANCE & SCHEDULE MODULE
+   Exact aesthetic match to Mirai Student Hub (hub.msot.org)
+   Supports Lavender (Light), Cyber (Neon Dark), and Midnight (Slate Dark)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. MY ATTENDANCE PAGE WRAPPER & HEADER
+   -------------------------------------------------------------------------- */
+.edtech-attendance-section {
+    padding-top: 18px;
+    padding-bottom: 60px;
+    min-height: calc(100vh - 120px);
+}
+
+.att-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.att-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.att-page-title {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.att-cohort-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+[data-theme="cyber"] .att-cohort-badge {
+    background: rgba(244, 63, 94, 0.12);
+    color: #fda4af;
+    border-color: rgba(244, 63, 94, 0.3);
+}
+
+[data-theme="midnight"] .att-cohort-badge {
+    background: rgba(56, 189, 248, 0.12);
+    color: #7dd3fc;
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   2. TWO-COLUMN LAYOUT (ATTENDANCE LOG + SUBJECTS ATTENDANCE)
+   -------------------------------------------------------------------------- */
+.att-grid-container {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 980px) {
+    .att-grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.att-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+
+.att-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.att-card-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Dropdown Filter (e.g. Lecture) */
+.att-filter-select-wrap {
+    position: relative;
+}
+
+.att-type-select {
+    appearance: none;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 7px 32px 7px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+[data-theme="cyber"] .att-type-select,
+[data-theme="midnight"] .att-type-select {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+}
+
+.att-type-select:hover,
+.att-type-select:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.att-select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* --------------------------------------------------------------------------
+   3. ATTENDANCE LOG SUMMARY STRIP (DONUT + TOTAL, PRESENT, ABSENT)
+   -------------------------------------------------------------------------- */
+.att-summary-strip {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1px solid #f1f5f9;
+    margin-bottom: 24px;
+}
+
+[data-theme="cyber"] .att-summary-strip {
+    background: rgba(244, 63, 94, 0.04);
+    border-color: rgba(244, 63, 94, 0.12);
+}
+
+[data-theme="midnight"] .att-summary-strip {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.att-donut-box {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+}
+
+.att-donut-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.att-donut-track {
+    fill: none;
+    stroke: #e2e8f0;
+    stroke-width: 10;
+}
+
+[data-theme="cyber"] .att-donut-track,
+[data-theme="midnight"] .att-donut-track {
+    stroke: rgba(255, 255, 255, 0.1);
+}
+
+.att-donut-absent-segment {
+    fill: none;
+    stroke: #f87171;
+    stroke-width: 10;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.att-donut-present-segment {
+    fill: none;
+    stroke: #10b981;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.att-donut-center-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.att-donut-center-pct {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #10b981;
+    line-height: 1;
+}
+
+.att-summary-stats {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    flex-wrap: wrap;
+}
+
+.att-summary-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.att-summary-stat-num {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.att-summary-stat-num.present-val {
+    color: #10b981;
+}
+
+.att-summary-stat-num.absent-val {
+    color: #ef4444;
+}
+
+.att-summary-stat-lbl {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: capitalize;
+}
+
+/* --------------------------------------------------------------------------
+   4. ATTENDANCE LOG LIST ITEMS
+   -------------------------------------------------------------------------- */
+.att-logs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.att-log-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    background: #ffffff;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="cyber"] .att-log-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="midnight"] .att-log-item {
+    background: rgba(30, 41, 59, 0.4);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.att-log-item:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+}
+
+.att-log-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.att-log-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.att-log-subject-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.att-pill-lecture {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+[data-theme="cyber"] .att-pill-lecture {
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.25);
+}
+
+.att-log-timestamp {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.att-log-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+/* Status Badges */
+.att-badge-present {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.att-badge-absent {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.att-raise-concern-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    color: #2563eb;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s ease;
+}
+
+.att-raise-concern-btn:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.att-concern-submitted-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #f59e0b;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+/* View Detailed Log Button */
+.att-view-detailed-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: #2563eb;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 16px 0 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.att-view-detailed-btn:hover {
+    color: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   5. SUBJECTS ATTENDANCE RIGHT COLUMN CARD
+   -------------------------------------------------------------------------- */
+.att-subjects-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.att-subjects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.att-subject-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+[data-theme="cyber"] .att-subject-item,
+[data-theme="midnight"] .att-subject-item {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.att-subject-item:last-child {
+    border-bottom: none;
+    padding-bottom: 4px;
+}
+
+.att-subj-top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.att-subj-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.att-subj-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.att-subj-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.02em;
+}
+
+.att-subj-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.att-subj-pct {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #dc2626;
+    line-height: 1;
+}
+
+.att-subj-pct.high {
+    color: #10b981;
+}
+
+.att-subj-classes {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+/* Subject Progress Bar */
+.att-subj-bar-track {
+    width: 100%;
+    height: 4px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+}
+
+[data-theme="cyber"] .att-subj-bar-track,
+[data-theme="midnight"] .att-subj-bar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.att-subj-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #dc2626;
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.att-view-all-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: #2563eb;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 18px 0 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.att-view-all-btn:hover {
+    color: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+
+/* --------------------------------------------------------------------------
+   7. DASHBOARD TODAY'S SCHEDULE / LECTURES STRIP (MATCHING SCREENSHOT 1)
+   -------------------------------------------------------------------------- */
+.dashboard-today-strip {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+@media (max-width: 980px) {
+    .dashboard-today-strip {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Quick Action Tiles (Schedule, My Courses, Fee Payment, Help) */
+.quick-action-tiles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.quick-action-tile {
+    background: #ffffff;
+    border: 1px solid #ebdff5;
+    border-radius: 16px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.04);
+}
+
+[data-theme="cyber"] .quick-action-tile {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="midnight"] .quick-action-tile {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.quick-action-tile:hover {
+    transform: translateY(-2px);
+    border-color: #7c3aed;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.12);
+}
+
+.quick-tile-icon {
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+}
+
+.quick-tile-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* Today's Lecture Cards Carousel / Grid */
+.today-lectures-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+
+.today-lecture-card {
+    background: #ffffff;
+    border: 1px solid #ebdff5;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.05);
+    transition: all 0.2s ease;
+}
+
+[data-theme="cyber"] .today-lecture-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="midnight"] .today-lecture-card {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.today-lecture-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.today-lecture-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.today-lecture-time {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.today-lecture-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.today-lecture-meta {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------
+   8. DASHBOARD HIGHLIGHTS BANNER (MATCHING SCREENSHOT 1)
+   -------------------------------------------------------------------------- */
+.dashboard-highlights-card {
+    background: #ffffff;
+    border: 1px solid #ebdff5;
+    border-radius: 18px;
+    padding: 20px 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+[data-theme="cyber"] .dashboard-highlights-card,
+[data-theme="midnight"] .dashboard-highlights-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.highlights-banner-wrap {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    height: 180px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #ffffff;
+}
+
+.highlights-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 80%;
+    z-index: 2;
+}
+
+.highlights-tag {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #93c5fd;
+}
+
+.highlights-headline {
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1.2;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.highlights-school {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.highlights-nav-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.highlights-nav-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.highlights-nav-btn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+/* --------------------------------------------------------------------------
+   9. RAISE CONCERN MODAL OVERLAY
+   -------------------------------------------------------------------------- */
+.att-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.att-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.att-modal-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #ebdff5;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 520px;
+    padding: 26px 28px;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.att-modal-overlay.active .att-modal-card {
+    transform: scale(1);
+}
+
+[data-theme="cyber"] .att-modal-card,
+[data-theme="midnight"] .att-modal-card {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.att-modal-close-btn {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    color: #64748b;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.att-modal-close-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.att-modal-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.att-modal-subtitle {
+    font-size: 0.84rem;
+    color: #64748b;
+    margin: 0 0 18px;
+}
+
+.att-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.att-modal-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+    letter-spacing: 0.03em;
+}
+
+[data-theme="cyber"] .att-modal-label,
+[data-theme="midnight"] .att-modal-label {
+    color: #cbd5e1;
+}
+
+.att-modal-input,
+.att-modal-select,
+.att-modal-textarea {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+[data-theme="cyber"] .att-modal-input,
+[data-theme="cyber"] .att-modal-select,
+[data-theme="cyber"] .att-modal-textarea,
+[data-theme="midnight"] .att-modal-input,
+[data-theme="midnight"] .att-modal-select,
+[data-theme="midnight"] .att-modal-textarea {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #f8fafc;
+}
+
+.att-modal-input:focus,
+.att-modal-select:focus,
+.att-modal-textarea:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.att-modal-textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.att-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.att-btn-cancel {
+    padding: 9px 18px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.att-btn-cancel:hover {
+    background: #e2e8f0;
+}
+
+.att-btn-submit {
+    padding: 9px 22px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none;
+    color: #ffffff;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transition: all 0.15s ease;
+}
+
+.att-btn-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+}
+
+/* Sidebar Cadet User Pill */
+.dash-sidebar-user-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(216, 180, 254, 0.6);
+    margin-top: auto;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+[data-theme="cyber"] .dash-sidebar-user-pill,
+[data-theme="midnight"] .dash-sidebar-user-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dash-sidebar-user-pill:hover {
+    background: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.dash-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.dash-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dash-user-name {
+    font-size: 0.86rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-user-branch {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.03em;
+}

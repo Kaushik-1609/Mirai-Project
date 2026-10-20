@@ -17,7 +17,7 @@
     const INVENTORY_KEY_PREFIX = 'MSOT_STUDY_INVENTORY_';
     const LEDGER_KEY_PREFIX = 'MSOT_REWARD_TRANSACTIONS_';
 
-    // Seed Catalog containing ONLY the 8 Approved Categories
+    // Seed Catalog containing ONLY the 8 Approved Categories with distinct emoji symbols
     const DEFAULT_CATALOG = [
         // 1. Avatar Store
         {
@@ -27,6 +27,7 @@
             description: 'Disciplined martial coder beginning the sacred path of algorithms.',
             rarity: 'Common',
             xpPrice: 250,
+            symbol: '🥷',
             asset: '🥷',
             previewData: { type: 'avatar', symbol: '🥷' },
             isActive: true,
@@ -40,6 +41,7 @@
             description: 'Stealthy debugger equipped with high-frequency neon katana.',
             rarity: 'Rare',
             xpPrice: 600,
+            symbol: '⚡',
             asset: '⚡',
             previewData: { type: 'avatar', symbol: '⚡' },
             isActive: true,
@@ -53,6 +55,7 @@
             description: 'Master of low-level memory allocation and pointer discipline.',
             rarity: 'Epic',
             xpPrice: 1200,
+            symbol: '⚔️',
             asset: '⚔️',
             previewData: { type: 'avatar', symbol: '⚔️' },
             isActive: true,
@@ -66,6 +69,7 @@
             description: 'Legendary guardian crowned with ancient technological flame.',
             rarity: 'Legendary',
             xpPrice: 2500,
+            symbol: '👹',
             asset: '👹',
             previewData: { type: 'avatar', symbol: '👹' },
             isActive: true,
@@ -81,8 +85,9 @@
             description: 'Pulsing cyan glowing border around your cadet dossier card.',
             rarity: 'Rare',
             xpPrice: 450,
-            asset: 'border-neon',
-            previewData: { slot: 'frame', cssClass: 'frame-neon-pulse', borderColor: '#00f0ff' },
+            symbol: '🖼️',
+            asset: '🖼️',
+            previewData: { slot: 'frame', cssClass: 'frame-neon-pulse', borderColor: '#00f0ff', symbol: '🖼️' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 25
@@ -94,8 +99,9 @@
             description: 'Prestige golden filigree forged for high-ranking academy scholars.',
             rarity: 'Epic',
             xpPrice: 950,
-            asset: 'border-gold',
-            previewData: { slot: 'frame', cssClass: 'frame-tokyo-gold', borderColor: '#f59e0b' },
+            symbol: '✨',
+            asset: '✨',
+            previewData: { slot: 'frame', cssClass: 'frame-tokyo-gold', borderColor: '#f59e0b', symbol: '✨' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 15
@@ -107,8 +113,9 @@
             description: 'Animated dark synthwave grid backdrop for your profile card.',
             rarity: 'Rare',
             xpPrice: 400,
-            asset: 'bg-matrix',
-            previewData: { slot: 'background', cssClass: 'bg-cyber-matrix' },
+            symbol: '🌌',
+            asset: '🌌',
+            previewData: { slot: 'background', cssClass: 'bg-cyber-matrix', symbol: '🌌' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 20
@@ -120,8 +127,9 @@
             description: 'Chromatic aberration styled nameplate banner badge.',
             rarity: 'Epic',
             xpPrice: 850,
-            asset: 'np-glitch',
-            previewData: { slot: 'nameplate', cssClass: 'nameplate-glitch' },
+            symbol: '🏷️',
+            asset: '🏷️',
+            previewData: { slot: 'nameplate', cssClass: 'nameplate-glitch', symbol: '🏷️' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 15
@@ -133,8 +141,9 @@
             description: 'Subtle fiery sparks hovering over your avatar crest.',
             rarity: 'Legendary',
             xpPrice: 1500,
-            asset: 'fx-ember',
-            previewData: { slot: 'effect', cssClass: 'effect-ember' },
+            symbol: '🔥',
+            asset: '🔥',
+            previewData: { slot: 'effect', cssClass: 'effect-ember', symbol: '🔥' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 8
@@ -148,8 +157,9 @@
             description: 'Consumable ward protecting against up to 100 XP deduction in penalty-enabled matches.',
             rarity: 'Rare',
             xpPrice: 300,
+            symbol: '🛡️',
             asset: '🛡️',
-            previewData: { maxProtection: 100 },
+            previewData: { maxProtection: 100, symbol: '🛡️' },
             isActive: true,
             isRepeatable: true,
             mysteryWeight: 25
@@ -163,8 +173,9 @@
             description: 'Emergency 24hr streak protection when your 3 free monthly freezes are used.',
             rarity: 'Rare',
             xpPrice: 1000,
+            symbol: '🧊',
             asset: '🧊',
-            previewData: { protectionHours: 24 },
+            previewData: { protectionHours: 24, symbol: '🧊' },
             isActive: true,
             isRepeatable: true,
             mysteryWeight: 20
@@ -178,8 +189,9 @@
             description: 'Open to unveil a random reward from the 8 approved categories with transparent odds!',
             rarity: 'Epic',
             xpPrice: 500,
+            symbol: '🎁',
             asset: '🎁',
-            previewData: { dropPool: 'approved_categories' },
+            previewData: { dropPool: 'approved_categories', symbol: '🎁' },
             isActive: true,
             isRepeatable: true,
             mysteryWeight: 0
@@ -193,8 +205,9 @@
             description: '30-day VIP pass featuring exclusive Crown badge, Royal Violet theme, and VIP tag.',
             rarity: 'Epic',
             xpPrice: 1800,
+            symbol: '👑',
             asset: '👑',
-            previewData: { durationDays: 30, badge: '👑 ELITE' },
+            previewData: { durationDays: 30, badge: '👑 ELITE', symbol: '👑' },
             isActive: true,
             isRepeatable: true,
             mysteryWeight: 10
@@ -206,8 +219,9 @@
             description: 'Permanent prestigious academy designation and exclusive theme.',
             rarity: 'Legendary',
             xpPrice: 5000,
+            symbol: '💎',
             asset: '💎',
-            previewData: { durationDays: null, badge: '💎 GRANDMASTER' },
+            previewData: { durationDays: null, badge: '💎 GRANDMASTER', symbol: '💎' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 3
@@ -221,8 +235,9 @@
             description: 'Majestic dragon sigil for your guild headquarters. Equipable by Guild Officers.',
             rarity: 'Epic',
             xpPrice: 1200,
+            symbol: '🐉',
             asset: '🐉',
-            previewData: { target: 'guild_banner' },
+            previewData: { target: 'guild_banner', symbol: '🐉' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 10
@@ -234,8 +249,9 @@
             description: 'Imperial red neon palette styling for your guild hall.',
             rarity: 'Rare',
             xpPrice: 800,
+            symbol: '⛩️',
             asset: '⛩️',
-            previewData: { target: 'guild_theme' },
+            previewData: { target: 'guild_theme', symbol: '⛩️' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 15
@@ -247,8 +263,9 @@
             description: 'Personal profile prefix showing devotion to your guild battalion.',
             rarity: 'Common',
             xpPrice: 350,
+            symbol: '🛡️',
             asset: '🛡️',
-            previewData: { target: 'personal_title' },
+            previewData: { target: 'personal_title', symbol: '🛡️' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 25
@@ -262,8 +279,9 @@
             description: 'Limited seasonal spiritual fox avatar. Preserved forever once acquired!',
             rarity: 'Legendary',
             xpPrice: 1600,
+            symbol: '🦊',
             asset: '🦊',
-            previewData: { season: 'Autumn 2026', activeUntil: '2026-11-30' },
+            previewData: { season: 'Autumn 2026', activeUntil: '2026-11-30', symbol: '🦊' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 5
@@ -275,8 +293,9 @@
             description: 'Limited spectral violet profile border for the academy Autumn Festival.',
             rarity: 'Epic',
             xpPrice: 1100,
+            symbol: '🎃',
             asset: '🎃',
-            previewData: { season: 'Spooky Lab 2026', activeUntil: '2026-11-15' },
+            previewData: { season: 'Spooky Lab 2026', activeUntil: '2026-11-15', symbol: '🎃' },
             isActive: true,
             isRepeatable: false,
             mysteryWeight: 10
@@ -346,11 +365,52 @@
         // DATA LOADING & PERSISTENCE
         // =========================================================================
 
+        getItemSymbol(item) {
+            if (!item) return '🎁';
+            if (item.symbol) return item.symbol;
+            if (item.asset && /\p{Extended_Pictographic}/u.test(item.asset)) return item.asset;
+            if (item.previewData && item.previewData.symbol) return item.previewData.symbol;
+
+            const cat = (item.category || '').toLowerCase();
+            const name = (item.name || '').toLowerCase();
+
+            if (cat === 'avatar') return '🥷';
+            if (cat === 'xp_shield') return '🛡️';
+            if (cat === 'streak_freeze') return '🧊';
+            if (cat === 'mystery_box') return '🎁';
+            if (cat === 'elite_membership') {
+                return name.includes('lifetime') || name.includes('grandmaster') ? '💎' : '👑';
+            }
+            if (cat === 'guild_rewards') {
+                if (name.includes('dragon')) return '🐉';
+                if (name.includes('theme')) return '⛩️';
+                return '🛡️';
+            }
+            if (cat === 'seasonal_collectibles') {
+                if (name.includes('specter') || name.includes('halloween')) return '🎃';
+                if (name.includes('kitsune')) return '🦊';
+                return '🍂';
+            }
+            if (cat === 'profile_customization') {
+                if (name.includes('frame') || name.includes('border')) return '🖼️';
+                if (name.includes('bg') || name.includes('background') || name.includes('grid')) return '🌌';
+                if (name.includes('nameplate')) return '🏷️';
+                if (name.includes('fire') || name.includes('ember') || name.includes('spark')) return '🔥';
+                return '✨';
+            }
+            return '🎁';
+        }
+
         loadCatalog() {
             try {
                 const localCatalog = localStorage.getItem('MSOT_STORE_CATALOG');
                 if (localCatalog) {
-                    this.catalog = JSON.parse(localCatalog);
+                    const parsed = JSON.parse(localCatalog);
+                    // Merge with DEFAULT_CATALOG so updated symbols and emoji assets are always active
+                    this.catalog = DEFAULT_CATALOG.map(def => {
+                        const existing = parsed.find(p => p.id === def.id);
+                        return existing ? { ...def, ...existing, symbol: def.symbol, asset: def.asset } : def;
+                    });
                 } else {
                     this.catalog = DEFAULT_CATALOG;
                     this.saveCatalog();
@@ -1029,6 +1089,8 @@
                 const inv = this.inventory.find(i => i.item_id === item.id);
                 const isOwned = !!inv && (inv.quantity || 1) > 0;
                 const isEquipped = !!inv && !!inv.is_equipped;
+                const symbol = this.getItemSymbol(item);
+                const cleanName = item.name.replace(/^[\p{Extended_Pictographic}\uFE0F\s]+/u, '').trim();
 
                 let actionBtnHtml = `
                     <button type="button" class="rs-btn-action rs-btn-buy" onclick="window.msotStore && window.msotStore.purchaseItem('${item.id}')">
@@ -1058,9 +1120,11 @@
                                 ${isOwned && !item.isRepeatable ? '<span class="rs-owned-pill">Owned</span>' : ''}
                             </div>
                             <div class="rs-item-preview-box">
-                                <span>${item.asset || '🎁'}</span>
+                                <span style="font-size:2.8rem; line-height:1; display:inline-block;">${symbol}</span>
                             </div>
-                            <h4 class="rs-item-name">${this.escapeHtml(item.name)}</h4>
+                            <h4 class="rs-item-name">
+                                <span class="rs-item-title-symbol" style="margin-right:6px;">${symbol}</span>${this.escapeHtml(cleanName)}
+                            </h4>
                             <p class="rs-item-desc">${this.escapeHtml(item.description)}</p>
                         </div>
                         <div class="rs-card-footer">
@@ -1094,7 +1158,7 @@
                 rows.push(`
                     <tr>
                         <td><span style="font-size:1.5rem;">🧊</span></td>
-                        <td><strong>Emergency Streak Freeze Token</strong></td>
+                        <td><strong><span style="margin-right:4px;">🧊</span>Emergency Streak Freeze Token</strong></td>
                         <td><span class="rs-rarity-badge rs-rarity-rare">Rare</span></td>
                         <td>x${this.streakFreezeState.paidCount}</td>
                         <td>
@@ -1109,6 +1173,8 @@
             this.inventory.forEach(inv => {
                 const item = this.catalog.find(i => i.id === inv.item_id);
                 if (!item) return;
+                const symbol = this.getItemSymbol(item);
+                const cleanName = item.name.replace(/^[\p{Extended_Pictographic}\uFE0F\s]+/u, '').trim();
 
                 let actionHtml = '—';
                 if (item.category === 'avatar' || item.category === 'profile_customization') {
@@ -1123,9 +1189,11 @@
 
                 rows.push(`
                     <tr>
-                        <td><span style="font-size:1.5rem;">${item.asset || '🎁'}</span></td>
+                        <td><span style="font-size:1.5rem;">${symbol}</span></td>
                         <td>
-                            <div style="font-weight:700; color:#fff;">${this.escapeHtml(item.name)}</div>
+                            <div style="font-weight:700; color:#fff;">
+                                <span style="margin-right:4px;">${symbol}</span>${this.escapeHtml(cleanName)}
+                            </div>
                             <div style="font-size:0.75rem; color:#94a3b8;">${this.escapeHtml(item.category.replace('_', ' '))}</div>
                         </td>
                         <td><span class="rs-rarity-badge rs-rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></td>

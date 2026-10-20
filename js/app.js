@@ -34,7 +34,11 @@ const ROUTE_MAP = {
     '#/compiler':    { section: 'assignmentsSection', title: 'Weekend Assignments & Compiler • MSOT Learn' },
     '#/guild-war': { section: 'battleSection',   title: 'Battle Arena • MSOT Learn' },
     '#/battle':    { section: 'battleSection',   title: 'Battle Arena • MSOT Learn' },
-    '#/faculty':   { section: 'facultySection',  title: 'Faculty Dashboard • MSOT Learn' },
+    '#/faculty':             { section: 'facultySection',  title: 'Faculty Dashboard • MSOT Learn', facultyTab: 'overview' },
+    '#/faculty/assignments': { section: 'facultySection',  title: 'Faculty Coursework • MSOT Learn', facultyTab: 'assignments' },
+    '#/faculty-assignments': { section: 'facultySection',  title: 'Faculty Coursework • MSOT Learn', facultyTab: 'assignments' },
+    '#/faculty/submissions': { section: 'facultySection',  title: 'Faculty Submissions • MSOT Learn', facultyTab: 'submissions' },
+    '#/faculty/students':    { section: 'facultySection',  title: 'Faculty Student Roster • MSOT Learn', facultyTab: 'students' },
     '#/admin':     { section: 'adminSection',    title: 'Admin XP Economy Rules • MSOT Learn' },
     '#/xp-rules':  { section: 'adminSection',    title: 'Admin XP Economy Rules • MSOT Learn' },
     '#/about':     { section: 'aboutSection',    title: 'About Academy & Pedagogy • MSOT Learn', allowedRoles: ['STUDENT', 'FACULTY', 'ADMIN'] },
@@ -180,7 +184,12 @@ window.switchSection = function (sectionId, updateHash = true) {
             } else if (sectionId === 'dailySection') {
                 p.renderDailyQuizCard?.();
             } else if (sectionId === 'facultySection') {
-                p.renderFacultyDashboard?.();
+                const curRoute = typeof ROUTE_MAP !== 'undefined' ? ROUTE_MAP[(window.location.hash || '').toLowerCase()] : null;
+                if (curRoute && curRoute.facultyTab && typeof p.switchFacultySubTab === 'function') {
+                    p.switchFacultySubTab(curRoute.facultyTab);
+                } else {
+                    p.renderFacultyDashboard?.();
+                }
             } else if (sectionId === 'adminSection') {
                 p.renderAdminRules?.();
             } else if (sectionId === 'profileSection') {
@@ -348,7 +357,7 @@ function handleRoute() {
             return;
         }
     }
-    if (hash === '#/faculty') {
+    if (hash === '#/faculty' || hash.startsWith('#/faculty/') || hash.startsWith('#/faculty-')) {
         if (isTrueAdmin) {
             // Verified Admin can view faculty
         } else if (userRole !== 'FACULTY') {

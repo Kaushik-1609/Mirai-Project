@@ -307,16 +307,7 @@
     gap: 14px;
 }
 
-/* Multi-theme support */
-[data-theme="lavender"] .ia-case-modal-card {
-    background: #181124;
-    border-color: rgba(192, 132, 252, 0.3);
-}
-
-[data-theme="lavender"] .ia-stat-card {
-    background: rgba(30, 20, 48, 0.7);
-    border-color: rgba(192, 132, 252, 0.2);
-}
+/* Multi-theme support (Slate & Cyber) */
 
 [data-theme="midnight"] .ia-case-modal-card {
     background: #090d16;

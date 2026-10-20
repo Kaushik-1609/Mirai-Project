@@ -242,7 +242,35 @@
 
             window.msotRBAC = this;
             setTimeout(() => { this.syncFromSupabase(); }, 500);
-            console.log("⚡ MSOT RBAC & Governance Engine Initialized!");
+
+            // Listen for cross-tab registration and login requests in real time
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'MSOT_ADMIN_NOTIFICATIONS_V1' || e.key === 'MSOT_LEARN_ACCOUNTS_V2') {
+                    this.adminNotifications = this.loadAdminNotifications();
+                    const adminBadge = document.getElementById('adminNotifBadge');
+                    if (adminBadge) {
+                        const cnt = this.getUnreadNotificationsCount();
+                        adminBadge.textContent = cnt;
+                        adminBadge.style.display = cnt > 0 ? 'inline-block' : 'none';
+                    }
+                    if (window.msotPlatform && typeof window.msotPlatform.renderAdminRules === 'function') {
+                        const adminSec = document.getElementById('adminSection');
+                        if (adminSec && adminSec.classList.contains('active')) {
+                            window.msotPlatform.renderAdminRules();
+                        }
+                    }
+                }
+            });
+
+            // Periodic background sync for Admin to capture new logins / registrations
+            setInterval(() => {
+                const curRole = (this.getCurrentRole() || (window.msotAuth && window.msotAuth.session?.role) || '').toUpperCase();
+                if (curRole === 'ADMIN') {
+                    this.syncFromSupabase();
+                }
+            }, 6000);
+
+            console.log("⚡ MSOT RBAC & Governance Engine Initialized with Real-Time Notification Pipeline!");
         }
 
         // ─── Storage Helpers ─────────────────────────────────────────────────
@@ -293,16 +321,43 @@
             } catch (e) {}
         }
 
+        normalizeAssignment(asg) {
+            if (!asg || typeof asg !== 'object') return asg;
+            const isPub = (asg.is_published !== undefined) ? !!asg.is_published : (asg.isPublished !== undefined ? !!asg.isPublished : true);
+            const maxM = asg.max_marks !== undefined ? asg.max_marks : (asg.maxMarks !== undefined ? asg.maxMarks : 100);
+            const xp = asg.xp_reward !== undefined ? asg.xp_reward : (asg.xpReward !== undefined ? asg.xpReward : 50);
+            const cName = asg.creator_name || asg.creatorName || 'Utkarsh Raj';
+            const cEmail = asg.creator_email || asg.creatorEmail || 'faculty@msot.edu';
+
+            asg.is_published = isPub;
+            asg.isPublished = isPub;
+            asg.max_marks = maxM;
+            asg.maxMarks = maxM;
+            asg.xp_reward = xp;
+            asg.xpReward = xp;
+            asg.creator_name = cName;
+            asg.creatorName = cName;
+            asg.creator_email = cEmail;
+            asg.creatorEmail = cEmail;
+            if (!asg.status) {
+                asg.status = isPub ? 'ACTIVE' : 'DRAFT';
+            }
+            return asg;
+        }
+
         loadAssignments() {
             try {
                 const raw = localStorage.getItem(STORAGE_ASSIGNMENTS_KEY);
                 if (raw) {
                     const parsed = JSON.parse(raw);
-                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed.map(a => this.normalizeAssignment(a));
+                    }
                 }
             } catch (e) {}
-            this.saveAssignments(SEED_ASSIGNMENTS);
-            return SEED_ASSIGNMENTS;
+            const seeded = (SEED_ASSIGNMENTS || []).map(a => this.normalizeAssignment(a));
+            this.saveAssignments(seeded);
+            return seeded;
         }
 
         saveAssignments(data) {
@@ -354,6 +409,34 @@
             } catch (e) {}
         }
 
+        normalizeMessage(m) {
+            if (!m || typeof m !== 'object') return m;
+            const sName = m.sender_name || m.senderName || 'Academic Staff';
+            const sEmail = m.sender_email || m.senderEmail || 'faculty@msot.edu';
+            const rName = m.receiver_name || m.receiverName || m.studentName || 'Cadet';
+            const rEmail = m.receiver_email || m.receiverEmail || m.studentEmail || '';
+            const body = m.content || m.body || '';
+            const cAt = m.created_at || m.createdAt || new Date().toISOString();
+
+            m.sender_name = sName;
+            m.senderName = sName;
+            m.sender_email = sEmail;
+            m.senderEmail = sEmail;
+            m.receiver_name = rName;
+            m.receiverName = rName;
+            m.student_name = rName;
+            m.studentName = rName;
+            m.receiver_email = rEmail;
+            m.receiverEmail = rEmail;
+            m.student_email = rEmail;
+            m.studentEmail = rEmail;
+            m.content = body;
+            m.body = body;
+            m.created_at = cAt;
+            m.createdAt = cAt;
+            return m;
+        }
+
         loadMessages() {
             try {
                 const raw = localStorage.getItem(STORAGE_MESSAGES_KEY);
@@ -361,7 +444,7 @@
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed)) {
                         const realMsgs = parsed.filter(m => m && m.id !== 'msg-01' && m.id !== 'msg-02' && m.id !== 'msg-03' && m.id !== 'msg-04');
-                        return realMsgs;
+                        return realMsgs.map(m => this.normalizeMessage(m));
                     }
                 }
             } catch (e) {}
@@ -1166,6 +1249,7 @@
                     profiles.forEach(p => {
                         const em = (p.email || '').toLowerCase().trim();
                         if (em) {
+                            const appStatus = (p.approval_status || accounts[em]?.approval_status || 'PENDING').toUpperCase();
                             accounts[em] = {
                                 ...(accounts[em] || {}),
                                 id: p.id,
@@ -1175,8 +1259,8 @@
                                 studentId: p.student_id || accounts[em]?.studentId,
                                 role: (p.role || accounts[em]?.role || 'STUDENT').toUpperCase(),
                                 requested_role: (p.requested_role || accounts[em]?.requested_role || p.role || 'STUDENT').toUpperCase(),
-                                approval_status: (p.approval_status || accounts[em]?.approval_status || 'PENDING').toUpperCase(),
-                                status: (p.status || accounts[em]?.status || 'ACTIVE').toUpperCase(),
+                                approval_status: appStatus,
+                                status: (p.status || accounts[em]?.status || appStatus || 'ACTIVE').toUpperCase(),
                                 rejection_reason: p.rejection_reason || accounts[em]?.rejection_reason || null,
                                 year: p.year || accounts[em]?.year,
                                 semester: p.semester || accounts[em]?.semester,
@@ -1197,26 +1281,91 @@
                     .from('admin_notifications')
                     .select('*')
                     .order('created_at', { ascending: false });
+
+                const localNotifs = this.loadAdminNotifications();
+                const notifMap = new Map();
+                localNotifs.forEach(n => {
+                    const k = n.id || n.userEmail || n.user_email;
+                    if (k) notifMap.set(k, n);
+                });
+
                 if (notifs && !nErr && notifs.length > 0) {
-                    const localNotifs = this.loadAdminNotifications();
-                    const notifMap = new Map();
-                    localNotifs.forEach(n => notifMap.set(n.id || n.userEmail || n.user_email, n));
                     notifs.forEach(n => {
-                        notifMap.set(n.id, {
+                        const em = (n.user_email || n.userEmail || '').toLowerCase();
+                        const rRole = (n.requested_role || n.requestedRole || 'STUDENT').toUpperCase();
+                        const nType = n.notification_type || n.type || 'REGISTRATION_REQUEST';
+                        const cAt = n.created_at || n.createdAt || new Date().toISOString();
+                        notifMap.set(n.id || em, {
                             id: n.id,
-                            userId: n.user_id,
-                            userName: n.user_name,
-                            userEmail: (n.user_email || '').toLowerCase(),
-                            requestedRole: (n.requested_role || 'STUDENT').toUpperCase(),
-                            type: n.notification_type || 'REGISTRATION_REQUEST',
-                            title: n.title || `New ${(n.requested_role || 'STUDENT').toUpperCase()} registration requires approval.`,
-                            message: n.message,
-                            read: !!n.read,
-                            createdAt: n.created_at
+                            userId: n.user_id || n.userId,
+                            user_id: n.user_id || n.userId,
+                            userName: n.user_name || n.userName || 'New Candidate',
+                            user_name: n.user_name || n.userName || 'New Candidate',
+                            userEmail: em,
+                            user_email: em,
+                            requestedRole: rRole,
+                            requested_role: rRole,
+                            type: nType,
+                            notification_type: nType,
+                            title: n.title || (nType === 'LOGIN_REQUEST' ? `⚠️ Login Attempt: ${n.user_name || em} awaits approval` : `New ${rRole} registration requires approval.`),
+                            message: n.message || `Candidate ${em} requires administrative approval.`,
+                            read: Boolean(n.read),
+                            createdAt: cAt,
+                            created_at: cAt
                         });
                     });
-                    const merged = Array.from(notifMap.values()).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-                    this.saveAdminNotifications(merged);
+                }
+
+                // If any profile in profiles is PENDING but has no notification yet, synthesize one
+                if (profiles && profiles.length > 0) {
+                    profiles.forEach(p => {
+                        const em = (p.email || '').toLowerCase().trim();
+                        const appStatus = (p.approval_status || '').toUpperCase();
+                        if (em && appStatus === 'PENDING') {
+                            const hasNotif = Array.from(notifMap.values()).some(n => (n.userEmail === em || n.user_email === em));
+                            if (!hasNotif) {
+                                const rRole = (p.requested_role || p.role || 'STUDENT').toUpperCase();
+                                const uName = p.display_name || p.full_name || em.split('@')[0];
+                                notifMap.set(`synth_${em}`, {
+                                    id: `notif_prof_${em}`,
+                                    userId: p.id,
+                                    user_id: p.id,
+                                    userName: uName,
+                                    user_name: uName,
+                                    userEmail: em,
+                                    user_email: em,
+                                    requestedRole: rRole,
+                                    requested_role: rRole,
+                                    type: 'REGISTRATION_REQUEST',
+                                    notification_type: 'REGISTRATION_REQUEST',
+                                    title: `New ${rRole} registration requires approval.`,
+                                    message: `${uName} (${em}) has registered as ${rRole} and is awaiting administrative verification.`,
+                                    read: false,
+                                    createdAt: p.created_at || new Date().toISOString(),
+                                    created_at: p.created_at || new Date().toISOString()
+                                });
+                            }
+                        }
+                    });
+                }
+
+                const merged = Array.from(notifMap.values()).sort((a,b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at));
+                this.saveAdminNotifications(merged);
+
+                // Update notification bell badge in HUD
+                const adminBadge = document.getElementById('adminNotifBadge');
+                if (adminBadge) {
+                    const cnt = this.getUnreadNotificationsCount();
+                    adminBadge.textContent = cnt;
+                    adminBadge.style.display = cnt > 0 ? 'inline-block' : 'none';
+                }
+
+                // Live update Admin view if currently open
+                if (window.msotPlatform && typeof window.msotPlatform.renderAdminRules === 'function') {
+                    const adminSec = document.getElementById('adminSection');
+                    if (adminSec && adminSec.classList.contains('active')) {
+                        window.msotPlatform.renderAdminRules();
+                    }
                 }
             } catch (err) {
                 console.warn("Supabase RBAC sync note:", err);
@@ -1243,18 +1392,43 @@
 
         addAdminNotification(notif) {
             const list = this.loadAdminNotifications();
+            const uEmail = (notif.userEmail || notif.user_email || '').toLowerCase();
+            const uName = notif.userName || notif.user_name || 'New Candidate';
+            const reqRole = (notif.requestedRole || notif.requested_role || 'STUDENT').toUpperCase();
+            const nType = notif.type || notif.notification_type || 'REGISTRATION_REQUEST';
+            const cAt = notif.createdAt || notif.created_at || new Date().toISOString();
+            const nId = notif.id || `notif_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+            const nTitle = notif.title || (nType === 'LOGIN_REQUEST' ? `⚠️ Login Attempt: ${uName} awaits approval` : `New ${reqRole} registration requires Admin approval`);
+            const nMsg = notif.message || (nType === 'LOGIN_REQUEST' ? `${uName} (${uEmail}) attempted to log in, but their ${reqRole} account is pending approval.` : `New registration requires Admin approval`);
+
+            // Prevent duplicate unread notifications of the same type for the same email
+            const existingIdx = list.findIndex(n => (n.userEmail === uEmail || n.user_email === uEmail) && !n.read && (n.type === nType || n.notification_type === nType));
+
             const newNotif = {
-                id: notif.id || `notif_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                id: nId,
                 userId: notif.userId || notif.user_id || '',
-                userName: notif.userName || notif.user_name || 'New Candidate',
-                userEmail: (notif.userEmail || notif.user_email || '').toLowerCase(),
-                requestedRole: (notif.requestedRole || notif.requested_role || 'STUDENT').toUpperCase(),
-                type: notif.type || notif.notification_type || 'REGISTRATION_REQUEST',
-                message: notif.message || `New registration requires Admin approval`,
+                user_id: notif.userId || notif.user_id || '',
+                userName: uName,
+                user_name: uName,
+                userEmail: uEmail,
+                user_email: uEmail,
+                requestedRole: reqRole,
+                requested_role: reqRole,
+                type: nType,
+                notification_type: nType,
+                title: nTitle,
+                message: nMsg,
                 read: false,
-                createdAt: notif.createdAt || notif.created_at || new Date().toISOString()
+                createdAt: cAt,
+                created_at: cAt
             };
-            list.unshift(newNotif);
+
+            if (existingIdx !== -1) {
+                list[existingIdx] = newNotif;
+            } else {
+                list.unshift(newNotif);
+            }
+
             this.saveAdminNotifications(list);
 
             if (window.supabaseClient) {
@@ -1265,11 +1439,28 @@
                         user_email: newNotif.userEmail,
                         requested_role: newNotif.requestedRole.toLowerCase(),
                         notification_type: newNotif.type,
+                        title: newNotif.title,
                         message: newNotif.message,
                         read: false,
                         created_at: newNotif.createdAt
                     }]).then(() => {}).catch(err => console.warn("Supabase notification insert note:", err.message));
                 } catch(e) {}
+            }
+
+            // Immediately update notification bell badge in HUD
+            const adminBadge = document.getElementById('adminNotifBadge');
+            if (adminBadge) {
+                const unread = this.getUnreadNotificationsCount();
+                adminBadge.textContent = unread;
+                adminBadge.style.display = unread > 0 ? 'inline-block' : 'none';
+            }
+
+            // If Admin section is currently open, trigger live UI refresh
+            if (window.msotPlatform && typeof window.msotPlatform.renderAdminRules === 'function') {
+                const adminSec = document.getElementById('adminSection');
+                if (adminSec && adminSec.classList.contains('active')) {
+                    window.msotPlatform.renderAdminRules();
+                }
             }
 
             return newNotif;
@@ -1326,21 +1517,22 @@
             const accounts = stored ? JSON.parse(stored) : {};
             const list = Object.values(accounts);
             return list.map(acc => {
-                const reqRole = (acc.requested_role || acc.role || 'STUDENT').toUpperCase();
+                const reqRole = (acc.requested_role || acc.requestedRole || acc.role || 'STUDENT').toUpperCase();
                 const actualRole = (acc.role || reqRole || 'STUDENT').toUpperCase();
-                let appStatus = (acc.approval_status || '').toUpperCase();
+                let appStatus = (acc.approval_status || acc.approvalStatus || '').toUpperCase();
                 if (!appStatus) {
                     if (acc.status === 'PENDING') appStatus = 'PENDING';
                     else if (acc.status === 'INACTIVE') appStatus = 'REJECTED';
                     else if (acc.status === 'SUSPENDED') appStatus = 'SUSPENDED';
                     else appStatus = 'APPROVED';
                 }
+                const regDate = acc.registeredAt || acc.registered_at || acc.created_at || new Date().toISOString();
                 return {
                     id: acc.id || `acc_${acc.email}`,
                     email: acc.email,
                     name: acc.name || acc.email.split('@')[0],
                     username: acc.username || acc.alias || acc.email.split('@')[0],
-                    studentId: acc.studentId || '',
+                    studentId: acc.studentId || acc.student_id || '',
                     year: acc.year || '1st Year',
                     semester: acc.semester || 'Semester 1',
                     section: acc.section || 'Section Alpha',
@@ -1349,19 +1541,25 @@
                     phone: acc.phone || '',
                     avatar: acc.avatar || (actualRole === 'FACULTY' ? '🎓' : '⚔️'),
                     requestedRole: reqRole,
+                    requested_role: reqRole,
                     role: actualRole,
                     approvalStatus: appStatus,
-                    status: (acc.status || 'ACTIVE').toUpperCase(),
-                    rejectionReason: acc.rejection_reason || null,
-                    registeredAt: acc.registeredAt || new Date().toISOString(),
-                    approvedAt: acc.approved_at || null,
-                    approvedBy: acc.approved_by || null
+                    approval_status: appStatus,
+                    status: (acc.status || appStatus || 'ACTIVE').toUpperCase(),
+                    rejectionReason: acc.rejection_reason || acc.rejectionReason || null,
+                    rejection_reason: acc.rejection_reason || acc.rejectionReason || null,
+                    registeredAt: regDate,
+                    registered_at: regDate,
+                    approvedAt: acc.approved_at || acc.approvedAt || null,
+                    approved_at: acc.approved_at || acc.approvedAt || null,
+                    approvedBy: acc.approved_by || acc.approvedBy || null,
+                    approved_by: acc.approved_by || acc.approvedBy || null
                 };
             });
         }
 
         getPendingApprovals() {
-            return this.getAllRegistrations().filter(r => r.approvalStatus === 'PENDING' || r.status === 'PENDING');
+            return this.getAllRegistrations().filter(r => r.approvalStatus === 'PENDING' || r.approval_status === 'PENDING' || r.status === 'PENDING');
         }
 
         async approveRegistration(emailOrId) {
@@ -1586,26 +1784,27 @@
         }
 
         // ─── Assignments Engine (Faculty & Admin) ───────────────────────────
-        getAssignments(sectionFilter = 'ALL', statusFilter = 'ALL') {
-            let list = [...this.assignments];
-            if (sectionFilter !== 'ALL') {
-                list = list.filter(a => a.target_section === 'ALL' || a.target_section === sectionFilter);
+        getAssignments(sectionOrRole = 'ALL', statusFilter = 'ALL') {
+            let list = (this.assignments || []).map(a => this.normalizeAssignment(a));
+            if (sectionOrRole && sectionOrRole !== 'ALL' && sectionOrRole !== 'FACULTY' && sectionOrRole !== 'ADMIN' && sectionOrRole !== 'STUDENT') {
+                list = list.filter(a => a.target_section === 'ALL' || a.target_section === sectionOrRole);
             }
             if (statusFilter === 'published') {
-                list = list.filter(a => a.is_published === true);
+                list = list.filter(a => (a.is_published === true || a.isPublished === true));
             } else if (statusFilter === 'draft') {
-                list = list.filter(a => a.is_published === false);
+                list = list.filter(a => (a.is_published === false || a.isPublished === false));
             }
 
-            if (this.isStudent()) {
-                list = list.filter(a => a.is_published === true);
+            if (this.isStudent() || sectionOrRole === 'STUDENT') {
+                list = list.filter(a => (a.is_published === true || a.isPublished === true));
             }
 
             return list;
         }
 
         getAssignmentById(id) {
-            return this.assignments.find(a => a.id === id) || null;
+            const found = this.assignments.find(a => a.id === id);
+            return found ? this.normalizeAssignment(found) : null;
         }
 
         createAssignment(data) {
@@ -1614,28 +1813,45 @@
                 return false;
             }
             const user = this.getCurrentUser();
+            const isPub = (data.is_published !== undefined) ? !!data.is_published : (data.isPublished !== undefined ? !!data.isPublished : true);
+            const maxM = parseInt(data.max_marks || data.maxMarks, 10) || 100;
+            const xp = parseInt(data.xp_reward || data.xpReward, 10) || 50;
+            const cName = user?.name || 'Utkarsh Raj';
+            const cEmail = user?.email || 'faculty@msot.edu';
+
             const newAsg = {
                 id: `asg_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-                title: data.title.trim(),
+                title: data.title ? data.title.trim() : 'New Assignment',
                 description: data.description ? data.description.trim() : '',
                 subject: data.subject || 'C++ Systems Architecture',
                 topic: data.topic || 'General Algorithms',
                 deadline: data.deadline || new Date(Date.now() + 86400000 * 5).toISOString(),
-                xp_reward: parseInt(data.xp_reward, 10) || 50,
-                max_marks: parseInt(data.max_marks, 10) || 100,
+                xp_reward: xp,
+                xpReward: xp,
+                max_marks: maxM,
+                maxMarks: maxM,
                 target_section: data.target_section || 'ALL',
                 resource_url: data.resource_url ? data.resource_url.trim() : '',
-                is_published: data.is_published !== undefined ? data.is_published : true,
-                status: data.is_published ? 'ACTIVE' : 'DRAFT',
+                is_published: isPub,
+                isPublished: isPub,
+                status: isPub ? 'ACTIVE' : 'DRAFT',
                 creator_id: user?.id || 'usr_faculty',
-                creator_name: user?.name || 'Utkarsh Raj',
-                creator_email: user?.email || 'admin@msot.edu',
+                creator_name: cName,
+                creatorName: cName,
+                creator_email: cEmail,
+                creatorEmail: cEmail,
                 created_at: new Date().toISOString()
             };
 
             const updated = [newAsg, ...this.assignments];
             this.saveAssignments(updated);
             this.logAudit('ASSIGNMENT_CREATED', 'assignment', newAsg.id, { title: newAsg.title, section: newAsg.target_section });
+
+            if (window.miraiAudio && typeof window.miraiAudio.playSuccess === 'function') {
+                window.miraiAudio.playSuccess();
+            } else if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
 
             if (window.supabaseClient) {
                 window.supabaseClient.from('assignments').insert([{
@@ -1662,10 +1878,14 @@
             if (index === -1) return false;
             const existing = this.assignments[index];
 
-            if (!this.isAdmin() && (!this.isFaculty() || existing.creator_email?.toLowerCase() !== this.getCurrentUser()?.email?.toLowerCase())) {
-                alert('⚠️ Permission Denied: You can only edit your own assignments.');
+            if (!this.isAdmin() && !this.isFaculty()) {
+                alert('⚠️ Permission Denied: You do not have permission to edit assignments.');
                 return false;
             }
+
+            const isPub = (data.is_published !== undefined) ? !!data.is_published : (data.isPublished !== undefined ? !!data.isPublished : (existing.is_published !== undefined ? !!existing.is_published : !!existing.isPublished));
+            const maxM = data.max_marks !== undefined ? parseInt(data.max_marks, 10) : (data.maxMarks !== undefined ? parseInt(data.maxMarks, 10) : (existing.max_marks || existing.maxMarks || 100));
+            const xp = data.xp_reward !== undefined ? parseInt(data.xp_reward, 10) : (data.xpReward !== undefined ? parseInt(data.xpReward, 10) : (existing.xp_reward || existing.xpReward || 50));
 
             const updatedAsg = {
                 ...existing,
@@ -1674,25 +1894,39 @@
                 subject: data.subject || existing.subject,
                 topic: data.topic || existing.topic,
                 deadline: data.deadline || existing.deadline,
-                xp_reward: data.xp_reward ? parseInt(data.xp_reward, 10) : existing.xp_reward,
-                max_marks: data.max_marks ? parseInt(data.max_marks, 10) : existing.max_marks,
+                xp_reward: xp,
+                xpReward: xp,
+                max_marks: maxM,
+                maxMarks: maxM,
                 target_section: data.target_section || existing.target_section,
                 resource_url: data.resource_url !== undefined ? data.resource_url.trim() : existing.resource_url,
-                is_published: data.is_published !== undefined ? data.is_published : existing.is_published,
-                status: data.is_published ? 'ACTIVE' : 'DRAFT',
+                is_published: isPub,
+                isPublished: isPub,
+                status: isPub ? 'ACTIVE' : 'DRAFT',
+                creator_name: existing.creator_name || existing.creatorName || 'Utkarsh Raj',
+                creatorName: existing.creator_name || existing.creatorName || 'Utkarsh Raj',
+                creator_email: existing.creator_email || existing.creatorEmail || 'faculty@msot.edu',
+                creatorEmail: existing.creator_email || existing.creatorEmail || 'faculty@msot.edu',
                 updated_at: new Date().toISOString()
             };
 
             this.assignments[index] = updatedAsg;
             this.saveAssignments(this.assignments);
             this.logAudit('ASSIGNMENT_UPDATED', 'assignment', id, { title: updatedAsg.title });
+
+            if (window.miraiAudio && typeof window.miraiAudio.playSuccess === 'function') {
+                window.miraiAudio.playSuccess();
+            } else if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+
             return updatedAsg;
         }
 
         deleteAssignment(id) {
             const asg = this.getAssignmentById(id);
             if (!asg) return false;
-            if (!this.isAdmin() && (!this.isFaculty() || asg.creator_email?.toLowerCase() !== this.getCurrentUser()?.email?.toLowerCase())) {
+            if (!this.isAdmin() && !this.isFaculty()) {
                 alert('⚠️ Permission Denied: You cannot delete this assignment.');
                 return false;
             }
@@ -1702,23 +1936,39 @@
             const filtered = this.assignments.filter(a => a.id !== id);
             this.saveAssignments(filtered);
             this.logAudit('ASSIGNMENT_DELETED', 'assignment', id, { title: asg.title });
+
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+
             return true;
         }
 
         togglePublishAssignment(id) {
             const asg = this.getAssignmentById(id);
             if (!asg) return false;
-            if (!this.isAdmin() && (!this.isFaculty() || asg.creator_email?.toLowerCase() !== this.getCurrentUser()?.email?.toLowerCase())) {
+            if (!this.isAdmin() && !this.isFaculty()) {
                 alert('⚠️ Permission Denied: You cannot modify publishing status for this assignment.');
                 return false;
             }
 
-            asg.is_published = !asg.is_published;
-            asg.status = asg.is_published ? 'ACTIVE' : 'DRAFT';
+            const curStatus = (asg.is_published !== undefined) ? !!asg.is_published : (asg.isPublished !== undefined ? !!asg.isPublished : false);
+            const nextStatus = !curStatus;
+
+            asg.is_published = nextStatus;
+            asg.isPublished = nextStatus;
+            asg.status = nextStatus ? 'ACTIVE' : 'DRAFT';
             asg.updated_at = new Date().toISOString();
             this.saveAssignments(this.assignments);
-            this.logAudit('ASSIGNMENT_PUBLISH_TOGGLED', 'assignment', id, { is_published: asg.is_published });
-            return asg.is_published;
+            this.logAudit('ASSIGNMENT_PUBLISH_TOGGLED', 'assignment', id, { is_published: nextStatus });
+
+            if (window.miraiAudio && typeof window.miraiAudio.playSuccess === 'function') {
+                window.miraiAudio.playSuccess();
+            } else if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+
+            return nextStatus;
         }
 
         // ─── Submissions & Grading Engine ───────────────────────────────────
@@ -1916,7 +2166,7 @@
             const cleanReceiver = receiver_email.toLowerCase();
             const receiverUser = this.getUserByEmail(cleanReceiver);
 
-            const msg = {
+            const msg = this.normalizeMessage({
                 id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
                 sender_id: sender.id || 'usr_sender',
                 sender_name: sender.name || 'Academic Staff',
@@ -1927,12 +2177,13 @@
                 receiver_email: cleanReceiver,
                 subject: subject ? subject.trim() : 'Academic Communication',
                 content: content.trim(),
+                body: content.trim(),
                 related_assignment_id: related_assignment_id || null,
                 related_reason_id: related_reason_id || null,
                 in_reply_to: in_reply_to || null,
                 is_read: false,
                 created_at: new Date().toISOString()
-            };
+            });
 
             const updated = [msg, ...this.messages];
             this.saveMessages(updated);
@@ -2040,8 +2291,8 @@
                         <div class="rm-title-box">
                             <span class="rm-tag">${isAdminView ? 'ADMIN CONTROL // STUDENT DOSSIER' : 'FACULTY ACADEMIC MONITOR // STUDENT DOSSIER'}</span>
                             <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
-                                ${(dossier.customPhotoUrl || dossier.profilePic) && ((dossier.customPhotoUrl || dossier.profilePic).startsWith('data:') || (dossier.customPhotoUrl || dossier.profilePic).startsWith('http') || (dossier.customPhotoUrl || dossier.profilePic).startsWith('/'))
-                                    ? `<img src="${dossier.customPhotoUrl || dossier.profilePic}" alt="${dossier.name}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">`
+                                ${window.msotPlatform?.renderDynamicAvatar 
+                                    ? window.msotPlatform.renderDynamicAvatar(dossier, { size: 42 })
                                     : `<span style="font-size:28px;">${dossier.avatar || '⚔️'}</span>`
                                 }
                                 <div>
@@ -2201,6 +2452,19 @@
             modal.style.display = 'flex';
         }
 
+        closeStudentFlashCardModal() {
+            const modal = document.getElementById('msotStudentFlashModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.setProperty('display', 'none', 'important');
+                modal.style.setProperty('pointer-events', 'none', 'important');
+                modal.style.setProperty('visibility', 'hidden', 'important');
+            }
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+        }
+
         openStudentFlashCardModal(email) {
             const user = this.getUserByEmail(email);
             if (!user) {
@@ -2208,10 +2472,10 @@
                 return;
             }
 
-            const allStudents = this.getStudentUsers();
-            const currentIndex = allStudents.findIndex(s => s.email.toLowerCase() === email.toLowerCase());
+            const allStudents = (this.getStudentUsers && this.getStudentUsers().length > 0) ? this.getStudentUsers() : [user];
+            const currentIndex = allStudents.findIndex(s => (s.email || '').toLowerCase() === (user.email || '').toLowerCase());
             const prevCadet = currentIndex > 0 ? allStudents[currentIndex - 1] : allStudents[allStudents.length - 1];
-            const nextCadet = currentIndex < allStudents.length - 1 ? allStudents[currentIndex + 1] : allStudents[0];
+            const nextCadet = (currentIndex >= 0 && currentIndex < allStudents.length - 1) ? allStudents[currentIndex + 1] : allStudents[0];
 
             const act = this.calculateActivity(user.lastActive);
             const stats = user.stats || { force: 85, agility: 80, endurance: user.attendanceNum || 90, intelligence: 88 };
@@ -2221,19 +2485,29 @@
             if (!modal) {
                 modal = document.createElement('div');
                 modal.id = 'msotStudentFlashModal';
-                modal.className = 'cadet-flash-modal-overlay';
+                modal.className = 'cadet-flash-modal-overlay active';
                 document.body.appendChild(modal);
             }
 
+            modal.onclick = (e) => {
+                if (e.target === modal) this.closeStudentFlashCardModal();
+            };
+
             modal.innerHTML = `
                 <div class="cadet-flash-modal-box">
-                    <button type="button" class="cadet-flash-modal-close" onclick="document.getElementById('msotStudentFlashModal').style.display='none'" title="Close">✕</button>
+                    <button type="button" class="cadet-flash-modal-close" onclick="window.msotRBAC ? window.msotRBAC.closeStudentFlashCardModal() : (document.getElementById('msotStudentFlashModal').style.display='none')" title="Close">✕</button>
                     
                     <div class="cadet-flash-card">
                         <!-- Left Column: Portrait & Ornate Gold Banner -->
                         <div class="flash-portrait-col">
-                            <div class="flash-portrait-frame">
-                                <img src="${user.customPhotoUrl || user.profilePic || user.profile_pic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${user.name}" class="flash-portrait-img" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">
+                            <div class="flash-portrait-frame ${window.msotPlatform?.resolveStudentAvatarAndFrame(user).frameClass || ''}">
+                                ${window.msotPlatform && window.msotPlatform.resolveStudentAvatarAndFrame(user).isImage
+                                    ? `<img src="${window.msotPlatform.resolveStudentAvatarAndFrame(user).photo}" alt="${user.name}" class="flash-portrait-img" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">`
+                                    : (window.msotPlatform
+                                        ? `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:56px;background:rgba(255,255,255,0.05);">${window.msotPlatform.resolveStudentAvatarAndFrame(user).photo}</div>`
+                                        : `<img src="${user.customPhotoUrl || user.profilePic || user.profile_pic || 'assets/images/cadets/cadet_aarav.jpg'}" alt="${user.name}" class="flash-portrait-img" onerror="this.src='assets/images/cadets/cadet_aarav.jpg'">`
+                                    )
+                                }
                             </div>
                             <div class="ornate-gold-nameplate">
                                 <span class="ornate-callsign-text">${user.callsign || user.name.split(' ')[0]}</span>
@@ -2321,10 +2595,10 @@
                             <!-- Action Toolbar -->
                             <div class="flash-actions-bar">
                                 <div class="flash-actions-left">
-                                    <button type="button" class="flash-btn-primary" onclick="document.getElementById('msotStudentFlashModal').style.display='none'; window.msotRBAC.openMessageModal('${user.email}', 'Academic Feedback');">
+                                    <button type="button" class="flash-btn-primary" onclick="(window.msotRBAC ? window.msotRBAC.closeStudentFlashCardModal() : (document.getElementById('msotStudentFlashModal').style.display='none')); window.msotRBAC.openMessageModal('${user.email}', 'Academic Feedback');">
                                         💬 MESSAGE CADET
                                     </button>
-                                    <button type="button" class="flash-btn-secondary" onclick="document.getElementById('msotStudentFlashModal').style.display='none'; window.msotRBAC.openStudentDossierModal('${user.email}');">
+                                    <button type="button" class="flash-btn-secondary" onclick="(window.msotRBAC ? window.msotRBAC.closeStudentFlashCardModal() : (document.getElementById('msotStudentFlashModal').style.display='none')); window.msotRBAC.openStudentDossierModal('${user.email}');">
                                         👤 FULL DOSSIER
                                     </button>
                                 </div>
@@ -2337,10 +2611,13 @@
                 </div>
             `;
 
-            modal.onclick = (e) => {
-                if (e.target === modal) modal.style.display = 'none';
-            };
-            modal.style.display = 'flex';
+            modal.classList.add('active');
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.style.setProperty('pointer-events', 'auto', 'important');
+            modal.style.setProperty('visibility', 'visible', 'important');
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
         }
 
         openFacultyDossierModal(email) {
@@ -2467,6 +2744,10 @@
 
         // ─── Assignment Authoring Modal ─────────────────────────────────────
         openAssignmentModal(assignmentId = null) {
+            if (!assignmentId && typeof window.openCreateAssignmentModal === 'function') {
+                window.openCreateAssignmentModal();
+                return;
+            }
             const isEdit = !!assignmentId;
             const asg = isEdit ? this.getAssignmentById(assignmentId) : {
                 title: '',
@@ -2478,16 +2759,25 @@
                 max_marks: 100,
                 target_section: 'ALL',
                 resource_url: '',
-                is_published: true
+                is_published: true,
+                isPublished: true
             };
 
             let modal = document.getElementById('msotAssignmentModal');
             if (!modal) {
                 modal = document.createElement('div');
                 modal.id = 'msotAssignmentModal';
-                modal.className = 'rbac-modal-overlay';
                 document.body.appendChild(modal);
             }
+
+            modal.className = 'rbac-modal-overlay active';
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+
+            const isPub = asg ? ((asg.is_published !== undefined) ? !!asg.is_published : (asg.isPublished !== undefined ? !!asg.isPublished : true)) : true;
+            const maxMarks = asg ? (asg.max_marks || asg.maxMarks || 100) : 100;
+            const xpReward = asg ? (asg.xp_reward || asg.xpReward || 50) : 50;
+            const deadlineVal = asg && asg.deadline ? asg.deadline.slice(0, 16) : '';
 
             modal.innerHTML = `
                 <div class="rbac-modal-card" style="max-width: 620px;">
@@ -2496,42 +2786,42 @@
                             <span class="rm-tag">FACULTY CURRICULUM // ASSIGNMENT AUTHORING</span>
                             <h3>${isEdit ? 'Edit Assignment' : 'Publish New Academic Assignment'}</h3>
                         </div>
-                        <button type="button" class="rm-close-btn" onclick="document.getElementById('msotAssignmentModal').style.display='none'">✕</button>
+                        <button type="button" class="rm-close-btn" onclick="window.msotRBAC.closeAssignmentModal()">✕</button>
                     </div>
 
                     <form class="rbac-form" onsubmit="window.msotRBAC.handleAssignmentFormSubmit(event, '${assignmentId || ''}')">
                         <div class="form-group">
                             <label class="auth-label">ASSIGNMENT TITLE</label>
-                            <input id="asgTitle" type="text" value="${asg.title || ''}" placeholder="e.g. Dynamic Heap Allocation Vector Implementation" required class="opt-input" style="width:100%;">
+                            <input id="asgTitle" type="text" value="${asg && asg.title ? asg.title.replace(/"/g, '&quot;') : ''}" placeholder="e.g. Dynamic Heap Allocation Vector Implementation" required class="opt-input" style="width:100%;">
                         </div>
 
                         <div class="form-row-2">
                             <div class="form-group">
                                 <label class="auth-label">SUBJECT</label>
-                                <input id="asgSubject" type="text" value="${asg.subject || ''}" placeholder="e.g. C++ DSA" required class="opt-input" style="width:100%;">
+                                <input id="asgSubject" type="text" value="${asg && asg.subject ? asg.subject.replace(/"/g, '&quot;') : ''}" placeholder="e.g. C++ DSA" required class="opt-input" style="width:100%;">
                             </div>
                             <div class="form-group">
                                 <label class="auth-label">SPECIFIC TOPIC</label>
-                                <input id="asgTopic" type="text" value="${asg.topic || ''}" placeholder="e.g. Pointers & Free Store" required class="opt-input" style="width:100%;">
+                                <input id="asgTopic" type="text" value="${asg && asg.topic ? asg.topic.replace(/"/g, '&quot;') : ''}" placeholder="e.g. Pointers & Free Store" required class="opt-input" style="width:100%;">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label class="auth-label">DESCRIPTION & INSTRUCTIONS</label>
-                            <textarea id="asgDesc" rows="4" class="rbac-textarea" placeholder="Detail the problem requirements, expected algorithm, and deliverables..." required>${asg.description || ''}</textarea>
+                            <textarea id="asgDesc" rows="4" class="rbac-textarea" placeholder="Detail the problem requirements, expected algorithm, and deliverables..." required>${asg && asg.description ? asg.description : ''}</textarea>
                         </div>
 
                         <div class="form-row-2">
                             <div class="form-group">
                                 <label class="auth-label">SUBMISSION DEADLINE</label>
-                                <input id="asgDeadline" type="datetime-local" value="${asg.deadline ? asg.deadline.slice(0, 16) : ''}" required class="opt-input" style="width:100%;">
+                                <input id="asgDeadline" type="datetime-local" value="${deadlineVal}" required class="opt-input" style="width:100%;">
                             </div>
                             <div class="form-group">
                                 <label class="auth-label">TARGET SECTION</label>
                                 <select id="asgSection" class="opt-input" style="width:100%;">
-                                    <option value="ALL" ${asg.target_section === 'ALL' ? 'selected' : ''}>All Sections (Alpha & Beta)</option>
-                                    <option value="Section Alpha" ${asg.target_section === 'Section Alpha' ? 'selected' : ''}>Section Alpha Only</option>
-                                    <option value="Section Beta" ${asg.target_section === 'Section Beta' ? 'selected' : ''}>Section Beta Only</option>
+                                    <option value="ALL" ${!asg || asg.target_section === 'ALL' ? 'selected' : ''}>All Sections (Alpha & Beta)</option>
+                                    <option value="Section Alpha" ${asg && (asg.target_section === 'Section Alpha' || asg.targetSection === 'Section Alpha') ? 'selected' : ''}>Section Alpha Only</option>
+                                    <option value="Section Beta" ${asg && (asg.target_section === 'Section Beta' || asg.targetSection === 'Section Beta') ? 'selected' : ''}>Section Beta Only</option>
                                 </select>
                             </div>
                         </div>
@@ -2539,59 +2829,95 @@
                         <div class="form-row-2">
                             <div class="form-group">
                                 <label class="auth-label">MAXIMUM MARKS</label>
-                                <input id="asgMarks" type="number" value="${asg.max_marks || 100}" min="10" max="100" class="opt-input" style="width:100%;">
+                                <input id="asgMarks" type="number" value="${maxMarks}" min="10" max="100" class="opt-input" style="width:100%;">
                             </div>
                             <div class="form-group">
                                 <label class="auth-label">XP REWARD (GAMIFICATION)</label>
-                                <input id="asgXP" type="number" value="${asg.xp_reward || 50}" min="10" max="250" class="opt-input" style="width:100%;">
+                                <input id="asgXP" type="number" value="${xpReward}" min="10" max="250" class="opt-input" style="width:100%;">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label class="auth-label">REFERENCE / RESOURCE URL</label>
-                            <input id="asgResource" type="url" value="${asg.resource_url || ''}" placeholder="e.g. https://en.cppreference.com/..." class="opt-input" style="width:100%;">
+                            <input id="asgResource" type="url" value="${asg && (asg.resource_url || asg.resourceUrl) ? (asg.resource_url || asg.resourceUrl) : ''}" placeholder="e.g. https://en.cppreference.com/..." class="opt-input" style="width:100%;">
                         </div>
 
                         <div class="form-group" style="display:flex; align-items:center; gap:10px; margin-top:4px;">
-                            <input id="asgPublished" type="checkbox" ${asg.is_published ? 'checked' : ''} style="width:18px; height:18px;">
+                            <input id="asgPublished" type="checkbox" ${isPub ? 'checked' : ''} style="width:18px; height:18px;">
                             <label for="asgPublished" style="font-size:13px; font-weight:700; color:#fff; cursor:pointer;">Publish Immediately (Visible to Students)</label>
                         </div>
 
                         <div class="rm-actions">
-                            <button type="button" class="secondary-btn" onclick="document.getElementById('msotAssignmentModal').style.display='none'">CANCEL</button>
+                            <button type="button" class="secondary-btn" onclick="window.msotRBAC.closeAssignmentModal()">CANCEL</button>
                             <button type="submit" class="primary-btn">${isEdit ? 'SAVE CHANGES' : 'PUBLISH ASSIGNMENT ➔'}</button>
                         </div>
                     </form>
                 </div>
             `;
 
-            modal.style.display = 'flex';
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+        }
+
+        closeAssignmentModal() {
+            const modal = document.getElementById('msotAssignmentModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
         }
 
         handleAssignmentFormSubmit(e, id) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
+            const titleEl = document.getElementById('asgTitle');
+            const subjectEl = document.getElementById('asgSubject');
+            const topicEl = document.getElementById('asgTopic');
+            const descEl = document.getElementById('asgDesc');
+            const deadlineEl = document.getElementById('asgDeadline');
+            const sectionEl = document.getElementById('asgSection');
+            const marksEl = document.getElementById('asgMarks');
+            const xpEl = document.getElementById('asgXP');
+            const resourceEl = document.getElementById('asgResource');
+            const publishedEl = document.getElementById('asgPublished');
+
+            const isPub = publishedEl ? !!publishedEl.checked : true;
+            const maxM = parseInt(marksEl?.value, 10) || 100;
+            const xp = parseInt(xpEl?.value, 10) || 50;
+
             const data = {
-                title: document.getElementById('asgTitle').value,
-                subject: document.getElementById('asgSubject').value,
-                topic: document.getElementById('asgTopic').value,
-                description: document.getElementById('asgDesc').value,
-                deadline: new Date(document.getElementById('asgDeadline').value).toISOString(),
-                target_section: document.getElementById('asgSection').value,
-                max_marks: document.getElementById('asgMarks').value,
-                xp_reward: document.getElementById('asgXP').value,
-                resource_url: document.getElementById('asgResource').value,
-                is_published: document.getElementById('asgPublished').checked
+                title: titleEl?.value || 'New Assignment',
+                subject: subjectEl?.value || 'C++ Systems Architecture',
+                topic: topicEl?.value || 'General Algorithms',
+                description: descEl?.value || '',
+                deadline: deadlineEl?.value ? new Date(deadlineEl.value).toISOString() : new Date().toISOString(),
+                target_section: sectionEl?.value || 'ALL',
+                max_marks: maxM,
+                maxMarks: maxM,
+                xp_reward: xp,
+                xpReward: xp,
+                resource_url: resourceEl?.value || '',
+                is_published: isPub,
+                isPublished: isPub
             };
 
             if (id) {
                 this.updateAssignment(id, data);
-                alert('Assignment updated successfully!');
+                if (typeof window.showToast === 'function') {
+                    window.showToast('✅ Assignment updated successfully!');
+                }
             } else {
                 this.createAssignment(data);
-                alert('Assignment created and published!');
+                if (typeof window.showToast === 'function') {
+                    window.showToast('🚀 Assignment created successfully!');
+                }
             }
 
-            document.getElementById('msotAssignmentModal').style.display = 'none';
+            this.closeAssignmentModal();
+
             if (window.msotPlatform) {
                 window.msotPlatform.renderFacultyDashboard?.();
                 window.msotPlatform.renderAdminRules?.();
@@ -2915,6 +3241,10 @@
 
         // ─── 2-Way Message Modal (Faculty ↔️ Student) ────────────────────────
         openMessageModal(receiverEmail, subjectPrefix = '', relatedAsgId = null, relatedReasonId = null) {
+            if (!receiverEmail && typeof window.openSendMessageModal === 'function') {
+                window.openSendMessageModal();
+                return;
+            }
             const receiverUser = this.getUserByEmail(receiverEmail);
             const myUser = this.getCurrentUser();
 
@@ -2926,6 +3256,12 @@
                 document.body.appendChild(modal);
             }
 
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    this.closeMessageModal();
+                }
+            };
+
             modal.innerHTML = `
                 <div class="rbac-modal-card" style="max-width: 560px;">
                     <div class="rbac-modal-header">
@@ -2933,7 +3269,7 @@
                             <span class="rm-tag">COMMUNICATION // DIRECT DISPATCH</span>
                             <h3>Send Message</h3>
                         </div>
-                        <button type="button" class="rm-close-btn" onclick="document.getElementById('msotMessageModal').style.display='none'">✕</button>
+                        <button type="button" class="rm-close-btn" onclick="window.msotRBAC ? window.msotRBAC.closeMessageModal() : (document.getElementById('msotMessageModal').style.display='none')">✕</button>
                     </div>
 
                     <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:12.5px;">
@@ -2953,14 +3289,27 @@
                         </div>
 
                         <div class="rm-actions">
-                            <button type="button" class="secondary-btn" onclick="document.getElementById('msotMessageModal').style.display='none'">CANCEL</button>
+                            <button type="button" class="secondary-btn" onclick="window.msotRBAC ? window.msotRBAC.closeMessageModal() : (document.getElementById('msotMessageModal').style.display='none')">CANCEL</button>
                             <button type="submit" class="primary-btn">SEND MESSAGE ➔</button>
                         </div>
                     </form>
                 </div>
             `;
 
+            modal.classList.add('active');
             modal.style.display = 'flex';
+        }
+
+        closeMessageModal() {
+            const modal = document.getElementById('msotMessageModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                modal.style.setProperty('display', 'none', 'important');
+            }
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
         }
 
         handleSendMessageSubmit(e, receiverEmail, relatedAsgId, relatedReasonId) {
@@ -2977,11 +3326,99 @@
             });
 
             alert('Message dispatched successfully!');
-            document.getElementById('msotMessageModal').style.display = 'none';
+            this.closeMessageModal();
 
             if (window.msotPlatform) {
                 window.msotPlatform.renderFacultyDashboard?.();
                 window.msotPlatform.renderAdminRules?.();
+            }
+        }
+
+        closeStudentInboxModal() {
+            const modal = document.getElementById('msotStudentInboxModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                modal.style.setProperty('display', 'none', 'important');
+            }
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
+            }
+        }
+
+        openStudentInboxModal() {
+            const user = this.getCurrentUser();
+            const userEmail = (user?.email || '').toLowerCase();
+            const msgs = this.getMessages(userEmail).sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0));
+
+            let modal = document.getElementById('msotStudentInboxModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'msotStudentInboxModal';
+                document.body.appendChild(modal);
+            }
+
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    this.closeStudentInboxModal();
+                }
+            };
+
+            modal.className = 'rbac-modal-overlay active';
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+
+            modal.innerHTML = `
+                <div class="rbac-modal-card" style="max-width: 640px;">
+                    <div class="rbac-modal-header">
+                        <div class="rm-title-box">
+                            <span class="rm-tag">ACADEMIC INBOX // FACULTY CORRESPONDENCE</span>
+                            <h3>Faculty Messages (${msgs.length})</h3>
+                        </div>
+                        <button type="button" class="rm-close-btn" onclick="window.msotRBAC ? window.msotRBAC.closeStudentInboxModal() : (document.getElementById('msotStudentInboxModal').style.display='none')">✕</button>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto;padding-right:4px;">
+                        ${msgs.length === 0 ? `
+                            <div style="text-align:center;padding:40px 16px;color:#8c96a8;">
+                                <div style="font-size:38px;margin-bottom:8px;">📬</div>
+                                <h4>No Messages in your Inbox</h4>
+                                <p style="font-size:12px;margin-top:6px;">When faculty instructors send you guidance, assignment notes, or feedback, they will appear here.</p>
+                            </div>
+                        ` : msgs.map(m => {
+                            const senderName = m.sender_name || m.senderName || 'Faculty Instructor';
+                            const senderEmail = m.sender_email || m.senderEmail || '';
+                            const dateVal = m.created_at || m.createdAt;
+                            const dateStr = dateVal ? new Date(dateVal).toLocaleString() : 'Recent';
+                            const bodyText = m.content || m.body || '';
+                            return `
+                                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(0,240,255,0.2);border-radius:12px;padding:16px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                                        <div>
+                                            <strong style="color:#00f0ff;font-size:14px;">🎓 ${senderName}</strong>
+                                            <span style="font-size:12px;color:#8c96a8;"> (${senderEmail})</span>
+                                        </div>
+                                        <span style="font-size:11px;color:#64748b;">${dateStr}</span>
+                                    </div>
+                                    <h4 style="color:#fff;margin:0 0 6px 0;font-size:13.5px;">${m.subject || 'Academic Communication'}</h4>
+                                    <p style="color:#cbd5e1;font-size:13px;line-height:1.5;margin:0;white-space:pre-wrap;">${bodyText}</p>
+                                    <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+                                        <button class="btn-action-sm" onclick="(window.msotRBAC ? window.msotRBAC.closeStudentInboxModal() : (document.getElementById('msotStudentInboxModal').style.display='none')); window.msotRBAC.openMessageModal('${senderEmail}', 'Re: ${(m.subject || '').replace(/'/g, "\\'")}')">
+                                            REPLY TO INSTRUCTOR ➔
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div class="rm-actions" style="margin-top:16px;">
+                        <button type="button" class="primary-btn" onclick="window.msotRBAC ? window.msotRBAC.closeStudentInboxModal() : (document.getElementById('msotStudentInboxModal').style.display='none')">CLOSE INBOX</button>
+                    </div>
+                </div>
+            `;
+            if (window.miraiAudio && typeof window.miraiAudio.playClick === 'function') {
+                window.miraiAudio.playClick();
             }
         }
 
